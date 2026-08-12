@@ -1,226 +1,34 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ECHO v0.3 — Autonomous Mind</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      background-color: #0b0f19;
-      color: #00ffcc;
-      font-family: 'Courier New', Courier, monospace;
-      overflow: hidden;
-      width: 100vw;
-      height: 100vh;
-    }
+<script type="module">
+  import { EchoBrainV3 } from './core/echo.js';
 
-    #canvas-container {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 1;
-    }
+  // 1. Initialize Cognitive Core
+  const brain = new EchoBrainV3();
 
-    /* HUD Overlay Panels */
-    .hud-panel {
-      position: absolute;
-      z-index: 10;
-      background: rgba(10, 15, 25, 0.85);
-      border: 1px solid #00ffcc33;
-      border-radius: 8px;
-      padding: 15px;
-      backdrop-filter: blur(5px);
-      box-shadow: 0 0 15px rgba(0, 255, 204, 0.1);
-    }
+  // 2. Setup 3D Scene (Three.js)
+  const container = document.getElementById('canvas-container');
+  let scene, camera, renderer, echoMesh;
+  const entities = [];
 
-    .header-bar {
-      top: 15px;
-      left: 15px;
-      right: 15px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      height: 50px;
-    }
-
-    .left-panel {
-      top: 80px;
-      left: 15px;
-      width: 280px;
-      bottom: 220px;
-      overflow-y: auto;
-    }
-
-    .right-panel {
-      top: 80px;
-      right: 15px;
-      width: 280px;
-      bottom: 220px;
-      overflow-y: auto;
-    }
-
-    .bottom-panel {
-      bottom: 15px;
-      left: 15px;
-      right: 15px;
-      height: 190px;
-      display: grid;
-      grid-template-columns: 2fr 1fr 1.5fr;
-      gap: 15px;
-    }
-
-    h3 {
-      font-size: 0.85rem;
-      color: #7f9cf5;
-      text-transform: uppercase;
-      margin-bottom: 8px;
-      border-bottom: 1px solid #7f9cf533;
-      padding-bottom: 4px;
-    }
-
-    .stat-row {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 6px;
-      font-size: 0.8rem;
-    }
-
-    .bar-bg {
-      width: 100%;
-      background: #1a233a;
-      height: 8px;
-      border-radius: 4px;
-      margin-top: 2px;
-      margin-bottom: 8px;
-      overflow: hidden;
-    }
-
-    .bar-fill {
-      height: 100%;
-      background: #00ffcc;
-      width: 50%;
-      transition: width 0.3s ease;
-    }
-
-    .log-stream {
-      font-size: 0.75rem;
-      color: #a0aec0;
-      line-height: 1.4;
-      display: flex;
-      flex-direction: column-reverse;
-      gap: 6px;
-      max-height: 130px;
-      overflow-y: auto;
-    }
-
-    .log-entry {
-      background: rgba(255, 255, 255, 0.03);
-      padding: 4px 6px;
-      border-left: 2px solid #00ffcc;
-    }
-
-    .highlight { color: #ff007f; font-weight: bold; }
-  </style>
-
-  <!-- Load Three.js Engine from CDN -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-</head>
-<body>
-
-  <div id="canvas-container"></div>
-
-  <!-- HEADER BAR -->
-  <div class="hud-panel header-bar">
-    <div><strong>ECHO v0.3</strong> <span style="color:#00ffcc; font-size:0.8rem; margin-left:10px;">● AUTONOMOUS MIND ACTIVE</span></div>
-    <div id="hud-cycle">CYCLE: 0</div>
-    <div id="hud-time">TIME: Day 1 - 08:00 AM</div>
-  </div>
-
-  <!-- LEFT PANEL: INTERNAL STATE -->
-  <div class="hud-panel left-panel">
-    <h3>INTERNAL STATE</h3>
-    
-    <div class="stat-row"><span>Energy</span><span id="val-energy">75%</span></div>
-    <div class="bar-bg"><div class="bar-fill" id="bar-energy" style="width:75%"></div></div>
-
-    <div class="stat-row"><span>Curiosity</span><span id="val-curiosity">90%</span></div>
-    <div class="bar-bg"><div class="bar-fill" id="bar-curiosity" style="width:90%"></div></div>
-
-    <div class="stat-row"><span>Surprise Level</span><span id="val-surprise" class="highlight">0.00</span></div>
-    <div class="bar-bg"><div class="bar-fill" id="bar-surprise" style="width:0%; background:#ff007f;"></div></div>
-
-    <h3 style="margin-top:15px;">ACTIVE GOAL</h3>
-    <p id="hud-goal" style="font-size:0.8rem; color:#fff; font-weight:bold;">Initializing brain...</p>
-    
-    <h3 style="margin-top:15px;">SUB GOALS</h3>
-    <ul id="hud-subgoals" style="font-size:0.75rem; color:#a0aec0; padding-left:15px;">
-      <li>Analyzing environment...</li>
-    </ul>
-  </div>
-
-  <!-- RIGHT PANEL: PERCEPTIONS -->
-  <div class="hud-panel right-panel">
-    <h3>PERCEPTIONS</h3>
-    <div id="hud-perceptions" class="log-stream"></div>
-
-    <h3 style="margin-top:15px;">EMOTIONAL TENDENCIES</h3>
-    <div class="stat-row"><span>Curiosity</span><span>82%</span></div>
-    <div class="stat-row"><span>Excitement</span><span>61%</span></div>
-    <div class="stat-row"><span>Contentment</span><span>52%</span></div>
-    <div class="stat-row"><span>Fear</span><span>24%</span></div>
-  </div>
-
-  <!-- BOTTOM PANEL: THOUGHT PROCESS & METACOGNITION -->
-  <div class="hud-panel bottom-panel">
-    <div>
-      <h3>ECHO'S THOUGHT PROCESS - LIVE</h3>
-      <div id="hud-thoughts" class="log-stream"></div>
-    </div>
-    <div>
-      <h3>METACOGNITIVE REFLECTION</h3>
-      <div id="hud-reflection" style="font-size:0.75rem; color:#e2e8f0; line-height:1.3;">
-        Awaiting cognitive cycle...
-      </div>
-    </div>
-    <div>
-      <h3>WORLD INFO</h3>
-      <p style="font-size:0.75rem;">Location: Greenhaven Village</p>
-      <p style="font-size:0.75rem;">Weather: ☀️ Sunny (24°C)</p>
-      <p style="font-size:0.75rem; color:#00ffcc; margin-top:10px;" id="hud-action">ACTION: Idle</p>
-    </div>
-  </div>
-
-  <!-- COGNITIVE CORE + RENDERER MODULE -->
-  <script type="module">
-    import { EchoBrainV3 } from './core/echo.js';
-
-    // 1. Initialize Cognitive Core
-    const brain = new EchoBrainV3();
-
-    // 2. Setup 3D Scene (Three.js)
-    const container = document.getElementById('canvas-container');
-    const scene = new THREE.Scene();
+  if (container && typeof THREE !== 'undefined') {
+    scene = new THREE.Scene();
     scene.background = new THREE.Color(0x111625);
 
-    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
     camera.position.set(0, 8, 14);
     camera.lookAt(0, 0, 0);
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     container.appendChild(renderer.domElement);
 
-    // Lighting
+    // Lights
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
     scene.add(ambientLight);
     const dirLight = new THREE.DirectionalLight(0xffffff, 0.5);
     dirLight.position.set(10, 20, 10);
     scene.add(dirLight);
 
-    // Environment Meshes
+    // Ground
     const ground = new THREE.Mesh(
       new THREE.PlaneGeometry(40, 40),
       new THREE.MeshStandardMaterial({ color: 0x223322 })
@@ -228,28 +36,45 @@
     ground.rotation.x = -Math.PI / 2;
     scene.add(ground);
 
-    // Main Agent - ECHO
-    const echoMesh = new THREE.Mesh(
+    // ECHO Mesh
+    echoMesh = new THREE.Mesh(
       new THREE.SphereGeometry(0.8, 32, 32),
       new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.2 })
     );
     echoMesh.position.set(0, 0.8, 0);
     scene.add(echoMesh);
 
-    // Objects / Perceptions
-    const entities = [
+    // World Entities
+    const objectList = [
       { id: 'Old Man', type: 'npc', mesh: new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 1.2), new THREE.MeshStandardMaterial({ color: 0xaa6633 })), pos: [-3, 0.6, -2] },
       { id: 'Wooden House', type: 'building', mesh: new THREE.Mesh(new THREE.BoxGeometry(3, 2.5, 3), new THREE.MeshStandardMaterial({ color: 0x664422 })), pos: [4, 1.25, -4] },
       { id: 'Water Well', type: 'object', mesh: new THREE.Mesh(new THREE.CylinderGeometry(0.8, 0.8, 0.8), new THREE.MeshStandardMaterial({ color: 0x888888 })), pos: [0, 0.4, -5] }
     ];
 
-    entities.forEach(e => {
+    objectList.forEach(e => {
       e.mesh.position.set(...e.pos);
       scene.add(e.mesh);
+      entities.push(e);
     });
 
-    // Perceptions Provider
-    function getPerceptions() {
+    // Render Animation Loop
+    function animate() {
+      requestAnimationFrame(animate);
+      if (echoMesh) echoMesh.rotation.y += 0.01;
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  }
+
+  // 3. Perception Generator
+  function getPerceptions() {
+    if (entities.length > 0 && echoMesh) {
       return entities.map(e => ({
         id: e.id,
         type: e.type,
@@ -257,54 +82,64 @@
         state: 'static'
       }));
     }
+    return [
+      { id: 'Old Man', type: 'npc', distance: 3.0 },
+      { id: 'Wooden House', type: 'building', distance: 12.0 },
+      { id: 'Water Well', type: 'object', distance: 8.0 }
+    ];
+  }
 
-    // 3. Cognitive Step Execution & HUD Sync
-    function executeCognitiveCycle() {
-      const perceptions = getPerceptions();
+  // Safe DOM Helper
+  function setDOMText(id, text) {
+    const el = document.getElementById(id);
+    if (el) el.innerText = text;
+  }
+
+  // 4. Main Simulation Step
+  function runSimulation() {
+    const perceptions = getPerceptions();
+
+    try {
       const output = brain.step(perceptions);
 
-      // Update Header
-      document.getElementById('hud-cycle').innerText = `CYCLE: ${output.cycle}`;
+      // DOM Updates
+      setDOMText('hud-cycle', `CYCLE: ${output.cycle}`);
+      setDOMText('hud-goal', output.activeGoal);
+      setDOMText('val-surprise', output.surpriseScore.toFixed(2));
+      setDOMText('hud-reflection', output.latestReflection);
 
-      // Update Internal State HUD
-      document.getElementById('val-surprise').innerText = output.surpriseScore.toFixed(2);
-      document.getElementById('bar-surprise').style.width = `${Math.min(100, output.surpriseScore * 100)}%`;
+      if (output.action) {
+        setDOMText('hud-action', `ACTION: ${output.action.type} -> ${output.action.target}`);
+      }
 
-      document.getElementById('hud-goal').innerText = output.activeGoal;
-      document.getElementById('hud-subgoals').innerHTML = output.subGoals.map(sg => `<li>${sg}</li>`).join('');
+      const subGoalsElem = document.getElementById('hud-subgoals');
+      if (subGoalsElem && output.subGoals) {
+        subGoalsElem.innerHTML = output.subGoals.map(sg => `<li>${sg}</li>`).join('');
+      }
 
-      // Update Thought & Metacognition HUD
+      const surpriseBar = document.getElementById('bar-surprise');
+      if (surpriseBar) {
+        surpriseBar.style.width = `${Math.min(100, output.surpriseScore * 100)}%`;
+      }
+
       const thoughtLog = document.getElementById('hud-thoughts');
-      const newThought = document.createElement('div');
-      newThought.className = 'log-entry';
-      newThought.innerText = `[Cycle ${output.cycle}] Decision: Pursuing '${output.activeGoal}'`;
-      thoughtLog.prepend(newThought);
+      if (thoughtLog && output.latestReflection) {
+        const entry = document.createElement('div');
+        entry.className = 'log-entry';
+        entry.innerText = `[Cycle ${output.cycle}] ${output.latestReflection}`;
+        thoughtLog.prepend(entry);
+      }
 
-      document.getElementById('hud-reflection').innerText = output.latestReflection;
-      document.getElementById('hud-action').innerText = `ACTION: ${output.action.type} -> ${output.action.target}`;
-
-      // Render Perceptions List
       const percHUD = document.getElementById('hud-perceptions');
-      percHUD.innerHTML = perceptions.map(p => `<div class="log-entry">⦿ ${p.id} (${p.distance}m)</div>`).join('');
+      if (percHUD) {
+        percHUD.innerHTML = perceptions.map(p => `<div class="log-entry">⦿ ${p.id} (${p.distance || 0}m)</div>`).join('');
+      }
+
+    } catch (err) {
+      console.error("Simulation Execution Error:", err);
     }
+  }
 
-    // Run cognitive cycle every 1.5 seconds
-    setInterval(executeCognitiveCycle, 1500);
-
-    // Animation Loop
-    function animate() {
-      requestAnimationFrame(animate);
-      echoMesh.rotation.y += 0.01; // Slow ambient rotation
-      renderer.render(scene, camera);
-    }
-    animate();
-
-    // Window Resize Handler
-    window.addEventListener('resize', () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    });
-  </script>
-</body>
-</html>
+  // Start Cognitive Loop
+  setInterval(runSimulation, 1500);
+</script>
