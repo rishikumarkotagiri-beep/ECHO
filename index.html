@@ -8,15 +8,15 @@
 <meta name="viewport"
       content="width=device-width, initial-scale=1.0">
 
-<title>ECHO v0.4.1 — Autonomous Mind</title>
+<title>ECHO v0.5 — Living World</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
 <style>
 
-/* =====================================================
-   GLOBAL
-===================================================== */
+/* =========================================================
+   RESET
+========================================================= */
 
 * {
     box-sizing: border-box;
@@ -34,13 +34,12 @@ body {
 
 body {
 
-    background: #080d17;
+    background: #080d16;
 
     color: #00ffcc;
 
     font-family:
         "Courier New",
-        Courier,
         monospace;
 
     overflow: hidden;
@@ -48,41 +47,39 @@ body {
 }
 
 
-/* =====================================================
-   THREE.JS WORLD
-===================================================== */
+/* =========================================================
+   WORLD
+========================================================= */
 
-#canvas-container {
+#world {
 
     position: fixed;
 
     inset: 0;
-
-    width: 100%;
-    height: 100%;
 
     z-index: 1;
 
 }
 
 
-/* =====================================================
-   HUD PANELS
-===================================================== */
+/* =========================================================
+   HUD
+========================================================= */
 
-.hud-panel {
+.panel {
 
     position: absolute;
 
     z-index: 10;
 
     background:
-        rgba(8, 14, 24, 0.91);
+        rgba(7, 13, 23, 0.91);
 
     border:
-        1px solid rgba(0, 255, 204, 0.25);
+        1px solid
+        rgba(0,255,204,0.24);
 
-    border-radius: 9px;
+    border-radius: 8px;
 
     padding: 15px;
 
@@ -91,16 +88,16 @@ body {
 
     box-shadow:
         0 0 20px
-        rgba(0, 255, 204, 0.05);
+        rgba(0,255,204,0.05);
 
 }
 
 
-/* =====================================================
+/* =========================================================
    HEADER
-===================================================== */
+========================================================= */
 
-.header-bar {
+.header {
 
     top: 15px;
 
@@ -119,75 +116,66 @@ body {
 
 }
 
-.header-left {
+.logo {
 
     font-size: 16px;
 
     font-weight: bold;
 
-    letter-spacing: 2px;
+    letter-spacing: 3px;
 
 }
 
 .version {
 
-    font-size: 11px;
+    color: #77859e;
 
-    color: #8190ad;
+    font-size: 11px;
 
     margin-left: 8px;
 
 }
 
-.active {
+.online {
 
     color: #00ffcc;
 
     font-size: 11px;
 
-    margin-left: 12px;
+    margin-left: 10px;
 
 }
 
-.header-cycle {
+.center {
 
     text-align: center;
 
-    font-size: 14px;
-
 }
 
-.header-time {
+.right {
 
     text-align: right;
 
-    font-size: 14px;
-
 }
 
 
-/* =====================================================
-   LEFT PANEL
-===================================================== */
+/* =========================================================
+   SIDE PANELS
+========================================================= */
 
-.left-panel {
+.left {
 
     top: 84px;
 
     left: 15px;
 
-    width: 300px;
+    width: 305px;
 
     bottom: 220px;
 
     overflow-y: auto;
 
 }
-
-
-/* =====================================================
-   RIGHT PANEL
-===================================================== */
 
 .right-panel {
 
@@ -195,7 +183,7 @@ body {
 
     right: 15px;
 
-    width: 300px;
+    width: 305px;
 
     bottom: 220px;
 
@@ -204,11 +192,11 @@ body {
 }
 
 
-/* =====================================================
+/* =========================================================
    BOTTOM
-===================================================== */
+========================================================= */
 
-.bottom-panel {
+.bottom {
 
     bottom: 15px;
 
@@ -221,113 +209,96 @@ body {
     display: grid;
 
     grid-template-columns:
-        2fr 1fr 1.4fr;
+        2fr 1fr 1.3fr;
 
     gap: 16px;
 
 }
 
 
-/* =====================================================
+/* =========================================================
    HEADINGS
-===================================================== */
+========================================================= */
 
 h3 {
 
-    font-size: 12px;
+    color: #879bc1;
 
-    color: #91a5cc;
+    font-size: 11px;
 
     letter-spacing: 1px;
 
-    border-bottom:
-        1px solid
-        rgba(145,165,204,0.25);
-
-    padding-bottom: 8px;
+    padding-bottom: 7px;
 
     margin-bottom: 10px;
+
+    border-bottom:
+        1px solid
+        rgba(135,155,193,0.25);
 
 }
 
 
-/* =====================================================
-   STATE
-===================================================== */
+/* =========================================================
+   BARS
+========================================================= */
 
-.stat-row {
+.stat {
 
     display: flex;
 
     justify-content:
         space-between;
 
-    font-size: 12px;
+    font-size: 11px;
 
     margin-bottom: 6px;
 
 }
 
-.stat-value {
+.value {
 
     color: #00ffcc;
 
 }
 
-.bar-bg {
+.bar {
 
     width: 100%;
 
-    height: 8px;
+    height: 7px;
 
-    background:
-        #172039;
+    background: #172037;
 
-    border-radius: 6px;
+    border-radius: 5px;
 
     overflow: hidden;
 
-    margin-bottom: 13px;
+    margin-bottom: 12px;
 
 }
 
-.bar-fill {
+.fill {
 
     height: 100%;
 
-    width: 50%;
-
-    background:
-        #00e6c8;
+    background: #00e6c8;
 
     transition:
         width 0.5s ease;
 
-    box-shadow:
-        0 0 10px
-        rgba(0,255,204,0.35);
-
-}
-
-.surprise-fill {
-
-    background:
-        #ff007f;
-
 }
 
 
-/* =====================================================
-   GOAL
-===================================================== */
+/* =========================================================
+   TEXT
+========================================================= */
 
-.goal-text {
+.goal {
 
-    color: #ffffff;
+    color: white;
 
     font-size: 13px;
-
-    font-weight: bold;
 
     line-height: 1.5;
 
@@ -335,40 +306,51 @@ h3 {
 
 }
 
-.subgoals {
+.thought {
 
-    padding-left: 18px;
-
-    color: #a3aec0;
-
-    font-size: 11px;
-
-    line-height: 1.7;
-
-}
-
-
-/* =====================================================
-   MEMORY
-===================================================== */
-
-.memory-container {
-
-    max-height: 125px;
-
-    overflow-y: auto;
-
-}
-
-.memory-entry {
-
-    color: #00d9b5;
+    color: #b9c5d7;
 
     font-size: 10px;
 
     line-height: 1.5;
 
-    padding: 6px 4px;
+    padding: 5px;
+
+    border-left:
+        2px solid
+        #00ffcc;
+
+    background:
+        rgba(255,255,255,0.025);
+
+}
+
+.log {
+
+    height: 135px;
+
+    overflow-y: auto;
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 5px;
+
+}
+
+
+/* =========================================================
+   MEMORY
+========================================================= */
+
+.memory {
+
+    font-size: 10px;
+
+    color: #00d9b5;
+
+    padding: 6px 3px;
 
     border-bottom:
         1px solid
@@ -377,13 +359,13 @@ h3 {
 }
 
 
-/* =====================================================
+/* =========================================================
    PERCEPTION
-===================================================== */
+========================================================= */
 
 .perception {
 
-    padding: 8px;
+    padding: 7px;
 
     margin-bottom: 6px;
 
@@ -394,93 +376,47 @@ h3 {
         2px solid
         #00ffcc;
 
-    font-size: 11px;
+    font-size: 10px;
 
 }
 
-.perception-name {
+.perception strong {
 
-    color: #d6fff7;
-
-}
-
-.perception-distance {
-
-    color: #8190a8;
-
-    margin-top: 3px;
+    color: #d9fff8;
 
 }
 
+.muted {
 
-/* =====================================================
-   THOUGHTS
-===================================================== */
-
-.thought-log {
-
-    height: 140px;
-
-    overflow-y: auto;
-
-    display: flex;
-
-    flex-direction: column;
-
-    gap: 6px;
+    color: #758198;
 
 }
 
-.thought {
+
+/* =========================================================
+   EVENT
+========================================================= */
+
+.event {
+
+    color: #d2fff7;
 
     font-size: 10px;
 
     line-height: 1.5;
 
-    color: #b2bdcf;
-
-    padding: 5px 7px;
-
-    background:
-        rgba(255,255,255,0.025);
-
-    border-left:
-        2px solid
-        #00ffcc;
-
 }
 
 
-/* =====================================================
-   REFLECTION
-===================================================== */
-
-.reflection {
-
-    font-size: 12px;
-
-    line-height: 1.6;
-
-    color: #d5fff8;
-
-}
-
-
-/* =====================================================
-   WORLD INFO
-===================================================== */
-
-.world-info {
-
-    font-size: 11px;
-
-    line-height: 1.8;
-
-}
+/* =========================================================
+   ACTION
+========================================================= */
 
 .action {
 
     color: #00ffcc;
+
+    font-size: 11px;
 
     margin-top: 8px;
 
@@ -488,7 +424,9 @@ h3 {
 
 .learning {
 
-    color: #8290a4;
+    color: #8996aa;
+
+    font-size: 10px;
 
     margin-top: 8px;
 
@@ -497,26 +435,11 @@ h3 {
 }
 
 
-/* =====================================================
-   STATUS
-===================================================== */
-
-.online {
-
-    color: #00ffcc;
-
-    text-shadow:
-        0 0 8px
-        rgba(0,255,204,0.7);
-
-}
-
-
-/* =====================================================
+/* =========================================================
    MOBILE
-===================================================== */
+========================================================= */
 
-@media (max-width: 1000px) {
+@media(max-width:1000px) {
 
     body {
 
@@ -524,36 +447,42 @@ h3 {
 
     }
 
-    .header-bar {
+    .header {
 
         grid-template-columns: 1fr;
 
         height: auto;
 
-        gap: 8px;
+        gap: 6px;
 
     }
 
-    .header-cycle,
-    .header-time {
+    .center,
+    .right {
 
         text-align: left;
 
     }
 
-    .left-panel,
-    .right-panel {
+    .left,
+    .right-panel,
+    .bottom {
 
         position: relative;
 
         top: auto;
+
         left: auto;
+
         right: auto;
+
         bottom: auto;
 
-        width: calc(100% - 30px);
+        width:
+            calc(100% - 30px);
 
-        margin: 90px 15px 15px;
+        margin:
+            90px 15px 15px;
 
     }
 
@@ -563,27 +492,11 @@ h3 {
 
     }
 
-    .bottom-panel {
-
-        position: relative;
-
-        bottom: auto;
-        left: auto;
-        right: auto;
-
-        margin: 15px;
-
-        width: calc(100% - 30px);
+    .bottom {
 
         height: auto;
 
         grid-template-columns: 1fr;
-
-    }
-
-    #canvas-container {
-
-        position: fixed;
 
     }
 
@@ -597,37 +510,37 @@ h3 {
 <body>
 
 
-<!-- =====================================================
+<!-- =========================================================
      THREE.JS WORLD
-===================================================== -->
+========================================================= -->
 
-<div id="canvas-container"></div>
+<div id="world"></div>
 
 
-<!-- =====================================================
+<!-- =========================================================
      HEADER
-===================================================== -->
+========================================================= -->
 
-<div class="hud-panel header-bar">
+<div class="panel header">
 
-    <div class="header-left">
+    <div class="logo">
 
         ECHO
 
         <span class="version">
-            v0.4.1
+            v0.5
         </span>
 
-        <span class="active">
-            ● AUTONOMOUS MIND ACTIVE
+        <span class="online">
+            ● LIVING WORLD
         </span>
 
     </div>
 
 
     <div
-        id="hud-cycle"
-        class="header-cycle"
+        id="cycle"
+        class="center"
     >
 
         CYCLE: 0
@@ -636,22 +549,22 @@ h3 {
 
 
     <div
-        id="hud-time"
-        class="header-time"
+        id="time"
+        class="right"
     >
 
-        TIME: Day 1 - 08:00 AM
+        DAY 1 — 08:00 AM
 
     </div>
 
 </div>
 
 
-<!-- =====================================================
-     LEFT PANEL
-===================================================== -->
+<!-- =========================================================
+     LEFT
+========================================================= -->
 
-<div class="hud-panel left-panel">
+<div class="panel left">
 
 
     <h3>
@@ -659,155 +572,154 @@ h3 {
     </h3>
 
 
-    <!-- ENERGY -->
-
-    <div class="stat-row">
+    <div class="stat">
 
         <span>
             Energy
         </span>
 
         <span
-            id="val-energy"
-            class="stat-value"
+            id="energy"
+            class="value"
         >
-            75%
+            80%
         </span>
 
     </div>
 
 
-    <div class="bar-bg">
+    <div class="bar">
 
         <div
-            id="bar-energy"
-            class="bar-fill"
-            style="width:75%"
+            id="energyBar"
+            class="fill"
+            style="width:80%"
         ></div>
 
     </div>
 
 
-    <!-- CURIOSITY -->
-
-    <div class="stat-row">
+    <div class="stat">
 
         <span>
             Curiosity
         </span>
 
         <span
-            id="val-curiosity"
-            class="stat-value"
+            id="curiosity"
+            class="value"
         >
-            90%
+            70%
         </span>
 
     </div>
 
 
-    <div class="bar-bg">
+    <div class="bar">
 
         <div
-            id="bar-curiosity"
-            class="bar-fill"
-            style="width:90%"
+            id="curiosityBar"
+            class="fill"
+            style="width:70%"
         ></div>
 
     </div>
 
 
-    <!-- SURPRISE -->
-
-    <div class="stat-row">
+    <div class="stat">
 
         <span>
-            Surprise Level
+            Wonder
         </span>
 
         <span
-            id="val-surprise"
-            class="stat-value"
-            style="color:#ff007f"
+            id="wonder"
+            class="value"
         >
-            0.00
+            50%
         </span>
 
     </div>
 
 
-    <div class="bar-bg">
+    <div class="bar">
 
         <div
-            id="bar-surprise"
-            class="bar-fill surprise-fill"
-            style="width:0%"
+            id="wonderBar"
+            class="fill"
+            style="width:50%"
         ></div>
 
     </div>
 
 
-    <!-- ACTIVE GOAL -->
+    <div class="stat">
 
-    <h3>
-        ACTIVE GOAL
-    </h3>
+        <span>
+            Social
+        </span>
 
-
-    <div
-        id="hud-goal"
-        class="goal-text"
-    >
-
-        Initializing cognitive system...
+        <span
+            id="social"
+            class="value"
+        >
+            40%
+        </span>
 
     </div>
 
 
-    <!-- SUB GOALS -->
+    <div class="bar">
+
+        <div
+            id="socialBar"
+            class="fill"
+            style="width:40%"
+        ></div>
+
+    </div>
+
+
+    <!-- =====================================================
+         CURRENT INTENTION
+    ====================================================== -->
 
     <h3>
-        SUB GOALS
-    </h3>
 
-
-    <ul
-        id="hud-subgoals"
-        class="subgoals"
-    >
-
-        <li>
-            Scan environment
-        </li>
-
-        <li>
-            Evaluate novelty
-        </li>
-
-        <li>
-            Select objective
-        </li>
-
-    </ul>
-
-
-    <!-- MEMORY -->
-
-    <h3 style="margin-top:15px">
-
-        EPISODIC MEMORY
+        CURRENT INTENTION
 
     </h3>
 
 
     <div
-        id="hud-memory"
-        class="memory-container"
+        id="goal"
+        class="goal"
     >
 
-        <div class="memory-entry">
+        I am observing the world.
 
-            No experiences recorded yet.
+    </div>
+
+
+    <!-- =====================================================
+         MEMORY
+    ====================================================== -->
+
+    <h3>
+
+        MEMORY
+
+    </h3>
+
+
+    <div
+        id="memory"
+        class="log"
+    >
+
+        <div class="memory">
+
+            No experiences yet.
 
         </div>
 
@@ -817,90 +729,107 @@ h3 {
 </div>
 
 
-<!-- =====================================================
-     RIGHT PANEL
-===================================================== -->
+<!-- =========================================================
+     RIGHT
+========================================================= -->
 
-<div class="hud-panel right-panel">
+<div class="panel right-panel">
 
 
     <h3>
-        PERCEPTION STREAM
+        WHAT ECHO PERCEIVES
     </h3>
 
 
     <div
-        id="hud-perceptions"
+        id="perceptions"
     ></div>
 
 
     <h3 style="margin-top:15px">
 
-        EMOTIONAL TENDENCIES
+        EMOTIONAL STATE
 
     </h3>
 
 
-    <div class="stat-row">
+    <div class="stat">
 
         <span>
-            Curiosity
+            Calm
         </span>
 
         <span
-            id="val-emo-curiosity"
-            class="stat-value"
+            id="calm"
+            class="value"
         >
-            90%
+            60%
         </span>
 
     </div>
 
 
-    <div class="stat-row">
+    <div class="stat">
 
         <span>
             Excitement
         </span>
 
         <span
-            id="val-emo-excitement"
-            class="stat-value"
+            id="excitement"
+            class="value"
         >
-            61%
+            30%
         </span>
 
     </div>
 
 
-    <div class="stat-row">
+    <div class="stat">
 
         <span>
-            Contentment
+            Curiosity
         </span>
 
         <span
-            id="val-emo-contentment"
-            class="stat-value"
+            id="emotionCuriosity"
+            class="value"
         >
-            52%
+            70%
         </span>
 
     </div>
 
 
-    <div class="stat-row">
+    <div class="stat">
 
         <span>
-            Fear
+            Unease
         </span>
 
         <span
-            id="val-emo-fear"
-            class="stat-value"
+            id="unease"
+            class="value"
         >
-            24%
+            10%
         </span>
+
+    </div>
+
+
+    <h3 style="margin-top:18px">
+
+        LAST WORLD EVENT
+
+    </h3>
+
+
+    <div
+        id="event"
+        class="event"
+    >
+
+        The village is quiet.
 
     </div>
 
@@ -908,45 +837,45 @@ h3 {
 </div>
 
 
-<!-- =====================================================
-     BOTTOM PANEL
-===================================================== -->
+<!-- =========================================================
+     BOTTOM
+========================================================= -->
 
-<div class="hud-panel bottom-panel">
+<div class="panel bottom">
 
 
-    <!-- THOUGHT PROCESS -->
+    <!-- THOUGHTS -->
 
     <div>
 
         <h3>
-            ECHO'S THOUGHT PROCESS — LIVE
+            STREAM OF THOUGHT
         </h3>
 
 
         <div
-            id="hud-thoughts"
-            class="thought-log"
+            id="thoughts"
+            class="log"
         ></div>
 
     </div>
 
 
-    <!-- METACOGNITION -->
+    <!-- REFLECTION -->
 
     <div>
 
         <h3>
-            METACOGNITIVE REFLECTION
+            REFLECTION
         </h3>
 
 
         <div
-            id="hud-reflection"
-            class="reflection"
+            id="reflection"
+            class="event"
         >
 
-            Initializing...
+            I am beginning to observe my environment.
 
         </div>
 
@@ -958,45 +887,47 @@ h3 {
     <div>
 
         <h3>
-            WORLD INFO
+            WORLD
         </h3>
 
 
-        <div class="world-info">
+        <div class="event">
 
-            <div>
-                Location:
-                <span style="color:#00ffcc">
-                    Greenhaven Village
-                </span>
-            </div>
+            Location:
+            <span style="color:#00ffcc">
+                Greenhaven
+            </span>
 
-
-            <div>
-                Weather:
-                ☀️ Sunny (24°C)
-            </div>
+        </div>
 
 
-            <div
-                id="hud-action"
-                class="action"
-            >
+        <div
+            id="weather"
+            class="event"
+        >
 
-                ACTION: Initializing
+            Weather: Clear
 
-            </div>
+        </div>
 
 
-            <div
-                id="hud-learning"
-                class="learning"
-            >
+        <div
+            id="action"
+            class="action"
+        >
 
-                LEARNING:
-                No new knowledge yet.
+            ACTION: Observing
 
-            </div>
+        </div>
+
+
+        <div
+            id="learning"
+            class="learning"
+        >
+
+            LEARNING:
+            Nothing yet.
 
         </div>
 
@@ -1008,167 +939,644 @@ h3 {
 
 <script>
 
-/* =====================================================
-   ECHO v0.4.1
-   AUTONOMOUS COGNITIVE ENGINE
-===================================================== */
+/* =========================================================
+   ECHO v0.5
+   LIVING WORLD
+========================================================= */
 
 
-class AutonomousBrain {
+/* =========================================================
+   UTILITIES
+========================================================= */
+
+function clamp(
+    value,
+    min = 0,
+    max = 1
+) {
+
+    return Math.max(
+        min,
+        Math.min(
+            max,
+            value
+        )
+    );
+
+}
+
+
+function random(
+    min,
+    max
+) {
+
+    return (
+        Math.random() *
+        (max - min)
+    ) + min;
+
+}
+
+
+function choose(
+    array
+) {
+
+    return array[
+        Math.floor(
+            Math.random() *
+            array.length
+        )
+    ];
+
+}
+
+
+/* =========================================================
+   WORLD
+========================================================= */
+
+class LivingWorld {
 
 
     constructor() {
 
 
-        /* =================================================
-           CORE STATE
-        ================================================= */
+        this.minute =
+            8 * 60;
 
 
-        this.cycle = 0;
-
-        this.minutes = 0;
-
-
-        this.energy = 0.75;
-
-        this.curiosity = 0.90;
-
-        this.excitement = 0.61;
-
-        this.contentment = 0.52;
-
-        this.fear = 0.24;
+        this.weather =
+            "Clear";
 
 
-        /* =================================================
-           MEMORY
-        ================================================= */
+        this.events = [];
 
 
-        this.memory = [];
+        this.entities = [];
 
 
-        /*
-         * Number of times an object has
-         * ACTUALLY been investigated.
-         */
-
-        this.inspectedTargets =
-            new Map();
-
-
-        /*
-         * Target that was just completed.
-         *
-         * This prevents immediate
-         * re-selection.
-         */
-
-        this.recentlyCompleted =
-            null;
-
-
-        /*
-         * Number of cognitive cycles
-         * during which the completed
-         * target is excluded.
-         */
-
-        this.completionCooldown =
-            0;
-
-
-        /* =================================================
-           CURRENT COGNITION
-        ================================================= */
-
-
-        this.currentTarget =
-            null;
-
-
-        this.currentGoal =
-            null;
-
-
-        this.lastAction =
-            "Observe";
-
-
-        this.lastEvent =
-            "Cognitive system initialized.";
-
-
-        this.lastLearning =
-            "No new knowledge yet.";
+        this.createEntities();
 
     }
 
 
     /* =====================================================
-       UTILITY
+       CREATE WORLD
     ===================================================== */
 
 
-    clamp(
-        value,
-        min = 0,
-        max = 1
+    createEntities() {
+
+
+        this.entities = [
+
+            {
+
+                id:
+                    "old_man",
+
+                name:
+                    "Old Man",
+
+                type:
+                    "person",
+
+                x:
+                    -4,
+
+                z:
+                    -2,
+
+                speed:
+                    0.025,
+
+                mood:
+                    "quiet",
+
+                activity:
+                    "walking",
+
+                destination:
+                    null,
+
+                memory:
+                    [],
+
+                relationship:
+                    0
+
+            },
+
+
+            {
+
+                id:
+                    "mira",
+
+                name:
+                    "Mira",
+
+                type:
+                    "person",
+
+                x:
+                    3,
+
+                z:
+                    1,
+
+                speed:
+                    0.03,
+
+                mood:
+                    "cheerful",
+
+                activity:
+                    "wandering",
+
+                destination:
+                    null,
+
+                memory:
+                    [],
+
+                relationship:
+                    0
+
+            },
+
+
+            {
+
+                id:
+                    "dog",
+
+                name:
+                    "Dog",
+
+                type:
+                    "animal",
+
+                x:
+                    -1,
+
+                z:
+                    -5,
+
+                speed:
+                    0.045,
+
+                mood:
+                    "playful",
+
+                activity:
+                    "wandering",
+
+                destination:
+                    null,
+
+                memory:
+                    [],
+
+                relationship:
+                    0
+
+            },
+
+
+            {
+
+                id:
+                    "well",
+
+                name:
+                    "Water Well",
+
+                type:
+                    "object",
+
+                x:
+                    0,
+
+                z:
+                    -4
+
+            },
+
+
+            {
+
+                id:
+                    "house",
+
+                name:
+                    "Wooden House",
+
+                type:
+                    "location",
+
+                x:
+                    4,
+
+                z:
+                    -4
+
+            },
+
+
+            {
+
+                id:
+                    "tree",
+
+                name:
+                    "Large Tree",
+
+                type:
+                    "object",
+
+                x:
+                    -6,
+
+                z:
+                    3
+
+            }
+
+        ];
+
+    }
+
+
+    /* =====================================================
+       GET ENTITY
+    ===================================================== */
+
+
+    get(
+        id
     ) {
 
-        return Math.max(
-            min,
-            Math.min(
-                max,
-                value
-            )
+        return this.entities.find(
+            e =>
+                e.id === id
         );
 
     }
 
 
     /* =====================================================
-       MEMORY
+       WORLD TICK
     ===================================================== */
 
 
-    remember(
-        target,
-        event,
-        learning
+    tick() {
+
+
+        this.minute++;
+
+
+        this.updateWeather();
+
+
+        this.updatePeople();
+
+
+        this.updateEvents();
+
+    }
+
+
+    /* =====================================================
+       TIME
+    ===================================================== */
+
+
+    getTime() {
+
+
+        const hour =
+            Math.floor(
+                this.minute / 60
+            ) % 24;
+
+
+        const minute =
+            this.minute % 60;
+
+
+        const suffix =
+            hour >= 12
+                ? "PM"
+                : "AM";
+
+
+        let displayHour =
+            hour % 12;
+
+
+        if (
+            displayHour === 0
+        ) {
+
+            displayHour =
+                12;
+
+        }
+
+
+        return {
+
+            hour,
+            minute,
+
+            text:
+                `Day 1 — ${
+                    String(
+                        displayHour
+                    ).padStart(
+                        2,
+                        "0"
+                    )
+                }:${
+                    String(
+                        minute
+                    ).padStart(
+                        2,
+                        "0"
+                    )
+                } ${suffix}`
+
+        };
+
+    }
+
+
+    /* =====================================================
+       WEATHER
+    ===================================================== */
+
+
+    updateWeather() {
+
+
+        const roll =
+            Math.random();
+
+
+        if (
+            roll < 0.015
+        ) {
+
+            this.weather =
+                "Cloudy";
+
+
+            this.addEvent(
+                "Clouds are slowly gathering."
+            );
+
+        }
+
+
+        else if (
+            roll < 0.025
+        ) {
+
+            this.weather =
+                "Windy";
+
+
+            this.addEvent(
+                "A strange wind moves through the village."
+            );
+
+        }
+
+
+        else if (
+            roll < 0.035
+        ) {
+
+            this.weather =
+                "Clear";
+
+        }
+
+    }
+
+
+    /* =====================================================
+       NPC MOVEMENT
+    ===================================================== */
+
+
+    updatePeople() {
+
+
+        const people =
+            this.entities.filter(
+                e =>
+                    e.type ===
+                    "person" ||
+                    e.type ===
+                    "animal"
+            );
+
+
+        people.forEach(
+            person => {
+
+
+                if (
+                    !person.destination ||
+                    distance(
+                        person,
+                        person.destination
+                    ) < 0.4
+                ) {
+
+
+                    person.destination = {
+
+                        x:
+                            random(
+                                -7,
+                                7
+                            ),
+
+                        z:
+                            random(
+                                -7,
+                                7
+                            )
+
+                    };
+
+
+                    if (
+                        person.id ===
+                        "old_man"
+                    ) {
+
+
+                        person.activity =
+                            choose([
+
+                                "walking",
+
+                                "visiting the well",
+
+                                "returning home",
+
+                                "watching the village"
+
+                            ]);
+
+                    }
+
+
+                    else if (
+                        person.id ===
+                        "mira"
+                    ) {
+
+                        person.activity =
+                            choose([
+
+                                "wandering",
+
+                                "looking around",
+
+                                "walking"
+
+                            ]);
+
+                    }
+
+
+                    else {
+
+                        person.activity =
+                            "wandering";
+
+                    }
+
+                }
+
+
+                moveEntity(
+                    person,
+                    person.destination,
+                    person.speed
+                );
+
+            }
+        );
+
+    }
+
+
+    /* =====================================================
+       WORLD EVENTS
+    ===================================================== */
+
+
+    updateEvents() {
+
+
+        const oldMan =
+            this.get(
+                "old_man"
+            );
+
+
+        const well =
+            this.get(
+                "well"
+            );
+
+
+        if (
+            oldMan &&
+            well &&
+            distance(
+                oldMan,
+                well
+            ) < 1
+        ) {
+
+
+            if (
+                Math.random()
+                < 0.08
+            ) {
+
+                oldMan.activity =
+                    "collecting water";
+
+
+                this.addEvent(
+                    "The Old Man is standing near the well."
+                );
+
+            }
+
+        }
+
+
+        if (
+            Math.random()
+            < 0.015
+        ) {
+
+            this.addEvent(
+                choose([
+
+                    "A distant sound echoes through the village.",
+
+                    "A bird suddenly flies from the tree.",
+
+                    "Someone seems to have opened the house door.",
+
+                    "The village becomes unusually quiet."
+
+                ])
+            );
+
+        }
+
+    }
+
+
+    /* =====================================================
+       EVENT
+    ===================================================== */
+
+
+    addEvent(
+        text
     ) {
 
 
-        this.memory.unshift({
+        this.events.unshift({
 
-            cycle:
-                this.cycle,
+            text,
 
-            target:
-                target,
-
-            event:
-                event,
-
-            learning:
-                learning,
-
-            time:
-                this.minutes
+            minute:
+                this.minute
 
         });
 
 
-        /*
-         * Keep only recent memories.
-         */
-
         if (
-            this.memory.length > 30
+            this.events.length >
+            30
         ) {
 
-            this.memory.pop();
+            this.events.pop();
 
         }
 
@@ -1176,127 +1584,411 @@ class AutonomousBrain {
 
 
     /* =====================================================
-       MEMORY QUERY
+       PERCEPTION
     ===================================================== */
 
 
-    hasInspected(id) {
+    perceive(
+        echo,
+        radius = 8
+    ) {
 
-        return this.inspectedTargets.has(
-            id
+
+        const visible = [];
+
+
+        this.entities.forEach(
+            entity => {
+
+
+                const d =
+                    distance(
+                        echo,
+                        entity
+                    );
+
+
+                if (
+                    d <= radius
+                ) {
+
+
+                    visible.push({
+
+                        id:
+                            entity.id,
+
+                        name:
+                            entity.name,
+
+                        type:
+                            entity.type,
+
+                        distance:
+                            Number(
+                                d.toFixed(
+                                    1
+                                )
+                            ),
+
+                        activity:
+                            entity.activity ||
+                            "still",
+
+                        mood:
+                            entity.mood ||
+                            null,
+
+                        x:
+                            entity.x,
+
+                        z:
+                            entity.z
+
+                    });
+
+                }
+
+            }
         );
 
+
+        return visible;
+
+    }
+
+}
+
+
+/* =========================================================
+   MOVEMENT HELPERS
+========================================================= */
+
+function distance(
+    a,
+    b
+) {
+
+    const dx =
+        a.x -
+        b.x;
+
+
+    const dz =
+        a.z -
+        b.z;
+
+
+    return Math.sqrt(
+        dx * dx +
+        dz * dz
+    );
+
+}
+
+
+function moveEntity(
+    entity,
+    destination,
+    speed
+) {
+
+
+    if (!destination) {
+
+        return;
+
     }
 
 
-    getVisitCount(id) {
+    const dx =
+        destination.x -
+        entity.x;
 
-        return (
-            this.inspectedTargets.get(
-                id
-            ) || 0
+
+    const dz =
+        destination.z -
+        entity.z;
+
+
+    const d =
+        Math.sqrt(
+            dx * dx +
+            dz * dz
         );
 
-    }
 
+    if (
+        d < 0.01
+    ) {
 
-    /* =====================================================
-       INTEREST MODEL
-    ===================================================== */
-
-
-    interestScore(target) {
-
-
-        let score = 0.5;
-
-
-        /*
-         * NOVELTY
-         */
-
-        if (
-            !this.hasInspected(
-                target.id
-            )
-        ) {
-
-            score += 0.30;
-
-        }
-
-
-        /*
-         * DISTANCE
-         */
-
-        score +=
-            Math.max(
-                0,
-                1 -
-                target.distance / 12
-            )
-            *
-            0.20;
-
-
-        /*
-         * HUMAN
-         */
-
-        if (
-            target.id === "Old Man"
-        ) {
-
-            score += 0.35;
-
-        }
-
-
-        /*
-         * WATER
-         */
-
-        if (
-            target.id === "Water Well"
-        ) {
-
-            score += 0.25;
-
-        }
-
-
-        /*
-         * HOUSE
-         */
-
-        if (
-            target.id === "Wooden House"
-        ) {
-
-            score += 0.15;
-
-        }
-
-
-        return score;
+        return;
 
     }
 
 
-    /* =====================================================
-       GOAL SELECTION
-    ===================================================== */
+    entity.x +=
+        (
+            dx / d
+        ) *
+        speed;
 
 
-    chooseGoal(
-        perceptions
+    entity.z +=
+        (
+            dz / d
+        ) *
+        speed;
+
+}
+
+
+/* =========================================================
+   MEMORY
+========================================================= */
+
+class Memory {
+
+
+    constructor() {
+
+        this.episodes = [];
+
+        this.facts = [];
+
+        this.people = {};
+
+        this.places = {};
+
+        this.hypotheses = [];
+
+    }
+
+
+    rememberEpisode(
+        text
+    ) {
+
+
+        this.episodes.unshift({
+
+            text,
+
+            time:
+                Date.now()
+
+        });
+
+
+        if (
+            this.episodes.length >
+            50
+        ) {
+
+            this.episodes.pop();
+
+        }
+
+    }
+
+
+    learnFact(
+        fact
     ) {
 
 
         if (
-            !perceptions ||
-            perceptions.length === 0
+            !this.facts.includes(
+                fact
+            )
+        ) {
+
+            this.facts.unshift(
+                fact
+            );
+
+        }
+
+    }
+
+
+    rememberPerson(
+        id,
+        observation
+    ) {
+
+
+        if (
+            !this.people[id]
+        ) {
+
+            this.people[id] = [];
+
+        }
+
+
+        this.people[id].unshift(
+            observation
+        );
+
+
+        if (
+            this.people[id].length >
+            15
+        ) {
+
+            this.people[id].pop();
+
+        }
+
+    }
+
+
+    addHypothesis(
+        text
+    ) {
+
+
+        this.hypotheses.unshift({
+
+            text,
+
+            confidence:
+                random(
+                    0.35,
+                    0.75
+                ),
+
+            created:
+                Date.now()
+
+        });
+
+
+        if (
+            this.hypotheses.length >
+            20
+        ) {
+
+            this.hypotheses.pop();
+
+        }
+
+    }
+
+
+    recent(
+        count = 6
+    ) {
+
+        return this.episodes.slice(
+            0,
+            count
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   ECHO MIND
+========================================================= */
+
+class EchoMind {
+
+
+    constructor() {
+
+
+        this.energy =
+            0.80;
+
+
+        this.curiosity =
+            0.70;
+
+
+        this.wonder =
+            0.50;
+
+
+        this.social =
+            0.40;
+
+
+        this.calm =
+            0.60;
+
+
+        this.excitement =
+            0.30;
+
+
+        this.unease =
+            0.10;
+
+
+        this.memory =
+            new Memory();
+
+
+        this.thoughts =
+            [];
+
+
+        this.currentThought =
+            "I am observing.";
+
+
+        this.question =
+            "";
+
+
+        this.hypothesis =
+            "";
+
+
+        this.intention =
+            "Observe the village.";
+
+
+        this.action =
+            "observe";
+
+
+        this.focus =
+            null;
+
+
+        this.cycle =
+            0;
+
+
+        this.lastEvent =
+            "The village is quiet.";
+
+
+        this.lastLearning =
+            "Nothing yet.";
+
+    }
+
+
+    /* =====================================================
+       ATTENTION
+    ===================================================== */
+
+
+    attend(
+        perceptions,
+        world
+    ) {
+
+
+        if (
+            perceptions.length ===
+            0
         ) {
 
             return null;
@@ -1305,905 +1997,655 @@ class AutonomousBrain {
 
 
         /*
-         * STEP 1
+         * ECHO does not simply choose
+         * the closest object.
          *
-         * Find targets that have NEVER
-         * been investigated.
+         * Attention is influenced by:
          *
-         * ALSO exclude the target that
-         * was just completed.
+         * novelty
+         * movement
+         * social relevance
+         * distance
+         * randomness
+         * existing memory
          */
 
 
-        let candidates =
-            perceptions.filter(
+        const candidates =
+            perceptions.map(
                 p => {
 
+
+                    let score =
+                        random(
+                            0,
+                            0.35
+                        );
+
+
+                    /*
+                     * Movement catches attention.
+                     */
+
                     if (
-                        p.id ===
-                        this.recentlyCompleted
+                        p.activity &&
+                        p.activity !==
+                        "still"
                     ) {
 
-                        return false;
+                        score +=
+                            0.30;
 
                     }
 
 
-                    return !this.hasInspected(
-                        p.id
-                    );
+                    /*
+                     * People naturally
+                     * attract social attention.
+                     */
+
+                    if (
+                        p.type ===
+                        "person"
+                    ) {
+
+                        score +=
+                            this.social *
+                            0.35;
+
+                    }
+
+
+                    /*
+                     * Animals can be interesting.
+                     */
+
+                    if (
+                        p.type ===
+                        "animal"
+                    ) {
+
+                        score +=
+                            this.curiosity *
+                            0.20;
+
+                    }
+
+
+                    /*
+                     * Unknown places gain
+                     * wonder.
+                     */
+
+                    if (
+                        p.type ===
+                        "location"
+                    ) {
+
+                        score +=
+                            this.wonder *
+                            0.25;
+
+                    }
+
+
+                    /*
+                     * Closer perception.
+                     */
+
+                    score +=
+                        Math.max(
+                            0,
+                            1 -
+                            p.distance / 8
+                        )
+                        *
+                        0.20;
+
+
+                    /*
+                     * Previously remembered
+                     * people get extra meaning.
+                     */
+
+                    if (
+                        p.id ===
+                        "old_man" &&
+                        this.memory.people.old_man
+                    ) {
+
+                        score +=
+                            0.25;
+
+                    }
+
+
+                    return {
+
+                        perception:
+                            p,
+
+                        score
+
+                    };
 
                 }
             );
-
-
-        /*
-         * If new objects exist,
-         * choose one of them.
-         */
-
-        if (
-            candidates.length > 0
-        ) {
-
-
-            candidates.sort(
-                (a, b) => {
-
-                    return (
-                        this.interestScore(b)
-                        -
-                        this.interestScore(a)
-                    );
-
-                }
-            );
-
-
-            return candidates[0];
-
-        }
-
-
-        /*
-         * STEP 2
-         *
-         * Everything has been explored.
-         *
-         * Revisit the LEAST visited
-         * object.
-         *
-         * But never immediately revisit
-         * the object just completed.
-         */
-
-
-        candidates =
-            perceptions.filter(
-                p =>
-                    p.id !==
-                    this.recentlyCompleted
-            );
-
-
-        /*
-         * Safety fallback.
-         */
-
-        if (
-            candidates.length === 0
-        ) {
-
-            candidates =
-                [...perceptions];
-
-        }
 
 
         candidates.sort(
-            (a, b) => {
-
-
-                const visitsA =
-                    this.getVisitCount(
-                        a.id
-                    );
-
-
-                const visitsB =
-                    this.getVisitCount(
-                        b.id
-                    );
-
-
-                /*
-                 * Least visited first.
-                 */
-
-                if (
-                    visitsA !==
-                    visitsB
-                ) {
-
-                    return (
-                        visitsA -
-                        visitsB
-                    );
-
-                }
-
-
-                /*
-                 * If equal,
-                 * use interest.
-                 */
-
-                return (
-                    this.interestScore(b)
-                    -
-                    this.interestScore(a)
-                );
-
-            }
+            (
+                a,
+                b
+            ) =>
+                b.score -
+                a.score
         );
 
 
-        return candidates[0];
+        return candidates[0].perception;
 
     }
 
 
     /* =====================================================
-       INVESTIGATION
+       THINK
     ===================================================== */
 
 
-    investigate(
-        target
+    think(
+        perceptions,
+        world
     ) {
 
 
-        if (!target) {
+        this.cycle++;
+
+
+        /*
+         * Natural state drift.
+         */
+
+        this.energy =
+            clamp(
+                this.energy -
+                0.004
+            );
+
+
+        this.curiosity =
+            clamp(
+                this.curiosity +
+                random(
+                    -0.015,
+                    0.015
+                )
+            );
+
+
+        this.wonder =
+            clamp(
+                this.wonder +
+                random(
+                    -0.02,
+                    0.02
+                )
+            );
+
+
+        /*
+         * Choose what currently
+         * deserves attention.
+         */
+
+        const focus =
+            this.attend(
+                perceptions,
+                world
+            );
+
+
+        this.focus =
+            focus;
+
+
+        if (!focus) {
 
             return;
 
         }
 
 
-        let event = "";
+        /*
+         * The mind creates an
+         * interpretation.
+         */
 
-        let learning = "";
+        let thought;
+
+
+        let question;
+
+
+        let intention;
+
+
+        let action;
+
+
+        let hypothesis;
 
 
         /* =================================================
-           OLD MAN
+           PEOPLE
         ================================================= */
 
 
         if (
-            target.id ===
-            "Old Man"
+            focus.type ===
+            "person"
         ) {
 
 
-            event =
-                "Encountered an unfamiliar human entity.";
+            const remembered =
+                this.memory.people[
+                    focus.id
+                ];
 
 
-            learning =
-                "Humans may be intelligent social agents.";
+            if (
+                remembered
+            ) {
+
+
+                thought =
+                    `I remember ${focus.name}. Something about their behavior feels familiar.`;
+
+
+                question =
+                    `I wonder what ${focus.name} is doing now.`;
+
+
+                hypothesis =
+                    `${focus.name} may be following a routine I have not understood yet.`;
+
+
+            }
+
+
+            else {
+
+
+                thought =
+                    `There is someone here. I do not know much about them yet.`;
+
+
+                question =
+                    `Who is ${focus.name}?`;
+
+
+                hypothesis =
+                    `${focus.name} may know something about this place.`;
+
+            }
+
+
+            this.social =
+                clamp(
+                    this.social +
+                    0.025
+                );
 
 
             this.excitement =
-                this.clamp(
+                clamp(
                     this.excitement +
-                    0.12
+                    0.02
                 );
 
 
-            this.curiosity =
-                this.clamp(
-                    this.curiosity +
-                    0.08
-                );
+            /*
+             * ECHO may approach,
+             * observe, or simply watch.
+             */
+
+            const choice =
+                Math.random();
+
+
+            if (
+                choice < 0.35
+            ) {
+
+                intention =
+                    `Watch ${focus.name} for a moment.`;
+
+                action =
+                    "observe";
+
+            }
+
+            else if (
+                choice < 0.65
+            ) {
+
+                intention =
+                    `Move closer to ${focus.name}.`;
+
+                action =
+                    "approach";
+
+            }
+
+            else {
+
+                intention =
+                    `Follow ${focus.name} and see where they go.`;
+
+                action =
+                    "follow";
+
+            }
 
         }
 
 
         /* =================================================
-           WATER WELL
+           ANIMAL
         ================================================= */
 
 
         else if (
-            target.id ===
-            "Water Well"
+            focus.type ===
+            "animal"
         ) {
 
 
-            event =
-                "Detected a constructed water source.";
+            thought =
+                `The ${focus.name} is moving differently from the people. I find that interesting.`;
 
 
-            learning =
-                "Water wells may provide access to useful resources.";
+            question =
+                `Where is the ${focus.name} going?`;
 
 
-            this.contentment =
-                this.clamp(
-                    this.contentment +
-                    0.08
+            hypothesis =
+                `The ${focus.name} may have its own reason for moving around the village.`;
+
+
+            this.wonder =
+                clamp(
+                    this.wonder +
+                    0.04
                 );
+
+
+            intention =
+                `Observe the ${focus.name}.`;
+
+
+            action =
+                "observe";
 
         }
 
 
         /* =================================================
-           WOODEN HOUSE
+           LOCATION
         ================================================= */
 
 
         else if (
-            target.id ===
-            "Wooden House"
+            focus.type ===
+            "location"
         ) {
 
 
-            event =
-                "Examined an artificial shelter structure.";
+            thought =
+                `The ${focus.name} has been here the whole time, but I still do not understand what happens inside it.`;
 
 
-            learning =
-                "Wooden structures may provide shelter or information.";
+            question =
+                `What happens at the ${focus.name} when nobody is watching?`;
 
 
-            this.curiosity =
-                this.clamp(
-                    this.curiosity +
+            hypothesis =
+                `There may be events happening here that I have not witnessed.`;
+
+
+            this.wonder =
+                clamp(
+                    this.wonder +
                     0.05
                 );
 
+
+            intention =
+                `Observe ${focus.name} without assuming I understand it.`;
+
+
+            action =
+                "approach";
+
         }
 
 
         /* =================================================
-           UNKNOWN
+           OBJECT
         ================================================= */
 
 
         else {
 
 
-            event =
-                "Examined an environmental object.";
+            thought =
+                `I notice the ${focus.name}. I have seen it before, but seeing something is not the same as understanding it.`;
 
 
-            learning =
-                "Object classified as part of the environment.";
+            question =
+                `What purpose might the ${focus.name} have?`;
+
+
+            hypothesis =
+                `The ${focus.name} may be connected to something else in the village.`;
+
+
+            this.curiosity =
+                clamp(
+                    this.curiosity +
+                    0.03
+                );
+
+
+            intention =
+                `Look at the ${focus.name} from a different perspective.`;
+
+
+            action =
+                "approach";
+
+        }
+
+
+        /*
+         * Unexpected events can override
+         * normal thinking.
+         */
+
+        if (
+            world.events.length >
+            0
+        ) {
+
+
+            const recent =
+                world.events[0];
+
+
+            if (
+                Math.random()
+                <
+                0.30
+            ) {
+
+
+                thought =
+                    `Something changed. ${recent.text}`;
+
+
+                question =
+                    `Why did that happen?`;
+
+
+                hypothesis =
+                    `The change may be connected to something I have not noticed yet.`;
+
+
+                intention =
+                    "Observe the change before acting.";
+
+
+                action =
+                    "observe";
+
+
+                this.wonder =
+                    clamp(
+                        this.wonder +
+                        0.08
+                    );
+
+            }
 
         }
 
 
         /* =================================================
-           MARK AS ACTUALLY INSPECTED
+           MEMORY
         ================================================= */
 
 
-        const previousVisits =
-            this.getVisitCount(
-                target.id
+        this.memory.rememberEpisode(
+
+            `I noticed ${focus.name}. ${thought}`
+
+        );
+
+
+        if (
+            focus.type ===
+            "person"
+        ) {
+
+
+            this.memory.rememberPerson(
+
+                focus.id,
+
+                `${focus.name} was ${focus.activity}.`
+
             );
 
+        }
 
-        this.inspectedTargets.set(
-            target.id,
-            previousVisits + 1
+
+        this.memory.addHypothesis(
+            hypothesis
         );
-
-
-        /* =================================================
-           STORE EPISODIC MEMORY
-        ================================================= */
-
-
-        this.remember(
-            target.id,
-            event,
-            learning
-        );
-
-
-        this.lastEvent =
-            event;
 
 
         this.lastLearning =
-            learning;
+            hypothesis;
 
 
-        /* =================================================
-           IMPORTANT GOAL MEMORY
-        ================================================= */
+        this.currentThought =
+            thought;
 
 
-        this.recentlyCompleted =
-            target.id;
+        this.question =
+            question;
 
 
-        this.completionCooldown =
-            4;
+        this.hypothesis =
+            hypothesis;
 
 
-        /* =================================================
-           INTERNAL STATE CHANGE
-        ================================================= */
+        this.intention =
+            intention;
 
 
-        this.energy =
-            this.clamp(
-                this.energy -
-                0.025,
-                0.20,
-                1
-            );
+        this.action =
+            action;
 
 
-        this.curiosity =
-            this.clamp(
-                this.curiosity -
-                0.04
-            );
-
-
-        /* =================================================
-           ACTION
-        ================================================= */
-
-
-        this.lastAction =
-            "Investigate";
-
-
-        /* =================================================
-           CLEAR CURRENT TARGET
-        ================================================= */
-
-
-        this.currentTarget =
-            null;
-
-
-        this.currentGoal =
-            null;
+        this.lastEvent =
+            world.events.length
+                ? world.events[0].text
+                : "The village continues.";
 
     }
 
 
     /* =====================================================
-       COGNITIVE STEP
+       REFLECT
     ===================================================== */
 
 
-    step(
-        perceptions
-    ) {
-
-
-        this.cycle++;
-
-        this.minutes += 2;
-
-
-        /* =================================================
-           COMPLETION COOLDOWN
-        ================================================= */
+    reflect() {
 
 
         if (
-            this.completionCooldown >
-            0
+            !this.focus
         ) {
 
-
-            this.completionCooldown--;
-
-
-            /*
-             * Keep the completed target
-             * excluded until cooldown ends.
-             */
-
-            if (
-                this.completionCooldown ===
-                0
-            ) {
-
-                this.recentlyCompleted =
-                    null;
-
-            }
+            return "I am still observing.";
 
         }
 
 
-        /* =================================================
-           ENERGY
-        ================================================= */
-
-
-        this.energy =
-            this.clamp(
-                this.energy -
-                0.005,
-                0.20,
-                1
+        const memories =
+            this.memory.recent(
+                3
             );
 
 
-        /* =================================================
-           REFRESH CURRENT TARGET
-        ================================================= */
-
-
         if (
-            this.currentTarget
+            memories.length >=
+            2
         ) {
 
 
-            const freshTarget =
-                perceptions.find(
-                    p =>
-                        p.id ===
-                        this.currentTarget.id
-                );
-
-
-            if (
-                freshTarget
-            ) {
-
-                this.currentTarget =
-                    freshTarget;
-
-            }
-
-
-            /* =============================================
-               ARRIVAL DETECTION
-            ============================================= */
-
-
-            if (
-
-                this.currentTarget &&
-
-                this.currentTarget.distance
-                <= 1.5
-
-            ) {
-
-
-                const completedTarget =
-                    this.currentTarget;
-
-
-                /*
-                 * ACTUALLY INVESTIGATE.
-                 */
-
-                this.investigate(
-                    completedTarget
-                );
-
-
-                /*
-                 * Force new decision.
-                 */
-
-                this.currentTarget =
-                    null;
-
-
-                this.currentGoal =
-                    null;
-
-            }
+            return `I keep encountering patterns. ${this.focus.name} is becoming part of my understanding of this place. I am not sure my interpretation is correct.`;
 
         }
 
 
-        /* =================================================
-           SELECT NEW TARGET
-        ================================================= */
-
-
-        if (
-            !this.currentTarget
-        ) {
-
-
-            this.currentTarget =
-                this.chooseGoal(
-                    perceptions
-                );
-
-        }
-
-
-        /* =================================================
-           SAFETY
-        ================================================= */
-
-
-        if (
-            !this.currentTarget
-            &&
-            perceptions.length
-        ) {
-
-            this.currentTarget =
-                perceptions[0];
-
-        }
-
-
-        if (
-            !this.currentTarget
-        ) {
-
-
-            return {
-
-                cycle:
-                    this.cycle,
-
-                timeString:
-                    "Day 1 - 08:00 AM",
-
-                surpriseScore:
-                    0,
-
-                activeGoal:
-                    "Observe the environment.",
-
-                subGoals: [
-
-                    "Scan environment",
-
-                    "Evaluate novelty",
-
-                    "Select objective"
-
-                ],
-
-                latestReflection:
-                    "No objects currently detected.",
-
-                action:
-                    null,
-
-                energy:
-                    this.energy,
-
-                curiosity:
-                    this.curiosity,
-
-                excitement:
-                    this.excitement,
-
-                contentment:
-                    this.contentment,
-
-                fear:
-                    this.fear,
-
-                memory:
-                    this.memory,
-
-                learning:
-                    this.lastLearning
-
-            };
-
-        }
-
-
-        /* =================================================
-           CURRENT TARGET
-        ================================================= */
-
-
-        const target =
-            this.currentTarget;
-
-
-        /* =================================================
-           SURPRISE
-        ================================================= */
-
-
-        const visits =
-            this.getVisitCount(
-                target.id
-            );
-
-
-        const novelty =
-            this.hasInspected(
-                target.id
-            )
-            ? 0.35
-            : 1.0;
-
-
-        const surprise =
-            Math.max(
-
-                0.05,
-
-                Math.min(
-
-                    0.95,
-
-                    (
-                        1 /
-                        (
-                            target.distance +
-                            0.5
-                        )
-                    )
-                    *
-                    novelty
-
-                    +
-
-                    (
-                        0.25 /
-                        (
-                            visits +
-                            1
-                        )
-                    )
-
-                )
-
-            );
-
-
-        /* =================================================
-           GOAL
-        ================================================= */
-
-
-        let activeGoal;
-
-        let subGoals;
-
-        let actionType;
-
-
-        if (
-            target.distance >
-            1.5
-        ) {
-
-
-            activeGoal =
-                `Approach and investigate ${target.id}`;
-
-
-            subGoals = [
-
-                `Navigate toward ${target.id}`,
-
-                `Monitor distance to target`,
-
-                `Prepare environmental analysis`
-
-            ];
-
-
-            actionType =
-                "MoveTowards";
-
-
-            this.lastAction =
-                "MoveTowards";
-
-        }
-
-
-        else {
-
-
-            activeGoal =
-                `Investigate ${target.id}`;
-
-
-            subGoals = [
-
-                `Analyze physical properties`,
-
-                `Compare against memory`,
-
-                `Store new knowledge`
-
-            ];
-
-
-            actionType =
-                "Investigate";
-
-        }
-
-
-        /* =================================================
-           METACOGNITIVE REFLECTION
-        ================================================= */
-
-
-        let reflection;
-
-
-        if (
-            !this.hasInspected(
-                target.id
-            )
-        ) {
-
-
-            reflection =
-                `I have not investigated ${target.id} before. Novel information may be present.`;
-
-        }
-
-
-        else {
-
-
-            reflection =
-                `I remember ${target.id}. I am evaluating whether another interaction could reveal something new.`;
-
-        }
-
-
-        if (
-            this.lastLearning
-        ) {
-
-
-            reflection +=
-                ` Recent learning: ${this.lastLearning}`;
-
-        }
-
-
-        /* =================================================
-           TIME
-        ================================================= */
-
-
-        const totalMinutes =
-            8 * 60 +
-            this.minutes;
-
-
-        const hours =
-            Math.floor(
-                totalMinutes /
-                60
-            ) % 24;
-
-
-        const minutes =
-            Math.floor(
-                totalMinutes %
-                60
-            );
-
-
-        const hrs =
-            String(
-                hours
-            )
-            .padStart(
-                2,
-                "0"
-            );
-
-
-        const mins =
-            String(
-                minutes
-            )
-            .padStart(
-                2,
-                "0"
-            );
-
-
-        const timeString =
-            `Day 1 - ${hrs}:${mins} AM`;
-
-
-        /* =================================================
-           RETURN COGNITIVE STATE
-        ================================================= */
-
-
-        return {
-
-            cycle:
-                this.cycle,
-
-            timeString:
-                timeString,
-
-            surpriseScore:
-                surprise,
-
-            activeGoal:
-                activeGoal,
-
-            subGoals:
-                subGoals,
-
-            latestReflection:
-                reflection,
-
-            action: {
-
-                type:
-                    actionType,
-
-                target:
-                    target
-
-            },
-
-            energy:
-                this.energy,
-
-            curiosity:
-                this.curiosity,
-
-            excitement:
-                this.excitement,
-
-            contentment:
-                this.contentment,
-
-            fear:
-                this.fear,
-
-            memory:
-                this.memory,
-
-            learning:
-                this.lastLearning
-
-        };
+        return `I have experienced something new. I do not know what it means yet, but I want to find out.`;
 
     }
 
 }
 
 
-/* =====================================================
-   CREATE BRAIN
-===================================================== */
+/* =========================================================
+   CREATE WORLD + MIND
+========================================================= */
 
-const brain =
-    new AutonomousBrain();
+const world =
+    new LivingWorld();
 
 
-/* =====================================================
+const mind =
+    new EchoMind();
+
+
+/* =========================================================
    THREE.JS
-===================================================== */
+========================================================= */
 
 const container =
     document.getElementById(
-        "canvas-container"
+        "world"
     );
 
 
@@ -2215,19 +2657,10 @@ let renderer;
 
 let echoMesh;
 
-let currentVectorTarget =
-    null;
+const meshes = {};
 
-
-const entities = [];
-
-
-/* =====================================================
-   INITIALIZE WORLD
-===================================================== */
 
 if (
-    container &&
     typeof THREE !==
     "undefined"
 ) {
@@ -2242,8 +2675,6 @@ if (
             0x0d1420
         );
 
-
-    /* CAMERA */
 
     camera =
         new THREE.PerspectiveCamera(
@@ -2274,8 +2705,6 @@ if (
     );
 
 
-    /* RENDERER */
-
     renderer =
         new THREE.WebGLRenderer({
 
@@ -2304,31 +2733,27 @@ if (
     );
 
 
-    /* =================================================
-       LIGHTING
-    ================================================= */
-
-
-    const ambient =
-        new THREE.AmbientLight(
-            0xffffff,
-            0.75
-        );
+    /* =====================================================
+       LIGHT
+    ===================================================== */
 
 
     scene.add(
-        ambient
+        new THREE.AmbientLight(
+            0xffffff,
+            0.72
+        )
     );
 
 
-    const sunlight =
+    const light =
         new THREE.DirectionalLight(
             0xffffff,
-            0.75
+            0.8
         );
 
 
-    sunlight.position.set(
+    light.position.set(
         10,
         20,
         10
@@ -2336,27 +2761,27 @@ if (
 
 
     scene.add(
-        sunlight
+        light
     );
 
 
-    /* =================================================
+    /* =====================================================
        GROUND
-    ================================================= */
+    ===================================================== */
 
 
     const ground =
         new THREE.Mesh(
 
             new THREE.PlaneGeometry(
-                50,
-                50
+                40,
+                40
             ),
 
             new THREE.MeshStandardMaterial({
 
                 color:
-                    0x1d3421,
+                    0x203b24,
 
                 roughness:
                     0.9
@@ -2375,9 +2800,9 @@ if (
     );
 
 
-    /* =================================================
+    /* =====================================================
        GRID
-    ================================================= */
+    ===================================================== */
 
 
     const grid =
@@ -2387,9 +2812,9 @@ if (
 
             40,
 
-            0x21483d,
+            0x254d39,
 
-            0x163126
+            0x183525
 
         );
 
@@ -2403,16 +2828,16 @@ if (
     );
 
 
-    /* =================================================
+    /* =====================================================
        ECHO
-    ================================================= */
+    ===================================================== */
 
 
     echoMesh =
         new THREE.Mesh(
 
             new THREE.SphereGeometry(
-                0.72,
+                0.65,
                 32,
                 32
             ),
@@ -2420,19 +2845,16 @@ if (
             new THREE.MeshStandardMaterial({
 
                 color:
-                    0xf3ffff,
-
-                roughness:
-                    0.15,
-
-                metalness:
-                    0.15,
+                    0xffffff,
 
                 emissive:
-                    0x087d69,
+                    0x008f78,
 
                 emissiveIntensity:
-                    0.5
+                    0.55,
+
+                roughness:
+                    0.15
 
             })
 
@@ -2441,7 +2863,7 @@ if (
 
     echoMesh.position.set(
         0,
-        0.75,
+        0.7,
         4
     );
 
@@ -2451,28 +2873,17 @@ if (
     );
 
 
-    /* =================================================
+    /* =====================================================
        ECHO LIGHT
-    ================================================= */
+    ===================================================== */
 
 
     const echoLight =
         new THREE.PointLight(
-
             0x00ffcc,
-
-            1.7,
-
-            7
-
+            1.5,
+            6
         );
-
-
-    echoLight.position.set(
-        0,
-        0.3,
-        0
-    );
 
 
     echoMesh.add(
@@ -2480,232 +2891,349 @@ if (
     );
 
 
-    /* =================================================
-       OLD MAN
-    ================================================= */
+    /* =====================================================
+       CREATE WORLD MESHES
+    ===================================================== */
 
 
-    const oldMan =
-        new THREE.Mesh(
-
-            new THREE.CylinderGeometry(
-                0.42,
-                0.42,
-                1.2,
-                16
-            ),
-
-            new THREE.MeshStandardMaterial({
-
-                color:
-                    0xf59e0b
-
-            })
-
-        );
+    world.entities.forEach(
+        entity => {
 
 
-    oldMan.position.set(
-        -4,
-        0.6,
-        -2
+            if (
+                entity.type ===
+                "person"
+            ) {
+
+
+                const mesh =
+                    new THREE.Mesh(
+
+                        new THREE.CylinderGeometry(
+                            0.35,
+                            0.35,
+                            1.2,
+                            16
+                        ),
+
+                        new THREE.MeshStandardMaterial({
+
+                            color:
+                                entity.id ===
+                                "old_man"
+                                    ? 0xe58b13
+                                    : 0x4aa3df
+
+                        })
+
+                    );
+
+
+                mesh.position.set(
+                    entity.x,
+                    0.6,
+                    entity.z
+                );
+
+
+                scene.add(
+                    mesh
+                );
+
+
+                meshes[
+                    entity.id
+                ] =
+                    mesh;
+
+            }
+
+
+            else if (
+                entity.type ===
+                "animal"
+            ) {
+
+
+                const mesh =
+                    new THREE.Mesh(
+
+                        new THREE.SphereGeometry(
+                            0.38,
+                            16,
+                            16
+                        ),
+
+                        new THREE.MeshStandardMaterial({
+
+                            color:
+                                0x9b8060
+
+                        })
+
+                    );
+
+
+                mesh.position.set(
+                    entity.x,
+                    0.38,
+                    entity.z
+                );
+
+
+                scene.add(
+                    mesh
+                );
+
+
+                meshes[
+                    entity.id
+                ] =
+                    mesh;
+
+            }
+
+
+            else if (
+                entity.id ===
+                "well"
+            ) {
+
+
+                const mesh =
+                    new THREE.Mesh(
+
+                        new THREE.CylinderGeometry(
+                            0.8,
+                            0.8,
+                            0.8,
+                            20
+                        ),
+
+                        new THREE.MeshStandardMaterial({
+
+                            color:
+                                0x68758a
+
+                        })
+
+                    );
+
+
+                mesh.position.set(
+                    entity.x,
+                    0.4,
+                    entity.z
+                );
+
+
+                scene.add(
+                    mesh
+                );
+
+
+                meshes[
+                    entity.id
+                ] =
+                    mesh;
+
+
+                const water =
+                    new THREE.Mesh(
+
+                        new THREE.CylinderGeometry(
+                            0.55,
+                            0.55,
+                            0.05,
+                            20
+                        ),
+
+                        new THREE.MeshStandardMaterial({
+
+                            color:
+                                0x00a8c6
+
+                        })
+
+                    );
+
+
+                water.position.set(
+                    entity.x,
+                    0.82,
+                    entity.z
+                );
+
+
+                scene.add(
+                    water
+                );
+
+            }
+
+
+            else if (
+                entity.id ===
+                "house"
+            ) {
+
+
+                const house =
+                    new THREE.Mesh(
+
+                        new THREE.BoxGeometry(
+                            3,
+                            2.4,
+                            3
+                        ),
+
+                        new THREE.MeshStandardMaterial({
+
+                            color:
+                                0x8a451e
+
+                        })
+
+                    );
+
+
+                house.position.set(
+                    entity.x,
+                    1.2,
+                    entity.z
+                );
+
+
+                scene.add(
+                    house
+                );
+
+
+                meshes[
+                    entity.id
+                ] =
+                    house;
+
+
+                const roof =
+                    new THREE.Mesh(
+
+                        new THREE.ConeGeometry(
+                            2.4,
+                            1.2,
+                            4
+                        ),
+
+                        new THREE.MeshStandardMaterial({
+
+                            color:
+                                0x4f2919
+
+                        })
+
+                    );
+
+
+                roof.position.set(
+                    entity.x,
+                    3,
+                    entity.z
+                );
+
+
+                roof.rotation.y =
+                    Math.PI / 4;
+
+
+                scene.add(
+                    roof
+                );
+
+            }
+
+
+            else if (
+                entity.id ===
+                "tree"
+            ) {
+
+
+                const trunk =
+                    new THREE.Mesh(
+
+                        new THREE.CylinderGeometry(
+                            0.3,
+                            0.4,
+                            2
+                        ),
+
+                        new THREE.MeshStandardMaterial({
+
+                            color:
+                                0x654321
+
+                        })
+
+                    );
+
+
+                trunk.position.set(
+                    entity.x,
+                    1,
+                    entity.z
+                );
+
+
+                scene.add(
+                    trunk
+                );
+
+
+                const leaves =
+                    new THREE.Mesh(
+
+                        new THREE.SphereGeometry(
+                            1.5,
+                            16,
+                            16
+                        ),
+
+                        new THREE.MeshStandardMaterial({
+
+                            color:
+                                0x285c32
+
+                        })
+
+                    );
+
+
+                leaves.position.set(
+                    entity.x,
+                    2.6,
+                    entity.z
+                );
+
+
+                scene.add(
+                    leaves
+                );
+
+
+                meshes[
+                    entity.id
+                ] =
+                    leaves;
+
+            }
+
+        }
     );
 
 
-    scene.add(
-        oldMan
-    );
-
-
-    entities.push({
-
-        id:
-            "Old Man",
-
-        mesh:
-            oldMan
-
-    });
-
-
-    /* =================================================
-       WATER WELL
-    ================================================= */
-
-
-    const well =
-        new THREE.Mesh(
-
-            new THREE.CylinderGeometry(
-                0.8,
-                0.8,
-                0.8,
-                20
-            ),
-
-            new THREE.MeshStandardMaterial({
-
-                color:
-                    0x64748b
-
-            })
-
-        );
-
-
-    well.position.set(
-        0,
-        0.4,
-        -4
-    );
-
-
-    scene.add(
-        well
-    );
-
-
-    entities.push({
-
-        id:
-            "Water Well",
-
-        mesh:
-            well
-
-    });
-
-
-    /* =================================================
-       WATER SURFACE
-    ================================================= */
-
-
-    const water =
-        new THREE.Mesh(
-
-            new THREE.CylinderGeometry(
-                0.55,
-                0.55,
-                0.05,
-                20
-            ),
-
-            new THREE.MeshStandardMaterial({
-
-                color:
-                    0x168aad,
-
-                emissive:
-                    0x063c4a
-
-            })
-
-        );
-
-
-    water.position.set(
-        0,
-        0.83,
-        -4
-    );
-
-
-    scene.add(
-        water
-    );
-
-
-    /* =================================================
-       WOODEN HOUSE
-    ================================================= */
-
-
-    const house =
-        new THREE.Mesh(
-
-            new THREE.BoxGeometry(
-                3.2,
-                2.5,
-                3
-            ),
-
-            new THREE.MeshStandardMaterial({
-
-                color:
-                    0x8a4217
-
-            })
-
-        );
-
-
-    house.position.set(
-        4,
-        1.25,
-        -4
-    );
-
-
-    scene.add(
-        house
-    );
-
-
-    entities.push({
-
-        id:
-            "Wooden House",
-
-        mesh:
-            house
-
-    });
-
-
-    /* =================================================
-       HOUSE ROOF
-    ================================================= */
-
-
-    const roof =
-        new THREE.Mesh(
-
-            new THREE.ConeGeometry(
-                2.5,
-                1.2,
-                4
-            ),
-
-            new THREE.MeshStandardMaterial({
-
-                color:
-                    0x542b19
-
-            })
-
-        );
-
-
-    roof.position.set(
-        4,
-        3.1,
-        -4
-    );
-
-
-    roof.rotation.y =
-        Math.PI / 4;
-
-
-    scene.add(
-        roof
-    );
-
-
-    /* =================================================
+    /* =====================================================
        ANIMATION
-    ================================================= */
+    ===================================================== */
 
 
     function animate() {
@@ -2716,94 +3244,152 @@ if (
         );
 
 
-        /* =============================================
-           MOVEMENT
-        ============================================= */
+        /*
+         * Smoothly synchronize
+         * world entities with meshes.
+         */
+
+
+        world.entities.forEach(
+            entity => {
+
+
+                const mesh =
+                    meshes[
+                        entity.id
+                    ];
+
+
+                if (
+                    mesh
+                ) {
+
+
+                    mesh.position.x =
+                        entity.x;
+
+
+                    mesh.position.z =
+                        entity.z;
+
+                }
+
+            }
+        );
+
+
+        /*
+         * ECHO movement is based
+         * on its current intention.
+         */
 
 
         if (
             echoMesh &&
-            currentVectorTarget
+            mind.focus
         ) {
 
 
-            const dx =
-                currentVectorTarget.x -
-                echoMesh.position.x;
-
-
-            const dz =
-                currentVectorTarget.z -
-                echoMesh.position.z;
-
-
-            const distance =
-                Math.sqrt(
-                    dx * dx +
-                    dz * dz
+            const focus =
+                world.get(
+                    mind.focus.id
                 );
 
 
             if (
-                distance > 1.5
+                focus
             ) {
 
 
-                const speed =
-                    Math.min(
+                const dx =
+                    focus.x -
+                    echoMesh.position.x;
 
-                        0.055,
 
-                        0.018 +
-                        distance *
-                        0.003
+                const dz =
+                    focus.z -
+                    echoMesh.position.z;
 
+
+                const d =
+                    Math.sqrt(
+                        dx * dx +
+                        dz * dz
                     );
 
 
-                echoMesh.position.x +=
-                    (
-                        dx /
-                        distance
-                    ) *
-                    speed;
+                /*
+                 * ECHO doesn't have to
+                 * touch the object.
+                 *
+                 * It approaches,
+                 * observes,
+                 * then may change
+                 * its mind.
+                 */
 
 
-                echoMesh.position.z +=
-                    (
-                        dz /
-                        distance
-                    ) *
-                    speed;
+                if (
+                    mind.action ===
+                    "approach" &&
+                    d > 2
+                ) {
 
 
-                /* FACE TARGET */
-
-                const desiredRotation =
-                    Math.atan2(
-                        dx,
-                        dz
-                    );
+                    const speed =
+                        0.035;
 
 
-                echoMesh.rotation.y +=
-                    (
-                        desiredRotation -
-                        echoMesh.rotation.y
-                    )
-                    *
-                    0.08;
+                    echoMesh.position.x +=
+                        (
+                            dx / d
+                        ) *
+                        speed;
+
+
+                    echoMesh.position.z +=
+                        (
+                            dz / d
+                        ) *
+                        speed;
+
+                }
+
+
+                else if (
+                    mind.action ===
+                    "follow" &&
+                    d > 2.5
+                ) {
+
+
+                    const speed =
+                        0.04;
+
+
+                    echoMesh.position.x +=
+                        (
+                            dx / d
+                        ) *
+                        speed;
+
+
+                    echoMesh.position.z +=
+                        (
+                            dz / d
+                        ) *
+                        speed;
+
+                }
 
             }
-
 
         }
 
 
-        /* =============================================
-           FLOATING MOTION
-        ============================================= */
-
+        /*
+         * Floating animation.
+         */
 
         if (
             echoMesh
@@ -2811,7 +3397,8 @@ if (
 
 
             echoMesh.position.y =
-                0.75 +
+
+                0.7 +
 
                 Math.sin(
                     Date.now() *
@@ -2822,6 +3409,7 @@ if (
 
 
             const pulse =
+
                 1 +
 
                 Math.sin(
@@ -2852,11 +3440,6 @@ if (
     animate();
 
 
-    /* =================================================
-       RESIZE
-    ================================================= */
-
-
     window.addEventListener(
         "resize",
         () => {
@@ -2881,62 +3464,11 @@ if (
 }
 
 
-/* =====================================================
-   PERCEPTION SYSTEM
-===================================================== */
+/* =========================================================
+   HUD
+========================================================= */
 
-function getPerceptions() {
-
-
-    if (
-        entities.length &&
-        echoMesh
-    ) {
-
-
-        return entities.map(
-            entity => {
-
-
-                const distance =
-                    echoMesh.position
-                        .distanceTo(
-                            entity.mesh.position
-                        );
-
-
-                return {
-
-                    id:
-                        entity.id,
-
-                    distance:
-                        Math.round(
-                            distance *
-                            10
-                        ) / 10,
-
-                    pos:
-                        entity.mesh.position
-
-                };
-
-            }
-        );
-
-    }
-
-
-    return [];
-
-}
-
-
-/* =====================================================
-   DOM HELPER
-===================================================== */
-
-function setDOMText(
+function setText(
     id,
     value
 ) {
@@ -2960,525 +3492,484 @@ function setDOMText(
 }
 
 
-/* =====================================================
-   RUN COGNITION
-===================================================== */
-
-function runSimulation() {
-
-
-    try {
+function setBar(
+    id,
+    value
+) {
 
 
-        /* =============================================
-           PERCEPTION
-        ============================================= */
-
-
-        const perceptions =
-            getPerceptions();
-
-
-        /* =============================================
-           THINK
-        ============================================= */
-
-
-        const output =
-            brain.step(
-                perceptions
-            );
-
-
-        if (!output) {
-
-            return;
-
-        }
-
-
-        /* =============================================
-           UPDATE MOVEMENT TARGET
-        ============================================= */
-
-
-        if (
-            output.action &&
-            output.action.target &&
-            output.action.target.pos
-        ) {
-
-
-            currentVectorTarget =
-                output.action.target.pos;
-
-        }
-
-
-        /*
-         * If there is no target,
-         * stop movement.
-         */
-
-        else {
-
-            currentVectorTarget =
-                null;
-
-        }
-
-
-        /* =============================================
-           HEADER
-        ============================================= */
-
-
-        setDOMText(
-            "hud-cycle",
-            `CYCLE: ${output.cycle}`
+    const element =
+        document.getElementById(
+            id
         );
 
 
-        setDOMText(
-            "hud-time",
-            `TIME: ${output.timeString}`
-        );
-
-
-        /* =============================================
-           ENERGY
-        ============================================= */
-
-
-        const energyPercent =
-            output.energy *
-            100;
-
-
-        setDOMText(
-            "val-energy",
-            `${energyPercent.toFixed(0)}%`
-        );
-
-
-        const energyBar =
-            document.getElementById(
-                "bar-energy"
-            );
-
-
-        if (
-            energyBar
-        ) {
-
-            energyBar.style.width =
-                `${energyPercent}%`;
-
-        }
-
-
-        /* =============================================
-           CURIOSITY
-        ============================================= */
-
-
-        const curiosityPercent =
-            output.curiosity *
-            100;
-
-
-        setDOMText(
-            "val-curiosity",
-            `${curiosityPercent.toFixed(0)}%`
-        );
-
-
-        setDOMText(
-            "val-emo-curiosity",
-            `${curiosityPercent.toFixed(0)}%`
-        );
-
-
-        const curiosityBar =
-            document.getElementById(
-                "bar-curiosity"
-            );
-
-
-        if (
-            curiosityBar
-        ) {
-
-            curiosityBar.style.width =
-                `${curiosityPercent}%`;
-
-        }
-
-
-        /* =============================================
-           SURPRISE
-        ============================================= */
-
-
-        setDOMText(
-            "val-surprise",
-            output.surpriseScore.toFixed(2)
-        );
-
-
-        const surpriseBar =
-            document.getElementById(
-                "bar-surprise"
-            );
-
-
-        if (
-            surpriseBar
-        ) {
-
-            surpriseBar.style.width =
-                `${output.surpriseScore * 100}%`;
-
-        }
-
-
-        /* =============================================
-           EMOTIONS
-        ============================================= */
-
-
-        setDOMText(
-            "val-emo-excitement",
-            `${(
-                output.excitement *
-                100
-            ).toFixed(0)}%`
-        );
-
-
-        setDOMText(
-            "val-emo-contentment",
-            `${(
-                output.contentment *
-                100
-            ).toFixed(0)}%`
-        );
-
-
-        setDOMText(
-            "val-emo-fear",
-            `${(
-                output.fear *
-                100
-            ).toFixed(0)}%`
-        );
-
-
-        /* =============================================
-           GOAL
-        ============================================= */
-
-
-        setDOMText(
-            "hud-goal",
-            output.activeGoal
-        );
-
-
-        /* =============================================
-           SUBGOALS
-        ============================================= */
-
-
-        const subGoals =
-            document.getElementById(
-                "hud-subgoals"
-            );
-
-
-        if (
-            subGoals
-        ) {
-
-
-            subGoals.innerHTML =
-
-                output.subGoals
-                    .map(
-                        goal =>
-                            `<li>${goal}</li>`
-                    )
-                    .join("");
-
-        }
-
-
-        /* =============================================
-           ACTION
-        ============================================= */
-
-
-        if (
-            output.action
-        ) {
-
-
-            setDOMText(
-
-                "hud-action",
-
-                `ACTION: ${
-                    output.action.type
-                } -> ${
-                    output.action.target.id
-                }`
-
-            );
-
-        }
-
-
-        /* =============================================
-           LEARNING
-        ============================================= */
-
-
-        setDOMText(
-
-            "hud-learning",
-
-            `LEARNING: ${
-                output.learning
-            }`
-
-        );
-
-
-        /* =============================================
-           REFLECTION
-        ============================================= */
-
-
-        setDOMText(
-            "hud-reflection",
-            output.latestReflection
-        );
-
-
-        /* =============================================
-           THOUGHT LOG
-        ============================================= */
-
-
-        const thoughtLog =
-            document.getElementById(
-                "hud-thoughts"
-            );
-
-
-        if (
-            thoughtLog
-        ) {
-
-
-            const thought =
-                document.createElement(
-                    "div"
-                );
-
-
-            thought.className =
-                "thought";
-
-
-            thought.innerText =
-
-                `[Cycle ${
-                    output.cycle
-                }] ${
-                    output.latestReflection
-                }`;
-
-
-            thoughtLog.prepend(
-                thought
-            );
-
-
-            while (
-                thoughtLog.children.length
-                > 12
-            ) {
-
-                thoughtLog.removeChild(
-                    thoughtLog.lastChild
-                );
-
-            }
-
-        }
-
-
-        /* =============================================
-           PERCEPTION STREAM
-        ============================================= */
-
-
-        const perceptionHUD =
-            document.getElementById(
-                "hud-perceptions"
-            );
-
-
-        if (
-            perceptionHUD
-        ) {
-
-
-            perceptionHUD.innerHTML =
-
-                perceptions
-                    .map(
-                        p => `
-
-                            <div
-                                class="perception"
-                            >
-
-                                <div
-                                    class="perception-name"
-                                >
-
-                                    ◉ ${p.id}
-
-                                </div>
-
-                                <div
-                                    class="perception-distance"
-                                >
-
-                                    Distance:
-                                    ${p.distance}m
-
-                                </div>
-
-                            </div>
-
-                        `
-                    )
-                    .join("");
-
-        }
-
-
-        /* =============================================
-           MEMORY
-        ============================================= */
-
-
-        const memoryHUD =
-            document.getElementById(
-                "hud-memory"
-            );
-
-
-        if (
-            memoryHUD
-        ) {
-
-
-            if (
-                output.memory.length === 0
-            ) {
-
-
-                memoryHUD.innerHTML = `
-
-                    <div
-                        class="memory-entry"
-                    >
-
-                        No experiences
-                        recorded yet.
-
-                    </div>
-
-                `;
-
-            }
-
-
-            else {
-
-
-                memoryHUD.innerHTML =
-
-                    output.memory
-                        .slice(
-                            0,
-                            8
-                        )
-
-                        .map(
-                            memory => `
-
-                                <div
-                                    class="memory-entry"
-                                >
-
-                                    C${memory.cycle}:
-                                    ${memory.target}
-                                    —
-                                    ${memory.learning}
-
-                                </div>
-
-                            `
-                        )
-
-                        .join("");
-
-            }
-
-        }
-
-
-    }
-
-    catch (
-        error
+    if (
+        element
     ) {
 
-
-        console.error(
-            "ECHO cognitive error:",
-            error
-        );
+        element.style.width =
+            `${value * 100}%`;
 
     }
 
 }
 
 
-/* =====================================================
-   START ECHO
-===================================================== */
+/* =========================================================
+   COGNITIVE CYCLE
+========================================================= */
+
+function cognitiveCycle() {
+
+
+    /*
+     * World continues existing.
+     */
+
+    world.tick();
+
+
+    /*
+     * ECHO only receives what
+     * it can perceive.
+     */
+
+    const perceptions =
+        world.perceive(
+            {
+
+                x:
+                    echoMesh
+                        ? echoMesh.position.x
+                        : 0,
+
+                z:
+                    echoMesh
+                        ? echoMesh.position.z
+                        : 4
+
+            },
+
+            8
+
+        );
+
+
+    /*
+     * Think.
+     */
+
+    mind.think(
+        perceptions,
+        world
+    );
+
+
+    /*
+     * Reflection.
+     */
+
+    const reflection =
+        mind.reflect();
+
+
+    /* =====================================================
+       HEADER
+    ===================================================== */
+
+
+    const time =
+        world.getTime();
+
+
+    setText(
+        "cycle",
+        `CYCLE: ${mind.cycle}`
+    );
+
+
+    setText(
+        "time",
+        time.text
+    );
+
+
+    /* =====================================================
+       INTERNAL STATE
+    ===================================================== */
+
+
+    setText(
+        "energy",
+        `${(
+            mind.energy *
+            100
+        ).toFixed(0)}%`
+    );
+
+
+    setBar(
+        "energyBar",
+        mind.energy
+    );
+
+
+    setText(
+        "curiosity",
+        `${(
+            mind.curiosity *
+            100
+        ).toFixed(0)}%`
+    );
+
+
+    setBar(
+        "curiosityBar",
+        mind.curiosity
+    );
+
+
+    setText(
+        "wonder",
+        `${(
+            mind.wonder *
+            100
+        ).toFixed(0)}%`
+    );
+
+
+    setBar(
+        "wonderBar",
+        mind.wonder
+    );
+
+
+    setText(
+        "social",
+        `${(
+            mind.social *
+            100
+        ).toFixed(0)}%`
+    );
+
+
+    setBar(
+        "socialBar",
+        mind.social
+    );
+
+
+    /* =====================================================
+       INTENTION
+    ===================================================== */
+
+
+    setText(
+        "goal",
+        mind.intention
+    );
+
+
+    /* =====================================================
+       EMOTION
+    ===================================================== */
+
+
+    setText(
+        "calm",
+        `${(
+            mind.calm *
+            100
+        ).toFixed(0)}%`
+    );
+
+
+    setText(
+        "excitement",
+        `${(
+            mind.excitement *
+            100
+        ).toFixed(0)}%`
+    );
+
+
+    setText(
+        "emotionCuriosity",
+        `${(
+            mind.curiosity *
+            100
+        ).toFixed(0)}%`
+    );
+
+
+    setText(
+        "unease",
+        `${(
+            mind.unease *
+            100
+        ).toFixed(0)}%`
+    );
+
+
+    /* =====================================================
+       THOUGHT
+    ===================================================== */
+
+
+    const thoughts =
+        document.getElementById(
+            "thoughts"
+        );
+
+
+    if (
+        thoughts
+    ) {
+
+
+        const block =
+            document.createElement(
+                "div"
+            );
+
+
+        block.className =
+            "thought";
+
+
+        block.innerHTML =
+
+            `<b>Thought:</b>
+             ${mind.currentThought}
+             <br>
+             <span class="muted">
+             Question:
+             ${mind.question}
+             </span>
+             <br>
+             <span class="muted">
+             Hypothesis:
+             ${mind.hypothesis}
+             </span>`;
+
+
+        thoughts.prepend(
+            block
+        );
+
+
+        while (
+            thoughts.children.length >
+            10
+        ) {
+
+            thoughts.removeChild(
+                thoughts.lastChild
+            );
+
+        }
+
+    }
+
+
+    /* =====================================================
+       REFLECTION
+    ===================================================== */
+
+
+    setText(
+        "reflection",
+        reflection
+    );
+
+
+    /* =====================================================
+       EVENT
+    ===================================================== */
+
+
+    if (
+        world.events.length
+    ) {
+
+
+        setText(
+            "event",
+            world.events[0].text
+        );
+
+    }
+
+
+    /* =====================================================
+       WEATHER
+    ===================================================== */
+
+
+    setText(
+        "weather",
+        `Weather: ${world.weather}`
+    );
+
+
+    /* =====================================================
+       ACTION
+    ===================================================== */
+
+
+    setText(
+        "action",
+
+        `ACTION: ${
+            mind.action
+        }`
+
+    );
+
+
+    /* =====================================================
+       LEARNING
+    ===================================================== */
+
+
+    setText(
+        "learning",
+
+        `LEARNING:
+         ${mind.lastLearning}`
+
+    );
+
+
+    /* =====================================================
+       PERCEPTIONS
+    ===================================================== */
+
+
+    const perceptionHUD =
+        document.getElementById(
+            "perceptions"
+        );
+
+
+    if (
+        perceptionHUD
+    ) {
+
+
+        perceptionHUD.innerHTML =
+
+            perceptions
+                .map(
+                    p => `
+
+                    <div class="perception">
+
+                        <strong>
+                            ◉ ${p.name}
+                        </strong>
+
+                        <br>
+
+                        <span class="muted">
+
+                            Distance:
+                            ${p.distance}m
+
+                        </span>
+
+                        <br>
+
+                        <span class="muted">
+
+                            Activity:
+                            ${p.activity}
+
+                        </span>
+
+                    </div>
+
+                `
+                )
+                .join("");
+
+    }
+
+
+    /* =====================================================
+       MEMORY
+    ===================================================== */
+
+
+    const memoryHUD =
+        document.getElementById(
+            "memory"
+        );
+
+
+    if (
+        memoryHUD
+    ) {
+
+
+        memoryHUD.innerHTML =
+
+            mind.memory
+                .recent(
+                    8
+                )
+
+                .map(
+                    memory => `
+
+                        <div class="memory">
+
+                            ${memory.text}
+
+                        </div>
+
+                    `
+                )
+
+                .join("");
+
+
+    }
+
+}
+
+
+/* =========================================================
+   START
+========================================================= */
+
+cognitiveCycle();
 
 
 /*
- * First cognitive cycle.
- */
-
-runSimulation();
-
-
-/*
- * Continue thinking every 2 seconds.
+ * World tick.
+ *
+ * The world changes every second.
  */
 
 setInterval(
-    runSimulation,
-    2000
+    () => {
+
+        world.tick();
+
+    },
+    1000
+);
+
+
+/*
+ * ECHO thinks every 3 seconds.
+ */
+
+setInterval(
+    cognitiveCycle,
+    3000
 );
 
 </script>
