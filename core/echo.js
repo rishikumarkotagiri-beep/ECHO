@@ -17,21 +17,20 @@ export class EchoBrainV3 {
   step(perceptions = []) {
     this.cycle += 1;
 
-    // 1. Prediction & Surprise
+    // 1. Compute Prediction Error
     const surpriseScore = this.prediction.computeSurprise(perceptions);
     this.selfModel.updateDrives(surpriseScore);
 
-    // 2. Drive & Concept Synthesis
+    // 2. Synthesize Concepts & Goals
     const concepts = Array.from(this.memory.concepts.entries());
     const topInterests = concepts
       .map(([concept, data]) => ({ concept, affinity: data.affinity }))
       .sort((a, b) => b.affinity - a.affinity);
 
-    // 3. Goal Formation
     const goalData = this.goals.determineGoal(surpriseScore, topInterests);
 
-    // 4. Memory Recording
-    const focusItem = perceptions.length > 0 ? perceptions[0] : { id: 'Void' };
+    // 3. Record Perception in Memory
+    const focusItem = perceptions.length > 0 ? perceptions[0] : { id: 'Village' };
     this.memory.recordEpisode({
       day: 1,
       perception: focusItem,
@@ -39,7 +38,7 @@ export class EchoBrainV3 {
       emotionalResponse: { valence: Math.random() }
     });
 
-    // 5. Metacognition
+    // 4. Generate Metacognitive Reflection
     const reflection = this.metacognition.evaluateState(
       this.cycle,
       goalData.activeGoal,
