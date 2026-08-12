@@ -1,22 +1,32 @@
-export class Metacognition {
+export class MetacognitionModule {
   constructor() {
-    this.lastDecision = null;
-    this.reflections = [];
+    this.reflectionLogs = [];
   }
 
-  inspect(decision, outcome) {
-    const reflection = {
-      time: Date.now(),
-      decision,
-      outcome,
-      confidence: outcome.success ? 0.8 : 0.35,
-      question: outcome.success
-        ? "What else can I learn from this?"
-        : "Why did my prediction fail?"
+  /**
+   * Formulates a self-reflective entry explaining decision logic.
+   */
+  reflectOnAction(cycle, internalState, goal, chosenAction, surpriseScore) {
+    const logEntry = {
+      cycle,
+      timestamp: Date.now(),
+      summary: `At cycle ${cycle}, I pursued '${goal}' because surprise score was ${surpriseScore.toFixed(2)} and curiosity was ${(internalState.curiosity * 100).toFixed(0)}%.`,
+      reasoningTrace: {
+        primaryDriver: surpriseScore > 0.5 ? 'High Environmental Surprise' : 'Internal Drive',
+        actionSelected: chosenAction.type,
+        target: chosenAction.target
+      }
     };
-    this.lastDecision = reflection;
-    this.reflections.unshift(reflection);
-    this.reflections = this.reflections.slice(0, 30);
-    return reflection;
+
+    if (this.reflectionLogs.length >= 20) {
+      this.reflectionLogs.shift();
+    }
+    this.reflectionLogs.push(logEntry);
+
+    return logEntry.summary;
+  }
+
+  getLatestReflection() {
+    return this.reflectionLogs[this.reflectionLogs.length - 1] || null;
   }
 }
