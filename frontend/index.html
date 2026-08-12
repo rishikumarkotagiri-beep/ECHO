@@ -1,0 +1,87 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ECHO v0.3 — Autonomous Mind</title>
+<style>
+body{margin:0;background:#050a0d;color:#e8f2f5;font-family:Arial,sans-serif;overflow:hidden}
+canvas{display:block}.hud{position:fixed;inset:0;pointer-events:none}.top,.panel,.bottom{pointer-events:auto}
+.top{height:65px;padding:0 20px;display:flex;align-items:center;gap:22px;background:#050b10dd;border-bottom:1px solid #28414a}
+.logo{font-weight:bold;letter-spacing:.1em}.green{color:#56e39a}.muted{color:#8ba4ad;font-size:11px}.buttons{margin-left:auto}.btn{background:#08151d;border:1px solid #29434e;color:#dcebef;border-radius:6px;padding:8px 12px;margin-left:5px}
+.panel{position:absolute;top:82px;width:240px;background:#071117df;border:1px solid #29414a;border-radius:8px;padding:13px;backdrop-filter:blur(8px)}
+.left{left:14px}.right{right:14px}.bottom{position:absolute;bottom:12px;left:14px;right:14px;display:flex;gap:12px}.card{flex:1;background:#071117df;border:1px solid #29414a;border-radius:8px;padding:11px;min-width:0}
+h3{font-size:10px;color:#91aab3;letter-spacing:.12em;margin:0 0 10px}.item{font-size:10px;padding:6px 0;border-bottom:1px solid #173039}.meter{margin:7px 0;font-size:10px}.meter span{float:right}.bar{height:5px;background:#13252c;margin-top:3px}.bar i{display:block;height:100%;background:#35c988}.thought{font-size:10px;padding:5px 0}.goal{font-size:11px;line-height:1.45;color:#d0e1e5}
+@media(max-width:900px){.panel{width:190px}.bottom{display:none}}
+</style>
+</head>
+<body>
+<div id="world"></div>
+<div class="hud">
+<div class="top">
+<div><div class="logo">ECHO v0.3</div><div class="muted">AUTONOMOUS MIND EXPERIMENT</div></div>
+<div class="green">● ACTIVE</div><div class="muted">CYCLE <b id="cycle">0</b></div>
+<div class="buttons"><button class="btn" id="pause">Ⅱ PAUSE</button><button class="btn" id="fast">▷▷ FAST</button></div>
+</div>
+<div class="panel left">
+<h3>INTERNAL STATE</h3><div id="state"></div>
+<h3>CURRENT GOAL</h3><div class="goal" id="goal"></div>
+<h3>SELF MODEL</h3><div class="goal" id="self"></div>
+</div>
+<div class="panel right">
+<h3>ACTIVE QUESTIONS</h3><div id="questions"></div>
+<h3>ATTENTION</h3><div id="attention"></div>
+<h3>LEARNED KNOWLEDGE</h3><div id="knowledge"></div>
+</div>
+<div class="bottom">
+<div class="card"><h3>MEMORY</h3><div id="memory"></div></div>
+<div class="card"><h3>THOUGHT + METACOGNITION</h3><div id="thoughts"></div></div>
+<div class="card"><h3>LAST DECISION</h3><div id="decision"></div></div>
+</div>
+</div>
+<script type="module">
+import * as THREE from "https://unpkg.com/three@0.177.0/build/three.module.js";
+import {Echo} from "../core/echo.js";
+import {VillageWorld} from "../world/world.js";
+
+const scene=new THREE.Scene(); scene.background=new THREE.Color(0x91bac9); scene.fog=new THREE.Fog(0x91bac9,35,125);
+const camera=new THREE.PerspectiveCamera(52,innerWidth/innerHeight,.1,250); camera.position.set(0,5,15);
+const renderer=new THREE.WebGLRenderer({antialias:true}); renderer.setSize(innerWidth,innerHeight); renderer.setPixelRatio(Math.min(devicePixelRatio,2)); renderer.shadowMap.enabled=true; document.getElementById("world").appendChild(renderer.domElement);
+scene.add(new THREE.HemisphereLight(0xdcefff,0x385343,2.1));
+const sun=new THREE.DirectionalLight(0xffedcc,3); sun.position.set(-20,35,15); sun.castShadow=true; scene.add(sun);
+const ground=new THREE.Mesh(new THREE.PlaneGeometry(160,160),new THREE.MeshStandardMaterial({color:0x4c6b48}));ground.rotation.x=-Math.PI/2;ground.receiveShadow=true;scene.add(ground);
+function box(x,z,w,h,d,c){let m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshStandardMaterial({color:c,roughness:.8}));m.position.set(x,h/2,z);m.castShadow=m.receiveShadow=true;scene.add(m)}
+function tree(x,z,s){box(x,z,.5*s,2.5*s,.5*s,0x5a4431);let c=new THREE.Mesh(new THREE.SphereGeometry(1.7*s,12,10),new THREE.MeshStandardMaterial({color:0x2f653f}));c.position.set(x,3*s,z);c.castShadow=true;scene.add(c)}
+for(let i=0;i<22;i++)tree(-35+Math.random()*70,-30+Math.random()*25,.7+Math.random()*.6);
+for(let i=0;i<10;i++)box(-30+Math.random()*60,-25+Math.random()*25,3+Math.random()*4,2+Math.random()*2,3+Math.random()*4,0x6b513c);
+let path=new THREE.Mesh(new THREE.PlaneGeometry(7,80),new THREE.MeshStandardMaterial({color:0x9c8058}));path.rotation.x=-Math.PI/2;path.position.z=-13;scene.add(path);
+
+const echoG=new THREE.Group(), white=new THREE.MeshStandardMaterial({color:0xdbe3e4,metalness:.3,roughness:.3}), dark=new THREE.MeshStandardMaterial({color:0x11191d,metalness:.7}), glow=new THREE.MeshStandardMaterial({color:0x6ce9ff,emissive:0x299ab7,emissiveIntensity:2});
+function p(g,geo,mat,x,y,z){let m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);m.castShadow=true;g.add(m)}
+p(echoG,new THREE.SphereGeometry(.62,24,18),white,0,2.8,0);p(echoG,new THREE.BoxGeometry(1.1,1.2,.65),white,0,1.45,0);p(echoG,new THREE.BoxGeometry(.68,.65,.7),dark,0,.65,0);
+for(let x of [-.22,.22])p(echoG,new THREE.SphereGeometry(.06,10,8),glow,x,2.95,.56);
+for(let x of [-.28,.28]){p(echoG,new THREE.CapsuleGeometry(.2,.85,8,12),white,x,.15,0);p(echoG,new THREE.BoxGeometry(.4,.18,.7),dark,x,-.45,.12)}
+for(let x of [-.72,.72])p(echoG,new THREE.CapsuleGeometry(.17,.8,8,12),white,x,1.45,0);
+echoG.position.set(0,0,7);scene.add(echoG);
+
+const world=new VillageWorld(), brain=new Echo(world);
+let paused=false,speed=1;
+function renderUI(){
+document.getElementById("cycle").textContent=brain.cycle;
+document.getElementById("state").innerHTML=Object.entries(brain.internal).map(([k,v])=>`<div class="meter">${k}<span>${Math.round(v*100)}%</span><div class="bar"><i style="width:${v*100}%"></i></div></div>`).join("");
+const goals=brain.motivation.activeGoal;document.getElementById("goal").textContent=goals?.text||"Observing the world.";
+document.getElementById("self").textContent=brain.self.describe();
+document.getElementById("questions").innerHTML=brain.questions.map(q=>`<div class="item">◉ ${q}</div>`).join("");
+document.getElementById("attention").innerHTML=(brain.memory.working.length?world.objects.slice(0,3):[]).map(o=>`<div class="item">${o.name}</div>`).join("");
+document.getElementById("knowledge").innerHTML=brain.memory.knowledge().slice(0,5).map(k=>`<div class="item"><b>${k.key}</b><br>${k.value}</div>`).join("");
+document.getElementById("memory").innerHTML=brain.memory.working.slice(0,6).map(m=>`<div class="item">${m.event}</div>`).join("");
+document.getElementById("thoughts").innerHTML=brain.thoughts.slice(0,5).map(t=>`<div class="thought">◉ ${t}</div>`).join("");
+const r=brain.metacognition.lastDecision;document.getElementById("decision").innerHTML=r?`<div class="goal">Action: <b>${r.decision.action}</b><br>Outcome: ${r.outcome.result}<br>Reflection: ${r.question}<br>Confidence: ${Math.round(r.confidence*100)}%</div>`:"No decision yet.";
+}
+setInterval(()=>{if(!paused){for(let i=0;i<speed;i++)brain.step();renderUI()}},1400);renderUI();
+let t=0;function loop(){requestAnimationFrame(loop);t+=.01;echoG.position.y=Math.sin(t*2)*.02;camera.lookAt(0,2,0);renderer.render(scene,camera)}loop();
+document.getElementById("pause").onclick=()=>{paused=!paused;document.getElementById("pause").textContent=paused?"▶ RESUME":"Ⅱ PAUSE"};
+document.getElementById("fast").onclick=()=>speed=speed===1?4:1;
+addEventListener("resize",()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
+</script>
+</body></html>
