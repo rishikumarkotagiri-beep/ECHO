@@ -1,39 +1,32 @@
 export class MemorySystem {
   constructor() {
-    this.working = [];
-    this.episodic = [];
-    this.semantic = new Map();
+    this.episodicMemory = []; // Chronological record of experiences
+    this.concepts = new Map(); // Synthesized knowledge: item/action -> sentiment/utility
   }
 
-  remember(event, importance = 0.5) {
-    const item = {
-      id: crypto.randomUUID?.() ?? String(Date.now() + Math.random()),
-      time: Date.now(),
-      event,
-      importance,
-      accessCount: 0
-    };
-    this.working.unshift(item);
-    this.episodic.unshift(item);
-    this.working = this.working.slice(0, 12);
-    this.episodic = this.episodic.slice(0, 100);
-    return item;
+  // Store raw sensory-action-outcome frame
+  recordEpisode(episode) {
+    // episode: { day, time, perception, action, outcome, emotionalResponse }
+    this.episodicMemory.push(episode);
+    this.updateConcepts(episode);
   }
 
-  learn(key, value, confidence = 0.6) {
-    this.semantic.set(key, { value, confidence, updated: Date.now() });
+  // Extract preferences organically from past experiences
+  updateConcepts(episode) {
+    const key = episode.perception.id;
+    const current = this.concepts.get(key) || { encounters: 0, affinity: 0.5, valenceHistory: [] };
+    
+    current.encounters += 1;
+    current.valenceHistory.push(episode.emotionalResponse.valence);
+    
+    // Average emotional impact to build dynamic affinity
+    const avgValence = current.valenceHistory.reduce((a, b) => a + b, 0) / current.valenceHistory.length;
+    current.affinity = avgValence;
+
+    this.concepts.set(key, current);
   }
 
-  recall(query = "") {
-    const q = query.toLowerCase();
-    return this.episodic
-      .filter(x => !q || x.event.toLowerCase().includes(q))
-      .sort((a,b) => (b.importance + b.accessCount*.02) - (a.importance + a.accessCount*.02))
-      .slice(0, 8)
-      .map(x => { x.accessCount++; return x; });
-  }
-
-  knowledge() {
-    return [...this.semantic.entries()].map(([key, data]) => ({key, ...data}));
+  recallRelevant(context) {
+    return this.episodicMemory.filter(e => e.perception.id === context.id).slice(-3);
   }
 }
