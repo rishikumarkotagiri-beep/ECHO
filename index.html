@@ -1,75 +1,163 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ECHO</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>ECHO v0.3 — Autonomous Mind</title>
+
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Three.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 
 <body>
 
-  <div class="background"></div>
+  <!-- 3D WORLD -->
+  <div id="canvas-container"></div>
 
-  <main class="app">
+  <!-- HEADER -->
+  <div class="hud-panel header-bar">
 
-    <header>
-      <div class="logo">
-        <span class="dot"></span>
-        ECHO
+    <div>
+      <strong>ECHO</strong>
+      <span class="version">v0.3</span>
+    </div>
+
+    <div id="hud-cycle">CYCLE: 0</div>
+
+    <div id="hud-time">TIME: Day 1 - 08:00 AM</div>
+
+  </div>
+
+
+  <!-- LEFT PANEL -->
+  <div class="hud-panel left-panel">
+
+    <h3>PERCEPTION STREAM</h3>
+
+    <div id="hud-perceptions" class="log-stream">
+      Initializing perception...
+    </div>
+
+
+    <h3 style="margin-top:15px;">EMOTIONAL TENDENCIES</h3>
+
+    <div class="stat-row">
+      <span>Curiosity</span>
+      <span id="val-emo-curiosity">82%</span>
+    </div>
+
+    <div class="stat-row">
+      <span>Excitement</span>
+      <span id="val-emo-excitement">61%</span>
+    </div>
+
+    <div class="stat-row">
+      <span>Contentment</span>
+      <span id="val-emo-contentment">52%</span>
+    </div>
+
+    <div class="stat-row">
+      <span>Fear</span>
+      <span id="val-emo-fear">24%</span>
+    </div>
+
+  </div>
+
+
+  <!-- RIGHT PANEL -->
+  <div class="hud-panel right-panel">
+
+    <h3>COGNITIVE STATE</h3>
+
+    <div class="stat-row">
+      <span>Energy</span>
+      <span id="val-energy">75%</span>
+    </div>
+
+    <div class="bar-bg">
+      <div id="bar-energy" class="bar-fill"></div>
+    </div>
+
+
+    <div class="stat-row">
+      <span>Surprise</span>
+      <span id="val-surprise">0.20</span>
+    </div>
+
+    <div class="bar-bg">
+      <div id="bar-surprise" class="bar-fill"></div>
+    </div>
+
+
+    <h3 style="margin-top:15px;">ACTIVE GOAL</h3>
+
+    <div id="hud-goal" class="highlight">
+      Initializing...
+    </div>
+
+
+    <h3 style="margin-top:15px;">SUB-GOALS</h3>
+
+    <div id="hud-subgoals" class="log-stream">
+      Waiting...
+    </div>
+
+  </div>
+
+
+  <!-- BOTTOM PANEL -->
+  <div class="hud-panel bottom-panel">
+
+    <div>
+
+      <h3>METACOGNITIVE REFLECTION</h3>
+
+      <div id="hud-reflection" class="reflection">
+        ECHO is initializing its cognitive architecture...
       </div>
 
-      <div class="status">
+    </div>
+
+
+    <div>
+
+      <h3>CURRENT ACTION</h3>
+
+      <div id="hud-action" class="action">
+        ACTION: INITIALIZE
+      </div>
+
+    </div>
+
+
+    <div>
+
+      <h3>SYSTEM STATUS</h3>
+
+      <div class="status-row">
         <span class="status-dot"></span>
-        ONLINE
-      </div>
-    </header>
-
-    <section class="hero">
-
-      <div class="echo-orb">
-        <div class="orb-core"></div>
-        <div class="orb-ring ring-one"></div>
-        <div class="orb-ring ring-two"></div>
-        <div class="orb-ring ring-three"></div>
+        AUTONOMOUS ENGINE ONLINE
       </div>
 
-      <h1>ECHO</h1>
-
-      <p class="subtitle">
-        I listen. I remember. I respond.
-      </p>
-
-      <div id="conversation" class="conversation">
-        <div class="message echo-message">
-          <span class="name">ECHO</span>
-          <p>Hello.</p>
-          <p>I'm listening.</p>
-        </div>
+      <div class="status-row">
+        <span class="status-dot"></span>
+        PERCEPTION ONLINE
       </div>
 
-      <div class="input-area">
-        <input
-          id="userInput"
-          type="text"
-          placeholder="Talk to ECHO..."
-          autocomplete="off"
-        />
-
-        <button id="sendButton">
-          →
-        </button>
+      <div class="status-row">
+        <span class="status-dot"></span>
+        MEMORY ONLINE
       </div>
 
-    </section>
+    </div>
 
-    <footer>
-      <span>ECHO v1.0</span>
-      <span>BUILT FOR CURIOSITY</span>
-    </footer>
+  </div>
 
-  </main>
 
+  <!-- MAIN SCRIPT -->
   <script src="script.js"></script>
 
 </body>
