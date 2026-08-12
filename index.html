@@ -1,424 +1,76 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ECHO v0.3 — Autonomous Mind</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      background-color: #0b0f19;
-      color: #00ffcc;
-      font-family: 'Courier New', Courier, monospace;
-      overflow: hidden;
-      width: 100vw;
-      height: 100vh;
-    }
-
-    #canvas-container {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 1;
-    }
-
-    .hud-panel {
-      position: absolute;
-      z-index: 10;
-      background: rgba(10, 15, 25, 0.85);
-      border: 1px solid #00ffcc33;
-      border-radius: 8px;
-      padding: 15px;
-      backdrop-filter: blur(5px);
-      box-shadow: 0 0 15px rgba(0, 255, 204, 0.1);
-    }
-
-    .header-bar {
-      top: 15px;
-      left: 15px;
-      right: 15px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      height: 50px;
-    }
-
-    .left-panel {
-      top: 80px;
-      left: 15px;
-      width: 280px;
-      bottom: 220px;
-      overflow-y: auto;
-    }
-
-    .right-panel {
-      top: 80px;
-      right: 15px;
-      width: 280px;
-      bottom: 220px;
-      overflow-y: auto;
-    }
-
-    .bottom-panel {
-      bottom: 15px;
-      left: 15px;
-      right: 15px;
-      height: 190px;
-      display: grid;
-      grid-template-columns: 2fr 1fr 1.5fr;
-      gap: 15px;
-    }
-
-    h3 {
-      font-size: 0.85rem;
-      color: #7f9cf5;
-      text-transform: uppercase;
-      margin-bottom: 8px;
-      border-bottom: 1px solid #7f9cf533;
-      padding-bottom: 4px;
-    }
-
-    .stat-row {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 6px;
-      font-size: 0.8rem;
-    }
-
-    .bar-bg {
-      width: 100%;
-      background: #1a233a;
-      height: 8px;
-      border-radius: 4px;
-      margin-top: 2px;
-      margin-bottom: 8px;
-      overflow: hidden;
-    }
-
-    .bar-fill {
-      height: 100%;
-      background: #00ffcc;
-      width: 50%;
-      transition: width 0.4s ease;
-    }
-
-    .log-stream {
-      font-size: 0.75rem;
-      color: #a0aec0;
-      line-height: 1.4;
-      display: flex;
-      flex-direction: column-reverse;
-      gap: 6px;
-      max-height: 130px;
-      overflow-y: auto;
-    }
-
-    .log-entry {
-      background: rgba(255, 255, 255, 0.03);
-      padding: 4px 6px;
-      border-left: 2px solid #00ffcc;
-    }
-
-    .highlight { color: #ff007f; font-weight: bold; }
-  </style>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ECHO</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
 
-  <div id="canvas-container"></div>
+  <div class="background"></div>
 
-  <!-- HEADER BAR -->
-  <div class="hud-panel header-bar">
-    <div><strong>ECHO v0.3</strong> <span style="color:#00ffcc; font-size:0.8rem; margin-left:10px;">● AUTONOMOUS MIND ACTIVE</span></div>
-    <div id="hud-cycle">CYCLE: 0</div>
-    <div id="hud-time">TIME: Day 1 - 08:00 AM</div>
-  </div>
+  <main class="app">
 
-  <!-- LEFT PANEL -->
-  <div class="hud-panel left-panel">
-    <h3>INTERNAL STATE</h3>
-    
-    <div class="stat-row"><span>Energy</span><span id="val-energy">75%</span></div>
-    <div class="bar-bg"><div class="bar-fill" id="bar-energy" style="width:75%"></div></div>
-
-    <div class="stat-row"><span>Curiosity</span><span id="val-curiosity">90%</span></div>
-    <div class="bar-bg"><div class="bar-fill" id="bar-curiosity" style="width:90%"></div></div>
-
-    <div class="stat-row"><span>Surprise Level</span><span id="val-surprise" class="highlight">0.00</span></div>
-    <div class="bar-bg"><div class="bar-fill" id="bar-surprise" style="width:0%; background:#ff007f;"></div></div>
-
-    <h3 style="margin-top:15px;">ACTIVE GOAL</h3>
-    <p id="hud-goal" style="font-size:0.8rem; color:#fff; font-weight:bold;">Initializing brain...</p>
-    
-    <h3 style="margin-top:15px;">SUB GOALS</h3>
-    <ul id="hud-subgoals" style="font-size:0.75rem; color:#a0aec0; padding-left:15px;">
-      <li>Analyzing environment...</li>
-    </ul>
-  </div>
-
-  <!-- RIGHT PANEL -->
-  <div class="hud-panel right-panel">
-    <h3>PERCEPTIONS</h3>
-    <div id="hud-perceptions" class="log-stream"></div>
-
-    <h3 style="margin-top:15px;">EMOTIONAL TENDENCIES</h3>
-    <div class="stat-row"><span>Curiosity</span><span id="val-emo-curiosity">82%</span></div>
-    <div class="stat-row"><span>Excitement</span><span id="val-emo-excitement">61%</span></div>
-    <div class="stat-row"><span>Contentment</span><span id="val-emo-contentment">52%</span></div>
-    <div class="stat-row"><span>Fear</span><span id="val-emo-fear">24%</span></div>
-  </div>
-
-  <!-- BOTTOM PANEL -->
-  <div class="hud-panel bottom-panel">
-    <div>
-      <h3>ECHO'S THOUGHT PROCESS - LIVE</h3>
-      <div id="hud-thoughts" class="log-stream"></div>
-    </div>
-    <div>
-      <h3>METACOGNITIVE REFLECTION</h3>
-      <div id="hud-reflection" style="font-size:0.75rem; color:#e2e8f0; line-height:1.3;">
-        Awaiting cognitive cycle...
+    <header>
+      <div class="logo">
+        <span class="dot"></span>
+        ECHO
       </div>
-    </div>
-    <div>
-      <h3>WORLD INFO</h3>
-      <p style="font-size:0.75rem;">Location: Greenhaven Village</p>
-      <p style="font-size:0.75rem;">Weather: ☀️ Sunny (24°C)</p>
-      <p style="font-size:0.75rem; color:#00ffcc; margin-top:10px;" id="hud-action">ACTION: Idle</p>
-    </div>
-  </div>
 
-  <script>
-    // --- AUTONOMOUS BRAIN ENGINE ---
-    class AutonomousBrain {
-      constructor() {
-        this.cycle = 0;
-        this.minutes = 0;
-        this.energy = 0.75;
-        this.curiosity = 0.90;
-        this.memory = [];
-        this.inspectedTargets = new Map();
-      }
+      <div class="status">
+        <span class="status-dot"></span>
+        ONLINE
+      </div>
+    </header>
 
-      step(perceptions) {
-        this.cycle += 1;
-        this.minutes += 2;
-        this.energy = Math.max(0.20, this.energy - 0.005);
+    <section class="hero">
 
-        // Pick Target based on novelty
-        let target = perceptions[0] || { id: 'Village Ground', pos: [0, 0] };
-        let minVisits = Infinity;
+      <div class="echo-orb">
+        <div class="orb-core"></div>
+        <div class="orb-ring ring-one"></div>
+        <div class="orb-ring ring-two"></div>
+        <div class="orb-ring ring-three"></div>
+      </div>
 
-        perceptions.forEach(p => {
-          const visits = this.inspectedTargets.get(p.id) || 0;
-          if (visits < minVisits) {
-            minVisits = visits;
-            target = p;
-          }
-        });
+      <h1>ECHO</h1>
 
-        const currentVisits = this.inspectedTargets.get(target.id) || 0;
-        this.inspectedTargets.set(target.id, currentVisits + 1);
+      <p class="subtitle">
+        I listen. I remember. I respond.
+      </p>
 
-        // Compute dynamic surprise based on distance and visual novelty
-        const surprise = Math.max(0.05, Math.min(0.95, (1 / (target.distance + 0.5)) + (0.3 / (currentVisits + 1))));
+      <div id="conversation" class="conversation">
+        <div class="message echo-message">
+          <span class="name">ECHO</span>
+          <p>Hello.</p>
+          <p>I'm listening.</p>
+        </div>
+      </div>
 
-        // Formulate Goals
-        let activeGoal = `Approach and inspect ${target.id}`;
-        let subGoals = [`Calculate vector to ${target.id}`, `Scan local geometry`];
+      <div class="input-area">
+        <input
+          id="userInput"
+          type="text"
+          placeholder="Talk to ECHO..."
+          autocomplete="off"
+        />
 
-        if (target.distance < 1.5) {
-          activeGoal = `Analyze physical composition of ${target.id}`;
-          subGoals = [`Store high-res spatial model`, `Update topological map`];
-        }
+        <button id="sendButton">
+          →
+        </button>
+      </div>
 
-        // Metacognitive Reflection
-        const reflections = [
-          `Targeting ${target.id} at ${target.distance}m. Surprise delta: ${surprise.toFixed(2)}.`,
-          `Evaluating distance to ${target.id}. Spatial uncertainty decreasing.`,
-          `High cognitive focus on ${target.id}. Energy efficient state maintained.`,
-          `Re-indexing ${target.id} into episodic memory buffer.`
-        ];
-        const reflection = reflections[this.cycle % reflections.length];
+    </section>
 
-        // Format Clock Time
-        const totalMinutes = 8 * 60 + this.minutes;
-        const hrs = String(Math.floor((totalMinutes / 60) % 24)).padStart(2, '0');
-        const mins = String(Math.floor(totalMinutes % 60)).padStart(2, '0');
-        const timeString = `Day 1 - ${hrs}:${mins} AM`;
+    <footer>
+      <span>ECHO v1.0</span>
+      <span>BUILT FOR CURIOSITY</span>
+    </footer>
 
-        return {
-          cycle: this.cycle,
-          timeString: timeString,
-          surpriseScore: surprise,
-          activeGoal: activeGoal,
-          subGoals: subGoals,
-          latestReflection: reflection,
-          action: { type: 'MoveTowards', target: target },
-          energy: this.energy,
-          curiosity: this.curiosity
-        };
-      }
-    }
+  </main>
 
-    const brain = new AutonomousBrain();
+  <script src="script.js"></script>
 
-    // --- THREE.JS SCENE SETUP ---
-    const container = document.getElementById('canvas-container');
-    let scene, camera, renderer, echoMesh;
-    const entities = [];
-    let currentVectorTarget = null;
-
-    if (container && typeof THREE !== 'undefined') {
-      scene = new THREE.Scene();
-      scene.background = new THREE.Color(0x0e1422);
-
-      camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-      camera.position.set(0, 10, 15);
-      camera.lookAt(0, 0, 0);
-
-      renderer = new THREE.WebGLRenderer({ antialias: true });
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      container.appendChild(renderer.domElement);
-
-      scene.add(new THREE.AmbientLight(0xffffff, 0.7));
-      const dirLight = new THREE.DirectionalLight(0xffffff, 0.6);
-      dirLight.position.set(10, 20, 10);
-      scene.add(dirLight);
-
-      const ground = new THREE.Mesh(
-        new THREE.PlaneGeometry(50, 50),
-        new THREE.MeshStandardMaterial({ color: 0x1a261a, roughness: 0.8 })
-      );
-      ground.rotation.x = -Math.PI / 2;
-      scene.add(ground);
-
-      // ECHO Agent
-      echoMesh = new THREE.Mesh(
-        new THREE.SphereGeometry(0.8, 32, 32),
-        new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.1, metalness: 0.2 })
-      );
-      echoMesh.position.set(0, 0.8, 4);
-      scene.add(echoMesh);
-
-      // Environment Objects
-      const objectList = [
-        { id: 'Old Man', mesh: new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 1.2), new THREE.MeshStandardMaterial({ color: 0xd97706 })), pos: [-4, 0.6, -2] },
-        { id: 'Wooden House', mesh: new THREE.Mesh(new THREE.BoxGeometry(3, 2.5, 3), new THREE.MeshStandardMaterial({ color: 0x78350f })), pos: [4, 1.25, -4] },
-        { id: 'Water Well', mesh: new THREE.Mesh(new THREE.CylinderGeometry(0.8, 0.8, 0.8), new THREE.MeshStandardMaterial({ color: 0x64748b })), pos: [0, 0.4, -4] }
-      ];
-
-      objectList.forEach(e => {
-        e.mesh.position.set(...e.pos);
-        scene.add(e.mesh);
-        entities.push(e);
-      });
-
-      // Render & Physics Loop
-      function animate() {
-        requestAnimationFrame(animate);
-
-        if (echoMesh && currentVectorTarget) {
-          // Smooth Interpolation towards Target
-          echoMesh.position.x += (currentVectorTarget.x - echoMesh.position.x) * 0.03;
-          echoMesh.position.z += (currentVectorTarget.z - echoMesh.position.z) * 0.03;
-          echoMesh.rotation.y += 0.02;
-        }
-
-        renderer.render(scene, camera);
-      }
-      animate();
-
-      window.addEventListener('resize', () => {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-      });
-    }
-
-    function getPerceptions() {
-      if (entities.length > 0 && echoMesh) {
-        return entities.map(e => {
-          const dist = echoMesh.position.distanceTo(e.mesh.position);
-          return {
-            id: e.id,
-            distance: Math.round(dist * 10) / 10,
-            pos: e.mesh.position
-          };
-        });
-      }
-      return [
-        { id: 'Old Man', distance: 3.0, pos: { x: -4, z: -2 } },
-        { id: 'Wooden House', distance: 5.7, pos: { x: 4, z: -4 } },
-        { id: 'Water Well', distance: 5.0, pos: { x: 0, z: -4 } }
-      ];
-    }
-
-    function setDOMText(id, text) {
-      const el = document.getElementById(id);
-      if (el) el.innerText = text;
-    }
-
-    // Dynamic Execution Loop
-    function runSimulation() {
-      try {
-        const perceptions = getPerceptions();
-        const output = brain.step(perceptions);
-
-        // Update 3D Navigation Target
-        if (output.action && output.action.target && output.action.target.pos) {
-          currentVectorTarget = output.action.target.pos;
-        }
-
-        // HUD Updates
-        setDOMText('hud-cycle', `CYCLE: ${output.cycle}`);
-        setDOMText('hud-time', `TIME: ${output.timeString}`);
-        setDOMText('hud-goal', output.activeGoal);
-        setDOMText('val-surprise', output.surpriseScore.toFixed(2));
-        setDOMText('hud-reflection', output.latestReflection);
-
-        setDOMText('val-energy', `${(output.energy * 100).toFixed(0)}%`);
-        const energyBar = document.getElementById('bar-energy');
-        if (energyBar) energyBar.style.width = `${output.energy * 100}%`;
-
-        if (output.action) {
-          setDOMText('hud-action', `ACTION: ${output.action.type} -> ${output.action.target.id}`);
-        }
-
-        const subGoalsElem = document.getElementById('hud-subgoals');
-        if (subGoalsElem && output.subGoals) {
-          subGoalsElem.innerHTML = output.subGoals.map(sg => `<li>${sg}</li>`).join('');
-        }
-
-        const surpriseBar = document.getElementById('bar-surprise');
-        if (surpriseBar) {
-          surpriseBar.style.width = `${Math.min(100, output.surpriseScore * 100)}%`;
-        }
-
-        const thoughtLog = document.getElementById('hud-thoughts');
-        if (thoughtLog && output.latestReflection) {
-          const entry = document.createElement('div');
-          entry.className = 'log-entry';
-          entry.innerText = `[Cycle ${output.cycle}] ${output.latestReflection}`;
-          thoughtLog.prepend(entry);
-        }
-
-        const percHUD = document.getElementById('hud-perceptions');
-        if (percHUD) {
-          percHUD.innerHTML = perceptions.map(p => `<div class="log-entry">⦿ ${p.id} (${p.distance}m)</div>`).join('');
-        }
-
-      } catch (err) {
-        console.error("Simulation Loop Exception:", err);
-      }
-    }
-
-    // Run every 2 seconds
-    runSimulation();
-    setInterval(runSimulation, 2000);
-  </script>
 </body>
 </html>
