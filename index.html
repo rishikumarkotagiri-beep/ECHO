@@ -1,1174 +1,2079 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>ECHO v0.3 — Autonomous Mind</title>
+<meta charset="UTF-8">
 
-  <link rel="stylesheet" href="style.css">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
 
-  <!-- Three.js -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<title>ECHO v0.4 — Autonomous Mind</title>
+
+<style>
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+
+    background-color: #0b0f19;
+
+    color: #00ffcc;
+
+    font-family:
+        'Courier New',
+        Courier,
+        monospace;
+
+    overflow: hidden;
+
+    width: 100vw;
+
+    height: 100vh;
+}
+
+
+/* =====================================================
+   CANVAS
+===================================================== */
+
+#canvas-container {
+
+    position: absolute;
+
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 100%;
+
+    z-index: 1;
+}
+
+
+/* =====================================================
+   HUD
+===================================================== */
+
+.hud-panel {
+
+    position: absolute;
+
+    z-index: 10;
+
+    background:
+        rgba(10, 15, 25, 0.85);
+
+    border:
+        1px solid #00ffcc33;
+
+    border-radius: 8px;
+
+    padding: 15px;
+
+    backdrop-filter:
+        blur(5px);
+
+    box-shadow:
+        0 0 15px
+        rgba(0, 255, 204, 0.1);
+}
+
+
+/* =====================================================
+   HEADER
+===================================================== */
+
+.header-bar {
+
+    top: 15px;
+
+    left: 15px;
+
+    right: 15px;
+
+    display: flex;
+
+    justify-content:
+        space-between;
+
+    align-items:
+        center;
+
+    height: 50px;
+}
+
+
+/* =====================================================
+   SIDE PANELS
+===================================================== */
+
+.left-panel {
+
+    top: 80px;
+
+    left: 15px;
+
+    width: 280px;
+
+    bottom: 220px;
+
+    overflow-y: auto;
+}
+
+
+.right-panel {
+
+    top: 80px;
+
+    right: 15px;
+
+    width: 280px;
+
+    bottom: 220px;
+
+    overflow-y: auto;
+}
+
+
+/* =====================================================
+   BOTTOM
+===================================================== */
+
+.bottom-panel {
+
+    bottom: 15px;
+
+    left: 15px;
+
+    right: 15px;
+
+    height: 190px;
+
+    display: grid;
+
+    grid-template-columns:
+        2fr 1fr 1.5fr;
+
+    gap: 15px;
+}
+
+
+/* =====================================================
+   HEADINGS
+===================================================== */
+
+h3 {
+
+    font-size: 0.85rem;
+
+    color: #7f9cf5;
+
+    text-transform:
+        uppercase;
+
+    margin-bottom: 8px;
+
+    border-bottom:
+        1px solid #7f9cf533;
+
+    padding-bottom: 4px;
+}
+
+
+/* =====================================================
+   STATS
+===================================================== */
+
+.stat-row {
+
+    display: flex;
+
+    justify-content:
+        space-between;
+
+    margin-bottom: 6px;
+
+    font-size: 0.8rem;
+}
+
+
+.bar-bg {
+
+    width: 100%;
+
+    background:
+        #1a233a;
+
+    height: 8px;
+
+    border-radius: 4px;
+
+    margin-top: 2px;
+
+    margin-bottom: 8px;
+
+    overflow: hidden;
+}
+
+
+.bar-fill {
+
+    height: 100%;
+
+    background:
+        #00ffcc;
+
+    width: 50%;
+
+    transition:
+        width 0.4s ease;
+}
+
+
+.highlight {
+
+    color: #ff007f;
+
+    font-weight: bold;
+}
+
+
+/* =====================================================
+   LOG
+===================================================== */
+
+.log-stream {
+
+    font-size: 0.75rem;
+
+    color: #a0aec0;
+
+    line-height: 1.4;
+
+    display: flex;
+
+    flex-direction:
+        column-reverse;
+
+    gap: 6px;
+
+    max-height: 130px;
+
+    overflow-y: auto;
+}
+
+
+.log-entry {
+
+    background:
+        rgba(255, 255, 255, 0.03);
+
+    padding:
+        4px 6px;
+
+    border-left:
+        2px solid #00ffcc;
+}
+
+
+/* =====================================================
+   MEMORY
+===================================================== */
+
+.memory-entry {
+
+    color: #00d9b5;
+
+    font-size: 0.7rem;
+
+    padding:
+        4px 0;
+
+    border-bottom:
+        1px solid #ffffff08;
+}
+
+
+/* =====================================================
+   STATUS
+===================================================== */
+
+.status-online {
+
+    color: #00ffcc;
+
+    text-shadow:
+        0 0 8px
+        rgba(0,255,204,0.6);
+}
+
+
+/* =====================================================
+   MOBILE
+===================================================== */
+
+@media (max-width: 900px) {
+
+    body {
+        overflow: auto;
+    }
+
+    .left-panel,
+    .right-panel {
+
+        width: 220px;
+
+    }
+
+    .bottom-panel {
+
+        grid-template-columns:
+            1fr 1fr;
+
+    }
+
+}
+
+</style>
+
+
+<script
+src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js">
+</script>
+
 </head>
+
 
 <body>
 
-  <!-- ============================= -->
-  <!-- 3D WORLD -->
-  <!-- ============================= -->
 
-  <div id="canvas-container"></div>
+<!-- =====================================================
+     THREE.JS WORLD
+===================================================== -->
+
+<div id="canvas-container"></div>
 
 
-  <!-- ============================= -->
-  <!-- HEADER -->
-  <!-- ============================= -->
+<!-- =====================================================
+     HEADER
+===================================================== -->
 
-  <div class="hud-panel header-bar">
+<div class="hud-panel header-bar">
 
     <div>
-      <strong>ECHO</strong>
-      <span class="version">v0.3</span>
-      <span style="margin-left:10px;">
-        ● AUTONOMOUS MIND ACTIVE
-      </span>
+
+        <strong>
+            ECHO v0.4
+        </strong>
+
+        <span
+            class="status-online"
+            style="
+            font-size:0.8rem;
+            margin-left:10px;
+            "
+        >
+            ● AUTONOMOUS MIND ACTIVE
+        </span>
+
     </div>
+
 
     <div id="hud-cycle">
-      CYCLE: 0
+        CYCLE: 0
     </div>
+
 
     <div id="hud-time">
-      TIME: Day 1 - 08:00 AM
+        TIME: Day 1 - 08:00 AM
     </div>
 
-  </div>
+</div>
 
 
-  <!-- ============================= -->
-  <!-- LEFT PANEL -->
-  <!-- ============================= -->
+<!-- =====================================================
+     LEFT PANEL
+===================================================== -->
 
-  <div class="hud-panel left-panel">
+<div class="hud-panel left-panel">
 
-    <h3>INTERNAL STATE</h3>
-
-    <div class="stat-row">
-      <span>Energy</span>
-      <span id="val-energy">75%</span>
-    </div>
-
-    <div class="bar-bg">
-      <div
-        id="bar-energy"
-        class="bar-fill"
-        style="width:75%">
-      </div>
-    </div>
-
-
-    <div class="stat-row">
-      <span>Curiosity</span>
-      <span id="val-curiosity">90%</span>
-    </div>
-
-    <div class="bar-bg">
-      <div
-        id="bar-curiosity"
-        class="bar-fill"
-        style="width:90%">
-      </div>
-    </div>
-
-
-    <div class="stat-row">
-      <span>Surprise</span>
-      <span id="val-surprise">0.00</span>
-    </div>
-
-    <div class="bar-bg">
-      <div
-        id="bar-surprise"
-        class="bar-fill"
-        style="width:0%">
-      </div>
-    </div>
-
-
-    <h3 style="margin-top:15px;">
-      ACTIVE GOAL
-    </h3>
-
-    <div
-      id="hud-goal"
-      class="highlight">
-      Initializing brain...
-    </div>
-
-
-    <h3 style="margin-top:15px;">
-      GOAL DETAILS
-    </h3>
-
-    <div
-      id="hud-subgoals"
-      class="log-stream">
-      Analyzing...
-    </div>
-
-  </div>
-
-
-  <!-- ============================= -->
-  <!-- RIGHT PANEL -->
-  <!-- ============================= -->
-
-  <div class="hud-panel right-panel">
 
     <h3>
-      PERCEPTION STREAM
+        INTERNAL STATE
     </h3>
 
-    <div
-      id="hud-perceptions"
-      class="log-stream">
 
-      Initializing perception...
+    <div class="stat-row">
+
+        <span>
+            Energy
+        </span>
+
+        <span id="val-energy">
+            75%
+        </span>
 
     </div>
+
+
+    <div class="bar-bg">
+
+        <div
+            class="bar-fill"
+            id="bar-energy"
+            style="width:75%"
+        ></div>
+
+    </div>
+
+
+    <div class="stat-row">
+
+        <span>
+            Curiosity
+        </span>
+
+        <span id="val-curiosity">
+            90%
+        </span>
+
+    </div>
+
+
+    <div class="bar-bg">
+
+        <div
+            class="bar-fill"
+            id="bar-curiosity"
+            style="width:90%"
+        ></div>
+
+    </div>
+
+
+    <div class="stat-row">
+
+        <span>
+            Surprise Level
+        </span>
+
+        <span
+            id="val-surprise"
+            class="highlight"
+        >
+            0.00
+        </span>
+
+    </div>
+
+
+    <div class="bar-bg">
+
+        <div
+            class="bar-fill"
+            id="bar-surprise"
+            style="
+            width:0%;
+            background:#ff007f;
+            "
+        ></div>
+
+    </div>
+
+
+    <!-- GOAL -->
+
+    <h3 style="margin-top:15px;">
+
+        ACTIVE GOAL
+
+    </h3>
+
+
+    <p
+        id="hud-goal"
+        style="
+        font-size:0.8rem;
+        color:#fff;
+        font-weight:bold;
+        "
+    >
+        Initializing brain...
+    </p>
+
+
+    <!-- SUB GOALS -->
+
+    <h3 style="margin-top:15px;">
+
+        SUB GOALS
+
+    </h3>
+
+
+    <ul
+        id="hud-subgoals"
+        style="
+        font-size:0.75rem;
+        color:#a0aec0;
+        padding-left:15px;
+        "
+    >
+
+        <li>
+            Analyzing environment...
+        </li>
+
+    </ul>
+
+
+    <!-- MEMORY -->
+
+    <h3 style="margin-top:15px;">
+
+        EPISODIC MEMORY
+
+    </h3>
+
+
+    <div
+        id="hud-memory"
+        class="log-stream"
+    >
+
+    </div>
+
+
+</div>
+
+
+<!-- =====================================================
+     RIGHT PANEL
+===================================================== -->
+
+<div class="hud-panel right-panel">
+
+
+    <h3>
+        PERCEPTIONS
+    </h3>
+
+
+    <div
+        id="hud-perceptions"
+        class="log-stream"
+    ></div>
 
 
     <h3 style="margin-top:15px;">
-      EMOTIONAL TENDENCIES
+
+        EMOTIONAL TENDENCIES
+
     </h3>
 
 
     <div class="stat-row">
-      <span>Curiosity</span>
-      <span id="val-emo-curiosity">
-        82%
-      </span>
+
+        <span>
+            Curiosity
+        </span>
+
+        <span id="val-emo-curiosity">
+            90%
+        </span>
+
     </div>
 
 
     <div class="stat-row">
-      <span>Excitement</span>
-      <span id="val-emo-excitement">
-        61%
-      </span>
+
+        <span>
+            Excitement
+        </span>
+
+        <span id="val-emo-excitement">
+            61%
+        </span>
+
     </div>
 
 
     <div class="stat-row">
-      <span>Contentment</span>
-      <span id="val-emo-contentment">
-        52%
-      </span>
+
+        <span>
+            Contentment
+        </span>
+
+        <span id="val-emo-contentment">
+            52%
+        </span>
+
     </div>
 
 
     <div class="stat-row">
-      <span>Fear</span>
-      <span id="val-emo-fear">
-        24%
-      </span>
+
+        <span>
+            Fear
+        </span>
+
+        <span id="val-emo-fear">
+            24%
+        </span>
+
     </div>
 
-  </div>
+
+</div>
 
 
-  <!-- ============================= -->
-  <!-- BOTTOM PANEL -->
-  <!-- ============================= -->
+<!-- =====================================================
+     BOTTOM PANEL
+===================================================== -->
 
-  <div class="hud-panel bottom-panel">
+<div class="hud-panel bottom-panel">
 
-    <!-- THOUGHTS -->
+
+    <!-- THOUGHT PROCESS -->
 
     <div>
 
-      <h3>
-        ECHO'S THOUGHT PROCESS — LIVE
-      </h3>
+        <h3>
 
-      <div
-        id="hud-thoughts"
-        class="log-stream">
+            ECHO'S THOUGHT PROCESS - LIVE
 
-        Waiting for cognitive cycle...
+        </h3>
 
-      </div>
+
+        <div
+            id="hud-thoughts"
+            class="log-stream"
+        ></div>
 
     </div>
 
 
-    <!-- METACOGNITION -->
+    <!-- REFLECTION -->
 
     <div>
 
-      <h3>
-        METACOGNITIVE REFLECTION
-      </h3>
+        <h3>
 
-      <div
-        id="hud-reflection"
-        class="reflection">
+            METACOGNITIVE REFLECTION
 
-        ECHO is initializing
-        its cognitive architecture...
+        </h3>
 
-      </div>
+
+        <div
+            id="hud-reflection"
+            style="
+            font-size:0.75rem;
+            color:#e2e8f0;
+            line-height:1.3;
+            "
+        >
+
+            Awaiting cognitive cycle...
+
+        </div>
 
     </div>
 
 
-    <!-- ACTION / STATUS -->
+    <!-- WORLD -->
 
     <div>
 
-      <h3>
-        CURRENT ACTION
-      </h3>
+        <h3>
 
-      <div
-        id="hud-action"
-        class="action">
+            WORLD INFO
 
-        ACTION: INITIALIZE
-
-      </div>
+        </h3>
 
 
-      <h3 style="margin-top:15px;">
-        SYSTEM STATUS
-      </h3>
+        <p style="font-size:0.75rem;">
 
-      <div class="status-row">
-        <span class="status-dot"></span>
-        COGNITIVE ENGINE ONLINE
-      </div>
+            Location:
+            Greenhaven Village
 
-      <div class="status-row">
-        <span class="status-dot"></span>
-        PERCEPTION ONLINE
-      </div>
+        </p>
 
-      <div class="status-row">
-        <span class="status-dot"></span>
-        MEMORY ONLINE
-      </div>
 
-      <div class="status-row">
-        <span class="status-dot"></span>
-        LEARNING ONLINE
-      </div>
+        <p style="font-size:0.75rem;">
+
+            Weather:
+            ☀️ Sunny (24°C)
+
+        </p>
+
+
+        <p
+            style="
+            font-size:0.75rem;
+            color:#00ffcc;
+            margin-top:10px;
+            "
+            id="hud-action"
+        >
+
+            ACTION: Idle
+
+        </p>
+
+
+        <p
+            style="
+            font-size:0.7rem;
+            color:#718096;
+            margin-top:8px;
+            "
+            id="hud-learning"
+        >
+
+            Learning system initializing...
+
+        </p>
 
     </div>
 
-  </div>
+
+</div>
 
 
-  <!-- ================================================= -->
-  <!-- ECHO COGNITIVE CORE -->
-  <!-- ================================================= -->
-
-  <script type="module">
-
-    import { EchoBrainV3 }
-      from "./core/echo.js";
+<script>
 
 
-    // =================================================
-    // INITIALIZE ECHO
-    // =================================================
+/* =====================================================
+   ECHO AUTONOMOUS BRAIN v0.4
+===================================================== */
 
-    const brain = new EchoBrainV3();
+class AutonomousBrain {
 
 
-    console.log(
-      "ECHO Brain connected successfully."
+    constructor() {
+
+        this.cycle = 0;
+
+        this.minutes = 0;
+
+
+        /* INTERNAL STATE */
+
+        this.energy = 0.75;
+
+        this.curiosity = 0.90;
+
+        this.excitement = 0.61;
+
+        this.contentment = 0.52;
+
+        this.fear = 0.24;
+
+
+        /* MEMORY */
+
+        this.memory = [];
+
+
+        /*
+        IMPORTANT:
+
+        This now stores actual
+        completed investigations.
+
+        It does NOT increment simply
+        because a target was selected.
+        */
+
+        this.inspectedTargets =
+            new Map();
+
+
+        /* CURRENT EXPERIENCE */
+
+        this.currentTarget = null;
+
+        this.currentGoal = null;
+
+        this.lastAction = "Observe";
+
+        this.lastEvent =
+            "Cognitive system initialized.";
+
+        this.lastLearning =
+            "No new knowledge yet.";
+
+    }
+
+
+    /* =================================================
+       UTILITY
+    ================================================= */
+
+    clamp(
+        value,
+        min = 0,
+        max = 1
+    ) {
+
+        return Math.max(
+            min,
+            Math.min(max, value)
+        );
+
+    }
+
+
+    /* =================================================
+       MEMORY
+    ================================================= */
+
+    remember(
+        target,
+        event,
+        learning
+    ) {
+
+        this.memory.unshift({
+
+            cycle:
+                this.cycle,
+
+            target:
+                target,
+
+            event:
+                event,
+
+            learning:
+                learning,
+
+            time:
+                this.minutes
+
+        });
+
+
+        /*
+        Keep memory bounded.
+        */
+
+        if (
+            this.memory.length > 30
+        ) {
+
+            this.memory.pop();
+
+        }
+
+    }
+
+
+    /* =================================================
+       MEMORY QUERY
+    ================================================= */
+
+    hasInspected(id) {
+
+        return this.inspectedTargets
+            .has(id);
+
+    }
+
+
+    getVisitCount(id) {
+
+        return this.inspectedTargets
+            .get(id) || 0;
+
+    }
+
+
+    /* =================================================
+       INTEREST MODEL
+    ================================================= */
+
+    interestScore(target) {
+
+        let score = 0.5;
+
+
+        /*
+        Novelty.
+        */
+
+        if (
+            !this.hasInspected(
+                target.id
+            )
+        ) {
+
+            score += 0.30;
+
+        }
+
+
+        /*
+        Closer objects are easier
+        to investigate.
+        */
+
+        score +=
+            Math.max(
+                0,
+                1 -
+                target.distance / 12
+            ) * 0.20;
+
+
+        /*
+        Humans are especially
+        interesting.
+        */
+
+        if (
+            target.id === "Old Man"
+        ) {
+
+            score += 0.35;
+
+        }
+
+
+        /*
+        Water is potentially useful.
+        */
+
+        if (
+            target.id === "Water Well"
+        ) {
+
+            score += 0.25;
+
+        }
+
+
+        /*
+        Shelter / structure.
+        */
+
+        if (
+            target.id === "Wooden House"
+        ) {
+
+            score += 0.15;
+
+        }
+
+
+        return score;
+
+    }
+
+
+    /* =================================================
+       GOAL SELECTION
+    ================================================= */
+
+    chooseGoal(perceptions) {
+
+
+        if (
+            !perceptions ||
+            perceptions.length === 0
+        ) {
+
+            return null;
+
+        }
+
+
+        /*
+        First prefer things ECHO
+        has never actually investigated.
+        */
+
+        let candidates =
+            perceptions.filter(
+                p =>
+                    !this.hasInspected(
+                        p.id
+                    )
+            );
+
+
+        /*
+        If everything is known,
+        revisit the least explored
+        target.
+        */
+
+        if (
+            candidates.length === 0
+        ) {
+
+            candidates =
+                [...perceptions].sort(
+                    (a, b) =>
+                        this.getVisitCount(a.id)
+                        -
+                        this.getVisitCount(b.id)
+                );
+
+        }
+
+
+        /*
+        Rank candidates.
+        */
+
+        candidates.sort(
+            (a, b) =>
+                this.interestScore(b)
+                -
+                this.interestScore(a)
+        );
+
+
+        return candidates[0];
+
+    }
+
+
+    /* =================================================
+       INVESTIGATION
+    ================================================= */
+
+    investigate(target) {
+
+
+        if (!target) {
+
+            return;
+
+        }
+
+
+        let event = "";
+
+        let learning = "";
+
+
+        /* OLD MAN */
+
+        if (
+            target.id === "Old Man"
+        ) {
+
+            event =
+                "Encountered an unfamiliar human entity.";
+
+            learning =
+                "Humans may be intelligent social agents.";
+
+
+            this.excitement =
+                this.clamp(
+                    this.excitement + 0.12
+                );
+
+
+            this.curiosity =
+                this.clamp(
+                    this.curiosity + 0.08
+                );
+
+        }
+
+
+        /* WELL */
+
+        else if (
+            target.id === "Water Well"
+        ) {
+
+            event =
+                "Detected a constructed water source.";
+
+            learning =
+                "Water wells may provide access to useful resources.";
+
+
+            this.contentment =
+                this.clamp(
+                    this.contentment + 0.08
+                );
+
+        }
+
+
+        /* HOUSE */
+
+        else if (
+            target.id === "Wooden House"
+        ) {
+
+            event =
+                "Examined an artificial shelter structure.";
+
+            learning =
+                "Wooden structures may provide shelter or information.";
+
+
+            this.curiosity =
+                this.clamp(
+                    this.curiosity + 0.05
+                );
+
+        }
+
+
+        /* UNKNOWN */
+
+        else {
+
+            event =
+                "Examined an environmental object.";
+
+            learning =
+                "Object classified as part of the environment.";
+
+        }
+
+
+        /*
+        THIS IS THE IMPORTANT FIX.
+
+        Only now do we mark the
+        target as inspected.
+        */
+
+        const previousVisits =
+            this.getVisitCount(
+                target.id
+            );
+
+
+        this.inspectedTargets.set(
+            target.id,
+            previousVisits + 1
+        );
+
+
+        /*
+        Store experience.
+        */
+
+        this.remember(
+            target.id,
+            event,
+            learning
+        );
+
+
+        this.lastEvent =
+            event;
+
+        this.lastLearning =
+            learning;
+
+
+        this.lastAction =
+            "Investigate";
+
+
+        /*
+        Investigation changes
+        internal state.
+        */
+
+        this.energy =
+            this.clamp(
+                this.energy - 0.025,
+                0.20,
+                1
+            );
+
+
+        this.curiosity =
+            this.clamp(
+                this.curiosity - 0.04
+            );
+
+
+        /*
+        Target completed.
+        */
+
+        this.currentTarget =
+            null;
+
+        this.currentGoal =
+            null;
+
+    }
+
+
+    /* =================================================
+       MAIN COGNITIVE STEP
+    ================================================= */
+
+    step(perceptions) {
+
+
+        this.cycle++;
+
+        this.minutes += 2;
+
+
+        /*
+        Natural energy consumption.
+        */
+
+        this.energy =
+            this.clamp(
+                this.energy - 0.005,
+                0.20,
+                1
+            );
+
+
+        /*
+        Check whether ECHO has actually
+        arrived at its current target.
+        */
+
+        if (
+            this.currentTarget
+        ) {
+
+            const reached =
+                this.currentTarget.distance
+                <= 1.5;
+
+
+            if (reached) {
+
+                this.investigate(
+                    this.currentTarget
+                );
+
+            }
+
+        }
+
+
+        /*
+        No active target?
+        Think again.
+        */
+
+        if (
+            !this.currentTarget
+        ) {
+
+            this.currentTarget =
+                this.chooseGoal(
+                    perceptions
+                );
+
+        }
+
+
+        /*
+        Fallback.
+        */
+
+        if (
+            !this.currentTarget &&
+            perceptions.length
+        ) {
+
+            this.currentTarget =
+                perceptions[0];
+
+        }
+
+
+        const target =
+            this.currentTarget;
+
+
+        if (!target) {
+
+            return {
+
+                cycle:
+                    this.cycle,
+
+                timeString:
+                    "Day 1 - 08:00 AM",
+
+                surpriseScore:
+                    0,
+
+                activeGoal:
+                    "Observe the environment.",
+
+                subGoals:
+                    [
+                        "Scan environment",
+                        "Evaluate possible goals"
+                    ],
+
+                latestReflection:
+                    "No objects currently detected.",
+
+                action:
+                    null,
+
+                energy:
+                    this.energy,
+
+                curiosity:
+                    this.curiosity,
+
+                excitement:
+                    this.excitement,
+
+                contentment:
+                    this.contentment,
+
+                fear:
+                    this.fear,
+
+                memory:
+                    this.memory,
+
+                learning:
+                    this.lastLearning
+
+            };
+
+        }
+
+
+        /* =================================================
+           SURPRISE
+        ================================================= */
+
+        const visits =
+            this.getVisitCount(
+                target.id
+            );
+
+
+        const novelty =
+            this.hasInspected(
+                target.id
+            )
+            ? 0.35
+            : 1.0;
+
+
+        const surprise =
+            Math.max(
+                0.05,
+                Math.min(
+                    0.95,
+
+                    (
+                        1 /
+                        (target.distance + 0.5)
+                    )
+
+                    *
+
+                    novelty
+
+                    +
+
+                    (
+                        0.25 /
+                        (visits + 1)
+                    )
+
+                )
+            );
+
+
+        /* =================================================
+           GOAL
+        ================================================= */
+
+        let activeGoal;
+
+        let subGoals;
+
+        let actionType;
+
+
+        if (
+            target.distance > 1.5
+        ) {
+
+            activeGoal =
+                `Approach and investigate ${target.id}`;
+
+
+            subGoals = [
+
+                `Navigate toward ${target.id}`,
+
+                `Monitor distance to target`,
+
+                `Prepare environmental analysis`
+
+            ];
+
+
+            actionType =
+                "MoveTowards";
+
+
+            this.lastAction =
+                "MoveTowards";
+
+        }
+
+
+        else {
+
+            activeGoal =
+                `Investigate ${target.id}`;
+
+
+            subGoals = [
+
+                `Analyze physical properties`,
+
+                `Compare against memory`,
+
+                `Store new knowledge`
+
+            ];
+
+
+            actionType =
+                "Investigate";
+
+        }
+
+
+        /* =================================================
+           METACOGNITION
+        ================================================= */
+
+        let reflection;
+
+
+        if (
+            !this.hasInspected(
+                target.id
+            )
+        ) {
+
+            reflection =
+                `I have not investigated ${target.id} before. Novel information may be present.`;
+
+        }
+
+
+        else {
+
+            reflection =
+                `I remember ${target.id}. I am evaluating whether another interaction could reveal something new.`;
+
+        }
+
+
+        if (
+            this.lastLearning
+        ) {
+
+            reflection +=
+                ` Recent learning: ${this.lastLearning}`;
+
+        }
+
+
+        /* =================================================
+           TIME
+        ================================================= */
+
+        const totalMinutes =
+            8 * 60 +
+            this.minutes;
+
+
+        const hrs =
+            String(
+                Math.floor(
+                    (totalMinutes / 60)
+                    % 24
+                )
+            )
+            .padStart(
+                2,
+                "0"
+            );
+
+
+        const mins =
+            String(
+                Math.floor(
+                    totalMinutes % 60
+                )
+            )
+            .padStart(
+                2,
+                "0"
+            );
+
+
+        const timeString =
+            `Day 1 - ${hrs}:${mins} AM`;
+
+
+        /* =================================================
+           RETURN BRAIN STATE
+        ================================================= */
+
+        return {
+
+            cycle:
+                this.cycle,
+
+            timeString:
+                timeString,
+
+            surpriseScore:
+                surprise,
+
+            activeGoal:
+                activeGoal,
+
+            subGoals:
+                subGoals,
+
+            latestReflection:
+                reflection,
+
+            action: {
+
+                type:
+                    actionType,
+
+                target:
+                    target
+
+            },
+
+            energy:
+                this.energy,
+
+            curiosity:
+                this.curiosity,
+
+            excitement:
+                this.excitement,
+
+            contentment:
+                this.contentment,
+
+            fear:
+                this.fear,
+
+            memory:
+                this.memory,
+
+            learning:
+                this.lastLearning
+
+        };
+
+    }
+
+}
+
+
+/* =====================================================
+   CREATE BRAIN
+===================================================== */
+
+const brain =
+    new AutonomousBrain();
+
+
+/* =====================================================
+   THREE.JS SCENE
+===================================================== */
+
+const container =
+    document.getElementById(
+        'canvas-container'
     );
 
 
-    // =================================================
-    // THREE.JS WORLD
-    // =================================================
+let scene;
 
-    const container =
-      document.getElementById(
-        "canvas-container"
-      );
+let camera;
+
+let renderer;
+
+let echoMesh;
 
 
-    const scene =
-      new THREE.Scene();
+const entities = [];
+
+
+let currentVectorTarget =
+    null;
+
+
+/* =====================================================
+   INITIALIZE THREE.JS
+===================================================== */
+
+if (
+    container &&
+    typeof THREE !== 'undefined'
+) {
+
+
+    scene =
+        new THREE.Scene();
 
 
     scene.background =
-      new THREE.Color(
-        0x111625
-      );
+        new THREE.Color(
+            0x0e1422
+        );
 
 
-    // =================================================
-    // CAMERA
-    // =================================================
+    camera =
+        new THREE.PerspectiveCamera(
 
-    const camera =
-      new THREE.PerspectiveCamera(
-        60,
-        window.innerWidth /
-        window.innerHeight,
-        0.1,
-        1000
-      );
+            60,
+
+            window.innerWidth /
+            window.innerHeight,
+
+            0.1,
+
+            1000
+
+        );
 
 
     camera.position.set(
-      0,
-      8,
-      14
+        0,
+        10,
+        15
     );
 
 
     camera.lookAt(
-      0,
-      0,
-      0
+        0,
+        0,
+        0
     );
 
 
-    // =================================================
-    // RENDERER
-    // =================================================
+    renderer =
+        new THREE.WebGLRenderer({
 
-    const renderer =
-      new THREE.WebGLRenderer({
-        antialias: true
-      });
+            antialias:
+                true
+
+        });
 
 
     renderer.setSize(
-      window.innerWidth,
-      window.innerHeight
+        window.innerWidth,
+        window.innerHeight
     );
 
 
     renderer.setPixelRatio(
-      Math.min(
-        window.devicePixelRatio,
-        2
-      )
+        Math.min(
+            window.devicePixelRatio,
+            2
+        )
     );
 
 
     container.appendChild(
-      renderer.domElement
+        renderer.domElement
     );
 
 
-    // =================================================
-    // LIGHTING
-    // =================================================
-
-    const ambientLight =
-      new THREE.AmbientLight(
-        0xffffff,
-        0.7
-      );
-
+    /* LIGHT */
 
     scene.add(
-      ambientLight
+        new THREE.AmbientLight(
+            0xffffff,
+            0.7
+        )
     );
 
 
-    const directionalLight =
-      new THREE.DirectionalLight(
-        0xffffff,
-        0.6
-      );
+    const dirLight =
+        new THREE.DirectionalLight(
+            0xffffff,
+            0.6
+        );
 
 
-    directionalLight.position.set(
-      10,
-      20,
-      10
+    dirLight.position.set(
+        10,
+        20,
+        10
     );
 
 
     scene.add(
-      directionalLight
+        dirLight
     );
 
 
-    // =================================================
-    // GROUND
-    // =================================================
+    /* GROUND */
 
     const ground =
-      new THREE.Mesh(
+        new THREE.Mesh(
 
-        new THREE.PlaneGeometry(
-          40,
-          40
-        ),
+            new THREE.PlaneGeometry(
+                50,
+                50
+            ),
 
-        new THREE.MeshStandardMaterial({
-          color: 0x223322
-        })
+            new THREE.MeshStandardMaterial({
 
-      );
+                color:
+                    0x1a261a,
+
+                roughness:
+                    0.8
+
+            })
+
+        );
 
 
     ground.rotation.x =
-      -Math.PI / 2;
+        -Math.PI / 2;
 
 
     scene.add(
-      ground
+        ground
     );
 
 
-    // =================================================
-    // ECHO
-    // =================================================
+    /* =================================================
+       ECHO
+    ================================================= */
 
-    const echoMaterial =
-      new THREE.MeshStandardMaterial({
+    echoMesh =
+        new THREE.Mesh(
 
-        color: 0xffffff,
+            new THREE.SphereGeometry(
+                0.8,
+                32,
+                32
+            ),
 
-        roughness: 0.2,
+            new THREE.MeshStandardMaterial({
 
-        metalness: 0.1
+                color:
+                    0xffffff,
 
-      });
+                roughness:
+                    0.1,
 
+                metalness:
+                    0.2,
 
-    const echoMesh =
-      new THREE.Mesh(
+                emissive:
+                    0x064f44,
 
-        new THREE.SphereGeometry(
-          0.8,
-          32,
-          32
-        ),
+                emissiveIntensity:
+                    0.4
 
-        echoMaterial
+            })
 
-      );
+        );
 
 
     echoMesh.position.set(
-      0,
-      0.8,
-      0
+        0,
+        0.8,
+        4
     );
 
 
     scene.add(
-      echoMesh
+        echoMesh
     );
 
 
-    // =================================================
-    // ECHO LIGHT
-    // =================================================
+    /* =================================================
+       ENVIRONMENT
+    ================================================= */
 
-    const echoLight =
-      new THREE.PointLight(
-        0x00ffcc,
-        2,
-        8
-      );
+    const objectList = [
 
 
-    echoLight.position.set(
-      0,
-      1,
-      0
-    );
+        {
+
+            id:
+                'Old Man',
+
+            mesh:
+                new THREE.Mesh(
+
+                    new THREE.CylinderGeometry(
+                        0.4,
+                        0.4,
+                        1.2
+                    ),
+
+                    new THREE.MeshStandardMaterial({
+
+                        color:
+                            0xd97706
+
+                    })
+
+                ),
+
+            pos:
+                [-4, 0.6, -2]
+
+        },
 
 
-    scene.add(
-      echoLight
-    );
+        {
+
+            id:
+                'Wooden House',
+
+            mesh:
+                new THREE.Mesh(
+
+                    new THREE.BoxGeometry(
+                        3,
+                        2.5,
+                        3
+                    ),
+
+                    new THREE.MeshStandardMaterial({
+
+                        color:
+                            0x78350f
+
+                    })
+
+                ),
+
+            pos:
+                [4, 1.25, -4]
+
+        },
 
 
-    // =================================================
-    // WORLD ENTITIES
-    // =================================================
+        {
 
-    const entities = [
+            id:
+                'Water Well',
 
-      {
-        id: "Old Man",
+            mesh:
+                new THREE.Mesh(
 
-        type: "npc",
+                    new THREE.CylinderGeometry(
+                        0.8,
+                        0.8,
+                        0.8
+                    ),
 
-        mesh:
-          new THREE.Mesh(
+                    new THREE.MeshStandardMaterial({
 
-            new THREE.CylinderGeometry(
-              0.4,
-              0.4,
-              1.2
-            ),
+                        color:
+                            0x64748b
 
-            new THREE.MeshStandardMaterial({
-              color: 0xaa6633
-            })
+                    })
 
-          ),
+                ),
 
-        pos: [
-          -3,
-          0.6,
-          -2
-        ]
+            pos:
+                [0, 0.4, -4]
 
-      },
-
-
-      {
-        id: "Wooden House",
-
-        type: "building",
-
-        mesh:
-          new THREE.Mesh(
-
-            new THREE.BoxGeometry(
-              3,
-              2.5,
-              3
-            ),
-
-            new THREE.MeshStandardMaterial({
-              color: 0x664422
-            })
-
-          ),
-
-        pos: [
-          4,
-          1.25,
-          -4
-        ]
-
-      },
-
-
-      {
-        id: "Water Well",
-
-        type: "object",
-
-        mesh:
-          new THREE.Mesh(
-
-            new THREE.CylinderGeometry(
-              0.8,
-              0.8,
-              0.8
-            ),
-
-            new THREE.MeshStandardMaterial({
-              color: 0x888888
-            })
-
-          ),
-
-        pos: [
-          0,
-          0.4,
-          -5
-        ]
-
-      }
+        }
 
     ];
 
 
-    // Add entities to scene
-
-    entities.forEach(
-      entity => {
-
-        entity.mesh.position.set(
-          ...entity.pos
-        );
-
-        scene.add(
-          entity.mesh
-        );
-
-      }
-    );
-
-
-    // =================================================
-    // PERCEPTION SYSTEM
-    // =================================================
-
-    function getPerceptions() {
-
-      return entities.map(
+    objectList.forEach(
         entity => {
 
-          const distance =
-            echoMesh.position.distanceTo(
-              entity.mesh.position
+            entity.mesh.position.set(
+                ...entity.pos
             );
 
 
-          return {
+            scene.add(
+                entity.mesh
+            );
 
-            id: entity.id,
 
-            type: entity.type,
-
-            distance:
-              Math.round(
-                distance * 10
-              ) / 10,
-
-            state: "static"
-
-          };
+            entities.push(
+                entity
+            );
 
         }
-      );
-
-    }
-
-
-    // =================================================
-    // FORMAT GOAL
-    // =================================================
-
-    function formatGoal(
-      goal
-    ) {
-
-      if (!goal) {
-
-        return "No active goal";
-
-      }
-
-
-      if (typeof goal === "string") {
-
-        return goal;
-
-      }
-
-
-      if (goal.type) {
-
-        return goal.type;
-
-      }
-
-
-      if (goal.reason) {
-
-        return goal.reason;
-
-      }
-
-
-      return JSON.stringify(
-        goal
-      );
-
-    }
-
-
-    // =================================================
-    // FORMAT ACTION
-    // =================================================
-
-    function formatAction(
-      action
-    ) {
-
-      if (!action) {
-
-        return "ACTION: NONE";
-
-      }
-
-
-      const type =
-        action.type ||
-        action.action ||
-        "UNKNOWN";
-
-
-      const target =
-        action.target
-          ? ` → ${action.target}`
-          : "";
-
-
-      return (
-        "ACTION: " +
-        type +
-        target
-      );
-
-    }
-
-
-    // =================================================
-    // UPDATE HUD
-    // =================================================
-
-    function updateHUD(
-      output,
-      perceptions
-    ) {
-
-
-      // -----------------------------
-      // CYCLE
-      // -----------------------------
-
-      document
-        .getElementById(
-          "hud-cycle"
-        )
-        .innerText =
-        `CYCLE: ${output.step}`;
-
-
-      // -----------------------------
-      // SURPRISE
-      // -----------------------------
-
-      const surprise =
-        Number(
-          output.surprise || 0
-        );
-
-
-      document
-        .getElementById(
-          "val-surprise"
-        )
-        .innerText =
-        surprise.toFixed(2);
-
-
-      document
-        .getElementById(
-          "bar-surprise"
-        )
-        .style.width =
-        `${Math.min(
-          100,
-          Math.max(
-            0,
-            surprise * 100
-          )
-        )}%`;
-
-
-      // -----------------------------
-      // SELF STATE
-      // -----------------------------
-
-      if (output.self) {
-
-        const self =
-          output.self;
-
-
-        if (
-          typeof self.energy ===
-          "number"
-        ) {
-
-          const energy =
-            Math.max(
-              0,
-              Math.min(
-                1,
-                self.energy
-              )
-            );
-
-
-          document
-            .getElementById(
-              "val-energy"
-            )
-            .innerText =
-            `${Math.round(
-              energy * 100
-            )}%`;
-
-
-          document
-            .getElementById(
-              "bar-energy"
-            )
-            .style.width =
-            `${energy * 100}%`;
-
-        }
-
-
-        if (
-          typeof self.curiosity ===
-          "number"
-        ) {
-
-          const curiosity =
-            Math.max(
-              0,
-              Math.min(
-                1,
-                self.curiosity
-              )
-            );
-
-
-          document
-            .getElementById(
-              "val-curiosity"
-            )
-            .innerText =
-            `${Math.round(
-              curiosity * 100
-            )}%`;
-
-
-          document
-            .getElementById(
-              "bar-curiosity"
-            )
-            .style.width =
-            `${curiosity * 100}%`;
-
-        }
-
-      }
-
-
-      // -----------------------------
-      // GOAL
-      // -----------------------------
-
-      document
-        .getElementById(
-          "hud-goal"
-        )
-        .innerText =
-        formatGoal(
-          output.goal
-        );
-
-
-      // -----------------------------
-      // GOAL DETAILS
-      // -----------------------------
-
-      const goalDetails =
-        document.getElementById(
-          "hud-subgoals"
-        );
-
-
-      goalDetails.innerHTML = "";
-
-
-      if (
-        output.goal &&
-        typeof output.goal ===
-        "object"
-      ) {
-
-        Object.entries(
-          output.goal
-        ).forEach(
-          ([key, value]) => {
-
-            const div =
-              document.createElement(
-                "div"
-              );
-
-
-            div.className =
-              "log-entry";
-
-
-            div.innerText =
-              `${key}: ${value}`;
-
-
-            goalDetails.appendChild(
-              div
-            );
-
-          }
-        );
-
-      }
-      else {
-
-        goalDetails.innerHTML =
-          `<div class="log-entry">
-             Goal active
-           </div>`;
-
-      }
-
-
-      // -----------------------------
-      // REFLECTION
-      // -----------------------------
-
-      const reflection =
-        output.reflection;
-
-
-      document
-        .getElementById(
-          "hud-reflection"
-        )
-        .innerText =
-
-        typeof reflection ===
-        "string"
-
-          ? reflection
-
-          : reflection
-            ? JSON.stringify(
-                reflection,
-                null,
-                2
-              )
-
-            : "No reflection yet.";
-
-
-      // -----------------------------
-      // ACTION
-      // -----------------------------
-
-      document
-        .getElementById(
-          "hud-action"
-        )
-        .innerText =
-        formatAction(
-          output.action
-        );
-
-
-      // -----------------------------
-      // PERCEPTIONS
-      // -----------------------------
-
-      const perceptionHUD =
-        document.getElementById(
-          "hud-perceptions"
-        );
-
-
-      perceptionHUD.innerHTML =
-        perceptions
-          .map(
-            p => `
-
-              <div class="log-entry">
-
-                ⦿ ${p.id}
-
-                <br>
-
-                Distance:
-                ${p.distance}m
-
-                <br>
-
-                State:
-                ${p.state}
-
-              </div>
-
-            `
-          )
-          .join("");
-
-
-      // -----------------------------
-      // THOUGHT
-      // -----------------------------
-
-      const thoughtLog =
-        document.getElementById(
-          "hud-thoughts"
-        );
-
-
-      const thought =
-        document.createElement(
-          "div"
-        );
-
-
-      thought.className =
-        "log-entry";
-
-
-      thought.innerText =
-        `[Cycle ${output.step}] ` +
-        `Goal: ${formatGoal(
-          output.goal
-        )}`;
-
-
-      thoughtLog.prepend(
-        thought
-      );
-
-
-      // Keep only last 15
-
-      while (
-        thoughtLog.children.length >
-        15
-      ) {
-
-        thoughtLog.removeChild(
-          thoughtLog.lastChild
-        );
-
-      }
-
-    }
-
-
-    // =================================================
-    // COGNITIVE CYCLE
-    // =================================================
-
-    function executeCognitiveCycle() {
-
-      try {
-
-        const perceptions =
-          getPerceptions();
-
-
-        const output =
-          brain.step(
-            perceptions
-          );
-
-
-        console.log(
-          "ECHO CYCLE:",
-          output
-        );
-
-
-        updateHUD(
-          output,
-          perceptions
-        );
-
-
-      }
-
-      catch (error) {
-
-        console.error(
-          "ECHO cognitive cycle failed:",
-          error
-        );
-
-
-        document
-          .getElementById(
-            "hud-action"
-          )
-          .innerText =
-          "ACTION: ERROR";
-
-
-        document
-          .getElementById(
-            "hud-reflection"
-          )
-          .innerText =
-          error.message;
-
-      }
-
-    }
-
-
-    // =================================================
-    // START ECHO
-    // =================================================
-
-    executeCognitiveCycle();
-
-
-    setInterval(
-      executeCognitiveCycle,
-      1500
     );
 
 
-    // =================================================
-    // ANIMATION
-    // =================================================
+    /* =================================================
+       ANIMATION / MOVEMENT
+    ================================================= */
 
     function animate() {
 
-      requestAnimationFrame(
-        animate
-      );
+
+        requestAnimationFrame(
+            animate
+        );
 
 
-      // ECHO rotates
-
-      echoMesh.rotation.y +=
-        0.01;
-
-
-      // Gentle floating
-
-      echoMesh.position.y =
-        0.8 +
-        Math.sin(
-          Date.now() *
-          0.002
-        ) *
-        0.08;
+        if (
+            echoMesh &&
+            currentVectorTarget
+        ) {
 
 
-      // Light follows ECHO
-
-      echoLight.position.copy(
-        echoMesh.position
-      );
+            const dx =
+                currentVectorTarget.x -
+                echoMesh.position.x;
 
 
-      renderer.render(
-        scene,
-        camera
-      );
+            const dz =
+                currentVectorTarget.z -
+                echoMesh.position.z;
+
+
+            const distance =
+                Math.sqrt(
+                    dx * dx +
+                    dz * dz
+                );
+
+
+            /*
+            ECHO moves toward target.
+            */
+
+            if (
+                distance > 1.5
+            ) {
+
+
+                const speed =
+                    Math.min(
+
+                        0.055,
+
+                        0.018 +
+                        distance * 0.003
+
+                    );
+
+
+                echoMesh.position.x +=
+                    (dx / distance) *
+                    speed;
+
+
+                echoMesh.position.z +=
+                    (dz / distance) *
+                    speed;
+
+
+                /*
+                Face direction of travel.
+                */
+
+                const desiredRotation =
+                    Math.atan2(
+                        dx,
+                        dz
+                    );
+
+
+                echoMesh.rotation.y +=
+                    (
+                        desiredRotation -
+                        echoMesh.rotation.y
+                    )
+                    *
+                    0.08;
+
+            }
+
+
+            /*
+            Living / floating motion.
+            */
+
+            echoMesh.position.y =
+                0.8 +
+
+                Math.sin(
+                    Date.now() *
+                    0.004
+                )
+                *
+                0.08;
+
+        }
+
+
+        /*
+        Gentle pulse.
+        */
+
+        if (
+            echoMesh
+        ) {
+
+            const pulse =
+                1 +
+
+                Math.sin(
+                    Date.now() *
+                    0.005
+                )
+                *
+                0.025;
+
+
+            echoMesh.scale.set(
+                pulse,
+                pulse,
+                pulse
+            );
+
+        }
+
+
+        renderer.render(
+            scene,
+            camera
+        );
 
     }
 
@@ -1176,88 +2081,605 @@
     animate();
 
 
-    // =================================================
-    // RESIZE
-    // =================================================
+    /* RESIZE */
 
     window.addEventListener(
-      "resize",
-      () => {
-
-        camera.aspect =
-          window.innerWidth /
-          window.innerHeight;
+        'resize',
+        () => {
 
 
-        camera.updateProjectionMatrix();
+            camera.aspect =
+                window.innerWidth /
+                window.innerHeight;
 
 
-        renderer.setSize(
-          window.innerWidth,
-          window.innerHeight
-        );
+            camera.updateProjectionMatrix();
 
-      }
+
+            renderer.setSize(
+                window.innerWidth,
+                window.innerHeight
+            );
+
+        }
     );
 
-
-    // =================================================
-    // CLOCK
-    // =================================================
-
-    let minutes =
-      8 * 60;
+}
 
 
-    function updateClock() {
+/* =====================================================
+   PERCEPTION SYSTEM
+===================================================== */
 
-      minutes += 1;
-
-
-      const hours =
-        Math.floor(
-          minutes / 60
-        ) % 24;
+function getPerceptions() {
 
 
-      const mins =
-        minutes % 60;
+    if (
+        entities.length > 0 &&
+        echoMesh
+    ) {
 
 
-      const period =
-        hours >= 12
-          ? "PM"
-          : "AM";
+        return entities.map(
+            entity => {
 
 
-      const displayHour =
-        hours % 12 || 12;
+                const dist =
+                    echoMesh.position
+                        .distanceTo(
+                            entity.mesh.position
+                        );
 
 
-      document
-        .getElementById(
-          "hud-time"
-        )
-        .innerText =
-        `TIME: Day 1 - ` +
-        `${String(
-          displayHour
-        ).padStart(2, "0")}:` +
-        `${String(
-          mins
-        ).padStart(2, "0")} ` +
-        `${period}`;
+                return {
+
+                    id:
+                        entity.id,
+
+                    distance:
+                        Math.round(
+                            dist * 10
+                        ) / 10,
+
+                    pos:
+                        entity.mesh.position
+
+                };
+
+            }
+        );
 
     }
 
 
-    setInterval(
-      updateClock,
-      1500
-    );
+    return [
+
+        {
+
+            id:
+                'Old Man',
+
+            distance:
+                3.0,
+
+            pos:
+                {
+                    x: -4,
+                    z: -2
+                }
+
+        },
 
 
-  </script>
+        {
+
+            id:
+                'Wooden House',
+
+            distance:
+                5.7,
+
+            pos:
+                {
+                    x: 4,
+                    z: -4
+                }
+
+        },
+
+
+        {
+
+            id:
+                'Water Well',
+
+            distance:
+                5.0,
+
+            pos:
+                {
+                    x: 0,
+                    z: -4
+                }
+
+        }
+
+    ];
+
+}
+
+
+/* =====================================================
+   DOM HELPER
+===================================================== */
+
+function setDOMText(
+    id,
+    text
+) {
+
+
+    const element =
+        document.getElementById(
+            id
+        );
+
+
+    if (
+        element
+    ) {
+
+        element.innerText =
+            text;
+
+    }
+
+}
+
+
+/* =====================================================
+   SIMULATION
+===================================================== */
+
+function runSimulation() {
+
+
+    try {
+
+
+        /* PERCEPTION */
+
+        const perceptions =
+            getPerceptions();
+
+
+        /* THINK */
+
+        const output =
+            brain.step(
+                perceptions
+            );
+
+
+        if (!output) {
+
+            return;
+
+        }
+
+
+        /* =================================================
+           NAVIGATION TARGET
+        ================================================= */
+
+        if (
+            output.action &&
+            output.action.target &&
+            output.action.target.pos
+        ) {
+
+
+            currentVectorTarget =
+                output.action.target.pos;
+
+        }
+
+
+        /* =================================================
+           HEADER
+        ================================================= */
+
+        setDOMText(
+            'hud-cycle',
+            `CYCLE: ${output.cycle}`
+        );
+
+
+        setDOMText(
+            'hud-time',
+            `TIME: ${output.timeString}`
+        );
+
+
+        /* =================================================
+           GOAL
+        ================================================= */
+
+        setDOMText(
+            'hud-goal',
+            output.activeGoal
+        );
+
+
+        /* =================================================
+           SURPRISE
+        ================================================= */
+
+        setDOMText(
+            'val-surprise',
+            output.surpriseScore
+                .toFixed(2)
+        );
+
+
+        const surpriseBar =
+            document.getElementById(
+                'bar-surprise'
+            );
+
+
+        if (
+            surpriseBar
+        ) {
+
+            surpriseBar.style.width =
+                `${Math.min(
+                    100,
+                    output.surpriseScore *
+                    100
+                )}%`;
+
+        }
+
+
+        /* =================================================
+           ENERGY
+        ================================================= */
+
+        setDOMText(
+            'val-energy',
+            `${(
+                output.energy *
+                100
+            ).toFixed(0)}%`
+        );
+
+
+        const energyBar =
+            document.getElementById(
+                'bar-energy'
+            );
+
+
+        if (
+            energyBar
+        ) {
+
+            energyBar.style.width =
+                `${output.energy * 100}%`;
+
+        }
+
+
+        /* =================================================
+           CURIOSITY
+        ================================================= */
+
+        setDOMText(
+            'val-curiosity',
+            `${(
+                output.curiosity *
+                100
+            ).toFixed(0)}%`
+        );
+
+
+        setDOMText(
+            'val-emo-curiosity',
+            `${(
+                output.curiosity *
+                100
+            ).toFixed(0)}%`
+        );
+
+
+        const curiosityBar =
+            document.getElementById(
+                'bar-curiosity'
+            );
+
+
+        if (
+            curiosityBar
+        ) {
+
+            curiosityBar.style.width =
+                `${output.curiosity * 100}%`;
+
+        }
+
+
+        /* =================================================
+           EMOTIONS
+        ================================================= */
+
+        setDOMText(
+            'val-emo-excitement',
+            `${(
+                output.excitement *
+                100
+            ).toFixed(0)}%`
+        );
+
+
+        setDOMText(
+            'val-emo-contentment',
+            `${(
+                output.contentment *
+                100
+            ).toFixed(0)}%`
+        );
+
+
+        setDOMText(
+            'val-emo-fear',
+            `${(
+                output.fear *
+                100
+            ).toFixed(0)}%`
+        );
+
+
+        /* =================================================
+           ACTION
+        ================================================= */
+
+        if (
+            output.action
+        ) {
+
+
+            setDOMText(
+                'hud-action',
+
+                `ACTION: ${
+                    output.action.type
+                } -> ${
+                    output.action.target.id
+                }`
+
+            );
+
+        }
+
+
+        /* =================================================
+           SUB GOALS
+        ================================================= */
+
+        const subGoalsElem =
+            document.getElementById(
+                'hud-subgoals'
+            );
+
+
+        if (
+            subGoalsElem &&
+            output.subGoals
+        ) {
+
+
+            subGoalsElem.innerHTML =
+
+                output.subGoals
+
+                    .map(
+                        goal =>
+                            `<li>${goal}</li>`
+                    )
+
+                    .join('');
+
+        }
+
+
+        /* =================================================
+           REFLECTION
+        ================================================= */
+
+        setDOMText(
+            'hud-reflection',
+            output.latestReflection
+        );
+
+
+        /* =================================================
+           LEARNING
+        ================================================= */
+
+        setDOMText(
+            'hud-learning',
+
+            `LEARNING: ${
+                output.learning
+            }`
+
+        );
+
+
+        /* =================================================
+           THOUGHT PROCESS
+        ================================================= */
+
+        const thoughtLog =
+            document.getElementById(
+                'hud-thoughts'
+            );
+
+
+        if (
+            thoughtLog &&
+            output.latestReflection
+        ) {
+
+
+            const entry =
+                document.createElement(
+                    'div'
+                );
+
+
+            entry.className =
+                'log-entry';
+
+
+            entry.innerText =
+                `[Cycle ${
+                    output.cycle
+                }] ${
+                    output.latestReflection
+                }`;
+
+
+            thoughtLog.prepend(
+                entry
+            );
+
+
+            /*
+            Prevent infinite UI growth.
+            */
+
+            while (
+                thoughtLog.children.length
+                > 12
+            ) {
+
+                thoughtLog.removeChild(
+                    thoughtLog.lastChild
+                );
+
+            }
+
+        }
+
+
+        /* =================================================
+           PERCEPTIONS
+        ================================================= */
+
+        const percHUD =
+            document.getElementById(
+                'hud-perceptions'
+            );
+
+
+        if (
+            percHUD
+        ) {
+
+
+            percHUD.innerHTML =
+
+                perceptions
+
+                    .map(
+                        p =>
+
+                            `<div class="log-entry">
+                                ⦿ ${p.id}
+                                (${p.distance}m)
+                            </div>`
+
+                    )
+
+                    .join('');
+
+        }
+
+
+        /* =================================================
+           MEMORY
+        ================================================= */
+
+        const memoryHUD =
+            document.getElementById(
+                'hud-memory'
+            );
+
+
+        if (
+            memoryHUD
+        ) {
+
+
+            memoryHUD.innerHTML =
+
+                output.memory
+                    .slice(0, 8)
+
+                    .map(
+                        memory =>
+
+                            `<div class="memory-entry">
+                                C${memory.cycle}:
+                                ${memory.target}
+                                —
+                                ${memory.learning}
+                            </div>`
+
+                    )
+
+                    .join('');
+
+        }
+
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "ECHO Simulation Error:",
+            error
+        );
+
+    }
+
+}
+
+
+/* =====================================================
+   START
+===================================================== */
+
+runSimulation();
+
+
+/*
+Run a cognitive cycle
+every 2 seconds.
+*/
+
+setInterval(
+    runSimulation,
+    2000
+);
+
+
+</script>
+
 
 </body>
+
 </html>
