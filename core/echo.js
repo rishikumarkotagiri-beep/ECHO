@@ -17,34 +17,38 @@ export class EchoBrainV3 {
   step(perceptions = []) {
     this.cycle += 1;
 
-    // 1. Compute Prediction Error
-    const surpriseScore = this.prediction.computeSurprise(perceptions);
-    this.selfModel.updateDrives(surpriseScore);
+    // 1. Prediction & Surprise
+    const surpriseScore = this.prediction ? this.prediction.computeSurprise(perceptions) : 0.2;
+    if (this.selfModel && this.selfModel.updateDrives) {
+      this.selfModel.updateDrives(surpriseScore);
+    }
 
-    // 2. Synthesize Concepts & Goals
-    const concepts = Array.from(this.memory.concepts.entries());
-    const topInterests = concepts
-      .map(([concept, data]) => ({ concept, affinity: data.affinity }))
-      .sort((a, b) => b.affinity - a.affinity);
+    // 2. Goal Formation
+    const topInterests = [];
+    const goalData = this.goals 
+      ? this.goals.determineGoal(surpriseScore, topInterests) 
+      : { activeGoal: "Exploring surroundings", subGoals: ["Observe objects"] };
 
-    const goalData = this.goals.determineGoal(surpriseScore, topInterests);
-
-    // 3. Record Perception in Memory
+    // 3. Focus & Memory
     const focusItem = perceptions.length > 0 ? perceptions[0] : { id: 'Village' };
-    this.memory.recordEpisode({
-      day: 1,
-      perception: focusItem,
-      action: { type: 'observe', target: focusItem.id },
-      emotionalResponse: { valence: Math.random() }
-    });
+    if (this.memory && this.memory.recordEpisode) {
+      this.memory.recordEpisode({
+        day: 1,
+        perception: focusItem,
+        action: { type: 'observe', target: focusItem.id },
+        emotionalResponse: { valence: Math.random() }
+      });
+    }
 
-    // 4. Generate Metacognitive Reflection
-    const reflection = this.metacognition.evaluateState(
-      this.cycle,
-      goalData.activeGoal,
-      surpriseScore,
-      this.memory.episodicMemory.length
-    );
+    // 4. Metacognition Reflection
+    const reflection = this.metacognition 
+      ? this.metacognition.evaluateState(
+          this.cycle,
+          goalData.activeGoal,
+          surpriseScore,
+          this.memory ? this.memory.episodicMemory.length : 0
+        )
+      : `Cycle ${this.cycle}: Processing environment...`;
 
     return {
       cycle: this.cycle,
@@ -53,8 +57,8 @@ export class EchoBrainV3 {
       subGoals: goalData.subGoals,
       latestReflection: reflection,
       action: { type: 'Observe', target: focusItem.id },
-      memoryCount: this.memory.episodicMemory.length,
-      drives: this.selfModel.drives
+      memoryCount: this.memory ? this.memory.episodicMemory.length : 0,
+      drives: this.selfModel ? this.selfModel.drives : { curiosity: 0.9, energy: 0.8 }
     };
   }
 }
