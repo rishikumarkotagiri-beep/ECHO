@@ -1290,21 +1290,19 @@ class AutonomousBrain {
         arrived at its current target.
         */
 
-       if (this.currentTarget) {
+     
 
     /*
-     * Refresh the target using the
-     * latest perception data.
-     *
-     * The old version was keeping the
-     * distance from the moment the target
-     * was selected.
+     * Now check the REAL current distance.
      */
+
+    if (this.currentTarget) {
 
     const freshTarget =
         perceptions.find(
             p => p.id === this.currentTarget.id
         );
+
 
     if (freshTarget) {
 
@@ -1315,7 +1313,7 @@ class AutonomousBrain {
 
 
     /*
-     * Now check the REAL current distance.
+     * ECHO has arrived.
      */
 
     if (
@@ -1323,9 +1321,30 @@ class AutonomousBrain {
         this.currentTarget.distance <= 1.5
     ) {
 
+        const completedTarget =
+            this.currentTarget;
+
+
+        /*
+         * Learn from the experience.
+         */
+
         this.investigate(
-            this.currentTarget
+            completedTarget
         );
+
+
+        /*
+         * IMPORTANT:
+         * Force ECHO to think about a
+         * DIFFERENT target next.
+         */
+
+        this.currentTarget =
+            null;
+
+        this.currentGoal =
+            null;
 
     }
 
