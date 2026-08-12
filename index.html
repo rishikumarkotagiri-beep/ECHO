@@ -980,70 +980,112 @@ class AutonomousBrain {
        GOAL SELECTION
     ================================================= */
 
-    chooseGoal(perceptions) {
+   chooseGoal(perceptions) {
+
+    if (
+        !perceptions ||
+        perceptions.length === 0
+    ) {
+        return null;
+    }
 
 
-        if (
-            !perceptions ||
-            perceptions.length === 0
-        ) {
+    /*
+     * First: find objects ECHO has
+     * NEVER investigated.
+     */
 
-            return null;
-
-        }
-
-
-        /*
-        First prefer things ECHO
-        has never actually investigated.
-        */
-
-        let candidates =
-            perceptions.filter(
-                p =>
-                    !this.hasInspected(
-                        p.id
-                    )
-            );
-
-
-        /*
-        If everything is known,
-        revisit the least explored
-        target.
-        */
-
-        if (
-            candidates.length === 0
-        ) {
-
-            candidates =
-                [...perceptions].sort(
-                    (a, b) =>
-                        this.getVisitCount(a.id)
-                        -
-                        this.getVisitCount(b.id)
-                );
-
-        }
-
-
-        /*
-        Rank candidates.
-        */
-
-        candidates.sort(
-            (a, b) =>
-                this.interestScore(b)
-                -
-                this.interestScore(a)
+    let candidates =
+        perceptions.filter(
+            p =>
+                !this.hasInspected(p.id)
         );
 
+
+    /*
+     * If there are new objects,
+     * ALWAYS prefer them over objects
+     * already investigated.
+     */
+
+    if (candidates.length > 0) {
+
+        candidates.sort(
+            (a, b) => {
+
+                /*
+                 * Humans are interesting,
+                 * but novelty comes first.
+                 */
+
+                const scoreA =
+                    this.interestScore(a);
+
+                const scoreB =
+                    this.interestScore(b);
+
+                return scoreB - scoreA;
+
+            }
+        );
 
         return candidates[0];
 
     }
 
+
+    /*
+     * Everything has now been explored.
+     *
+     * Choose the least-visited object.
+     */
+
+    candidates =
+        [...perceptions].sort(
+            (a, b) => {
+
+                const visitsA =
+                    this.getVisitCount(a.id);
+
+                const visitsB =
+                    this.getVisitCount(b.id);
+
+
+                /*
+                 * Visit count is the
+                 * strongest factor.
+                 */
+
+                if (
+                    visitsA !== visitsB
+                ) {
+
+                    return (
+                        visitsA -
+                        visitsB
+                    );
+
+                }
+
+
+                /*
+                 * If equally visited,
+                 * prefer the more interesting
+                 * object.
+                 */
+
+                return (
+                    this.interestScore(b) -
+                    this.interestScore(a)
+                );
+
+            }
+        );
+
+
+    return candidates[0];
+
+}
 
     /* =================================================
        INVESTIGATION
