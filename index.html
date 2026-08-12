@@ -192,97 +192,167 @@
   </div>
 
   <!-- MAIN SCRIPT -->
- 
   <script type="module">
-  let brain = null;
-
-  // Inline Fallback Engine if file imports fail
-  class LocalFallbackBrain {
-    constructor() { this.cycle = 0; }
-    step(perceptions) {
-      this.cycle += 1;
-      const target = perceptions[this.cycle % perceptions.length] || { id: 'Village' };
-      return {
-        cycle: this.cycle,
-        surpriseScore: Math.random() * 0.4 + 0.1,
-        activeGoal: `Investigating ${target.id}`,
-        subGoals: [`Analyze position`, `Record observation`],
-        latestReflection: `Cycle ${this.cycle}: Cataloging ${target.id} into memory core.`,
-        action: { type: 'Observe', target: target.id }
-      };
+    // Fallback Brain Definition
+    class LocalFallbackBrain {
+      constructor() { this.cycle = 0; }
+      step(perceptions) {
+        this.cycle += 1;
+        const items = perceptions || [{ id: 'Village' }];
+        const target = items[this.cycle % items.length] || { id: 'Village' };
+        return {
+          cycle: this.cycle,
+          surpriseScore: Math.random() * 0.4 + 0.1,
+          activeGoal: `Investigating ${target.id}`,
+          subGoals: [`Scan ${target.id}`, `Record spatial coordinates`],
+          latestReflection: `Cycle ${target.id ? this.cycle : 0}: Observing ${target.id} in primary workspace.`,
+          action: { type: 'Observe', target: target.id }
+        };
+      }
     }
-  }
 
-  // Load Module Core safely
-  async function initEngine() {
-    try {
-      const module = await import('./core/echo.js');
-      brain = new module.EchoBrainV3();
-      console.log("EchoBrainV3 loaded successfully.");
-    } catch (err) {
-      console.warn("Module import failed, running fallback brain:", err);
-      brain = new LocalFallbackBrain();
+    let brain = new LocalFallbackBrain();
+
+    // Try importing external brain module asynchronously without blocking
+    import('./core/echo.js').then(module => {
+      if (module && module.EchoBrainV3) {
+        brain = new module.EchoBrainV3();
+        console.log("EchoBrainV3 module attached successfully.");
+      }
+    }).catch(err => {
+      console.warn("Module import failed, running on inline engine:", err);
+    });
+
+    // 3D Scene Initialization
+    const container = document.getElementById('canvas-container');
+    let scene, camera, renderer, echoMesh;
+    const entities = [];
+
+    if (container && typeof THREE !== 'undefined') {
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x111625);
+
+      camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+      camera.position.set(0, 8, 14);
+      camera.lookAt(0, 0, 0);
+
+      renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      container.appendChild(renderer.domElement);
+
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+      scene.add(ambientLight);
+      const dirLight = new THREE.DirectionalLight(0xffffff, 0.5);
+      dirLight.position.set(10, 20, 10);
+      scene.add(dirLight);
+
+      const ground = new THREE.Mesh(
+        new THREE.PlaneGeometry(40, 40),
+        new THREE.MeshStandardMaterial({ color: 0x223322 })
+      );
+      ground.rotation.x = -Math.PI / 2;
+      scene.add(ground);
+
+      echoMesh = new THREE.Mesh(
+        new THREE.SphereGeometry(0.8, 32, 32),
+        new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.2 })
+      );
+      echoMesh.position.set(0, 0.8, 0);
+      scene.add(echoMesh);
+
+      const objectList = [
+        { id: 'Old Man', type: 'npc', mesh: new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 1.2), new THREE.MeshStandardMaterial({ color: 0xaa6633 })), pos: [-3, 0.6, -2] },
+        { id: 'Wooden House', type: 'building', mesh: new THREE.Mesh(new THREE.BoxGeometry(3, 2.5, 3), new THREE.MeshStandardMaterial({ color: 0x664422 })), pos: [4, 1.25, -4] },
+        { id: 'Water Well', type: 'object', mesh: new THREE.Mesh(new THREE.CylinderGeometry(0.8, 0.8, 0.8), new THREE.MeshStandardMaterial({ color: 0x888888 })), pos: [0, 0.4, -5] }
+      ];
+
+      objectList.forEach(e => {
+        e.mesh.position.set(...e.pos);
+        scene.add(e.mesh);
+        entities.push(e);
+      });
+
+      function animate() {
+        requestAnimationFrame(animate);
+        if (echoMesh) echoMesh.rotation.y += 0.01;
+        renderer.render(scene, camera);
+      }
+      animate();
+
+      window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
     }
-  }
 
-  await initEngine();
-
-  function setDOMText(id, text) {
-    const el = document.getElementById(id);
-    if (el) el.innerText = text;
-  }
-
-  function runSimulation() {
-    if (!brain) return;
-
-    const perceptions = [
-      { id: 'Old Man', type: 'npc' },
-      { id: 'Wooden House', type: 'building' },
-      { id: 'Water Well', type: 'object' }
-    ];
-
-    try {
-      const output = brain.step(perceptions);
-
-      setDOMText('hud-cycle', `CYCLE: ${output.cycle}`);
-      setDOMText('hud-goal', output.activeGoal);
-      setDOMText('val-surprise', output.surpriseScore.toFixed(2));
-      setDOMText('hud-reflection', output.latestReflection);
-
-      if (output.action) {
-        setDOMText('hud-action', `ACTION: ${output.action.type} -> ${output.action.target}`);
+    function getPerceptions() {
+      if (entities.length > 0 && echoMesh) {
+        return entities.map(e => ({
+          id: e.id,
+          type: e.type,
+          distance: Math.round(echoMesh.position.distanceTo(e.mesh.position) * 10) / 10
+        }));
       }
-
-      const subGoalsElem = document.getElementById('hud-subgoals');
-      if (subGoalsElem && output.subGoals) {
-        subGoalsElem.innerHTML = output.subGoals.map(sg => `<li>${sg}</li>`).join('');
-      }
-
-      const surpriseBar = document.getElementById('bar-surprise');
-      if (surpriseBar) {
-        surpriseBar.style.width = `${Math.min(100, output.surpriseScore * 100)}%`;
-      }
-
-      const thoughtLog = document.getElementById('hud-thoughts');
-      if (thoughtLog && output.latestReflection) {
-        const entry = document.createElement('div');
-        entry.className = 'log-entry';
-        entry.innerText = `[Cycle ${output.cycle}] ${output.latestReflection}`;
-        thoughtLog.prepend(entry);
-      }
-
-      const percHUD = document.getElementById('hud-perceptions');
-      if (percHUD) {
-        percHUD.innerHTML = perceptions.map(p => `<div class="log-entry">⦿ ${p.id}</div>`).join('');
-      }
-
-    } catch (err) {
-      console.error("Simulation Execution Error:", err);
+      return [
+        { id: 'Old Man', type: 'npc', distance: 3.0 },
+        { id: 'Wooden House', type: 'building', distance: 12.0 },
+        { id: 'Water Well', type: 'object', distance: 8.0 }
+      ];
     }
-  }
 
-  // Execute loop every 1.5 seconds
-  setInterval(runSimulation, 1500);
-</script>
+    function setDOMText(id, text) {
+      const el = document.getElementById(id);
+      if (el) el.innerText = text;
+    }
+
+    // Cognitive Loop Execution
+    function runSimulation() {
+      const perceptions = getPerceptions();
+
+      try {
+        const output = brain.step(perceptions);
+
+        setDOMText('hud-cycle', `CYCLE: ${output.cycle}`);
+        setDOMText('hud-goal', output.activeGoal);
+        setDOMText('val-surprise', typeof output.surpriseScore === 'number' ? output.surpriseScore.toFixed(2) : "0.20");
+        setDOMText('hud-reflection', output.latestReflection);
+
+        if (output.action) {
+          setDOMText('hud-action', `ACTION: ${output.action.type} -> ${output.action.target}`);
+        }
+
+        const subGoalsElem = document.getElementById('hud-subgoals');
+        if (subGoalsElem && output.subGoals) {
+          subGoalsElem.innerHTML = output.subGoals.map(sg => `<li>${sg}</li>`).join('');
+        }
+
+        const surpriseBar = document.getElementById('bar-surprise');
+        if (surpriseBar && typeof output.surpriseScore === 'number') {
+          surpriseBar.style.width = `${Math.min(100, output.surpriseScore * 100)}%`;
+        }
+
+        const thoughtLog = document.getElementById('hud-thoughts');
+        if (thoughtLog && output.latestReflection) {
+          const entry = document.createElement('div');
+          entry.className = 'log-entry';
+          entry.innerText = `[Cycle ${output.cycle}] ${output.latestReflection}`;
+          thoughtLog.prepend(entry);
+        }
+
+        const percHUD = document.getElementById('hud-perceptions');
+        if (percHUD) {
+          percHUD.innerHTML = perceptions.map(p => `<div class="log-entry">⦿ ${p.id} (${p.distance || 0}m)</div>`).join('');
+        }
+
+      } catch (err) {
+        console.error("Simulation Execution Error:", err);
+      }
+    }
+
+    // Run immediately, then repeat every 1.5s
+    runSimulation();
+    setInterval(runSimulation, 1500);
+  </script>
 </body>
 </html>
