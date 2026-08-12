@@ -1248,25 +1248,46 @@ class AutonomousBrain {
         arrived at its current target.
         */
 
-        if (
+       if (this.currentTarget) {
+
+    /*
+     * Refresh the target using the
+     * latest perception data.
+     *
+     * The old version was keeping the
+     * distance from the moment the target
+     * was selected.
+     */
+
+    const freshTarget =
+        perceptions.find(
+            p => p.id === this.currentTarget.id
+        );
+
+    if (freshTarget) {
+
+        this.currentTarget =
+            freshTarget;
+
+    }
+
+
+    /*
+     * Now check the REAL current distance.
+     */
+
+    if (
+        this.currentTarget &&
+        this.currentTarget.distance <= 1.5
+    ) {
+
+        this.investigate(
             this.currentTarget
-        ) {
+        );
 
-            const reached =
-                this.currentTarget.distance
-                <= 1.5;
+    }
 
-
-            if (reached) {
-
-                this.investigate(
-                    this.currentTarget
-                );
-
-            }
-
-        }
-
+}
 
         /*
         No active target?
