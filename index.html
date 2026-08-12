@@ -101,7 +101,7 @@
       height: 100%;
       background: #00ffcc;
       width: 50%;
-      transition: width 0.3s ease;
+      transition: width 0.4s ease;
     }
 
     .log-stream {
@@ -165,10 +165,10 @@
     <div id="hud-perceptions" class="log-stream"></div>
 
     <h3 style="margin-top:15px;">EMOTIONAL TENDENCIES</h3>
-    <div class="stat-row"><span>Curiosity</span><span>82%</span></div>
-    <div class="stat-row"><span>Excitement</span><span>61%</span></div>
-    <div class="stat-row"><span>Contentment</span><span>52%</span></div>
-    <div class="stat-row"><span>Fear</span><span>24%</span></div>
+    <div class="stat-row"><span>Curiosity</span><span id="val-emo-curiosity">82%</span></div>
+    <div class="stat-row"><span>Excitement</span><span id="val-emo-excitement">61%</span></div>
+    <div class="stat-row"><span>Contentment</span><span id="val-emo-contentment">52%</span></div>
+    <div class="stat-row"><span>Fear</span><span id="val-emo-fear">24%</span></div>
   </div>
 
   <!-- BOTTOM PANEL -->
@@ -191,79 +191,124 @@
     </div>
   </div>
 
-  <!-- MAIN SCRIPT -->
-  <script type="module">
-    // Fallback Brain Definition
-    class LocalFallbackBrain {
-      constructor() { this.cycle = 0; }
+  <script>
+    // --- AUTONOMOUS BRAIN ENGINE ---
+    class AutonomousBrain {
+      constructor() {
+        this.cycle = 0;
+        this.minutes = 0;
+        this.energy = 0.75;
+        this.curiosity = 0.90;
+        this.memory = [];
+        this.inspectedTargets = new Map();
+      }
+
       step(perceptions) {
         this.cycle += 1;
-        const items = perceptions || [{ id: 'Village' }];
-        const target = items[this.cycle % items.length] || { id: 'Village' };
+        this.minutes += 2;
+        this.energy = Math.max(0.20, this.energy - 0.005);
+
+        // Pick Target based on novelty
+        let target = perceptions[0] || { id: 'Village Ground', pos: [0, 0] };
+        let minVisits = Infinity;
+
+        perceptions.forEach(p => {
+          const visits = this.inspectedTargets.get(p.id) || 0;
+          if (visits < minVisits) {
+            minVisits = visits;
+            target = p;
+          }
+        });
+
+        const currentVisits = this.inspectedTargets.get(target.id) || 0;
+        this.inspectedTargets.set(target.id, currentVisits + 1);
+
+        // Compute dynamic surprise based on distance and visual novelty
+        const surprise = Math.max(0.05, Math.min(0.95, (1 / (target.distance + 0.5)) + (0.3 / (currentVisits + 1))));
+
+        // Formulate Goals
+        let activeGoal = `Approach and inspect ${target.id}`;
+        let subGoals = [`Calculate vector to ${target.id}`, `Scan local geometry`];
+
+        if (target.distance < 1.5) {
+          activeGoal = `Analyze physical composition of ${target.id}`;
+          subGoals = [`Store high-res spatial model`, `Update topological map`];
+        }
+
+        // Metacognitive Reflection
+        const reflections = [
+          `Targeting ${target.id} at ${target.distance}m. Surprise delta: ${surprise.toFixed(2)}.`,
+          `Evaluating distance to ${target.id}. Spatial uncertainty decreasing.`,
+          `High cognitive focus on ${target.id}. Energy efficient state maintained.`,
+          `Re-indexing ${target.id} into episodic memory buffer.`
+        ];
+        const reflection = reflections[this.cycle % reflections.length];
+
+        // Format Clock Time
+        const totalMinutes = 8 * 60 + this.minutes;
+        const hrs = String(Math.floor((totalMinutes / 60) % 24)).padStart(2, '0');
+        const mins = String(Math.floor(totalMinutes % 60)).padStart(2, '0');
+        const timeString = `Day 1 - ${hrs}:${mins} AM`;
+
         return {
           cycle: this.cycle,
-          surpriseScore: Math.random() * 0.4 + 0.1,
-          activeGoal: `Investigating ${target.id}`,
-          subGoals: [`Scan ${target.id}`, `Record spatial coordinates`],
-          latestReflection: `Cycle ${target.id ? this.cycle : 0}: Observing ${target.id} in primary workspace.`,
-          action: { type: 'Observe', target: target.id }
+          timeString: timeString,
+          surpriseScore: surprise,
+          activeGoal: activeGoal,
+          subGoals: subGoals,
+          latestReflection: reflection,
+          action: { type: 'MoveTowards', target: target },
+          energy: this.energy,
+          curiosity: this.curiosity
         };
       }
     }
 
-    let brain = new LocalFallbackBrain();
+    const brain = new AutonomousBrain();
 
-    // Try importing external brain module asynchronously without blocking
-    import('./core/echo.js').then(module => {
-      if (module && module.EchoBrainV3) {
-        brain = new module.EchoBrainV3();
-        console.log("EchoBrainV3 module attached successfully.");
-      }
-    }).catch(err => {
-      console.warn("Module import failed, running on inline engine:", err);
-    });
-
-    // 3D Scene Initialization
+    // --- THREE.JS SCENE SETUP ---
     const container = document.getElementById('canvas-container');
     let scene, camera, renderer, echoMesh;
     const entities = [];
+    let currentVectorTarget = null;
 
     if (container && typeof THREE !== 'undefined') {
       scene = new THREE.Scene();
-      scene.background = new THREE.Color(0x111625);
+      scene.background = new THREE.Color(0x0e1422);
 
       camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-      camera.position.set(0, 8, 14);
+      camera.position.set(0, 10, 15);
       camera.lookAt(0, 0, 0);
 
       renderer = new THREE.WebGLRenderer({ antialias: true });
       renderer.setSize(window.innerWidth, window.innerHeight);
       container.appendChild(renderer.domElement);
 
-      const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
-      scene.add(ambientLight);
-      const dirLight = new THREE.DirectionalLight(0xffffff, 0.5);
+      scene.add(new THREE.AmbientLight(0xffffff, 0.7));
+      const dirLight = new THREE.DirectionalLight(0xffffff, 0.6);
       dirLight.position.set(10, 20, 10);
       scene.add(dirLight);
 
       const ground = new THREE.Mesh(
-        new THREE.PlaneGeometry(40, 40),
-        new THREE.MeshStandardMaterial({ color: 0x223322 })
+        new THREE.PlaneGeometry(50, 50),
+        new THREE.MeshStandardMaterial({ color: 0x1a261a, roughness: 0.8 })
       );
       ground.rotation.x = -Math.PI / 2;
       scene.add(ground);
 
+      // ECHO Agent
       echoMesh = new THREE.Mesh(
         new THREE.SphereGeometry(0.8, 32, 32),
-        new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.2 })
+        new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.1, metalness: 0.2 })
       );
-      echoMesh.position.set(0, 0.8, 0);
+      echoMesh.position.set(0, 0.8, 4);
       scene.add(echoMesh);
 
+      // Environment Objects
       const objectList = [
-        { id: 'Old Man', type: 'npc', mesh: new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 1.2), new THREE.MeshStandardMaterial({ color: 0xaa6633 })), pos: [-3, 0.6, -2] },
-        { id: 'Wooden House', type: 'building', mesh: new THREE.Mesh(new THREE.BoxGeometry(3, 2.5, 3), new THREE.MeshStandardMaterial({ color: 0x664422 })), pos: [4, 1.25, -4] },
-        { id: 'Water Well', type: 'object', mesh: new THREE.Mesh(new THREE.CylinderGeometry(0.8, 0.8, 0.8), new THREE.MeshStandardMaterial({ color: 0x888888 })), pos: [0, 0.4, -5] }
+        { id: 'Old Man', mesh: new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 1.2), new THREE.MeshStandardMaterial({ color: 0xd97706 })), pos: [-4, 0.6, -2] },
+        { id: 'Wooden House', mesh: new THREE.Mesh(new THREE.BoxGeometry(3, 2.5, 3), new THREE.MeshStandardMaterial({ color: 0x78350f })), pos: [4, 1.25, -4] },
+        { id: 'Water Well', mesh: new THREE.Mesh(new THREE.CylinderGeometry(0.8, 0.8, 0.8), new THREE.MeshStandardMaterial({ color: 0x64748b })), pos: [0, 0.4, -4] }
       ];
 
       objectList.forEach(e => {
@@ -272,9 +317,17 @@
         entities.push(e);
       });
 
+      // Render & Physics Loop
       function animate() {
         requestAnimationFrame(animate);
-        if (echoMesh) echoMesh.rotation.y += 0.01;
+
+        if (echoMesh && currentVectorTarget) {
+          // Smooth Interpolation towards Target
+          echoMesh.position.x += (currentVectorTarget.x - echoMesh.position.x) * 0.03;
+          echoMesh.position.z += (currentVectorTarget.z - echoMesh.position.z) * 0.03;
+          echoMesh.rotation.y += 0.02;
+        }
+
         renderer.render(scene, camera);
       }
       animate();
@@ -288,16 +341,19 @@
 
     function getPerceptions() {
       if (entities.length > 0 && echoMesh) {
-        return entities.map(e => ({
-          id: e.id,
-          type: e.type,
-          distance: Math.round(echoMesh.position.distanceTo(e.mesh.position) * 10) / 10
-        }));
+        return entities.map(e => {
+          const dist = echoMesh.position.distanceTo(e.mesh.position);
+          return {
+            id: e.id,
+            distance: Math.round(dist * 10) / 10,
+            pos: e.mesh.position
+          };
+        });
       }
       return [
-        { id: 'Old Man', type: 'npc', distance: 3.0 },
-        { id: 'Wooden House', type: 'building', distance: 12.0 },
-        { id: 'Water Well', type: 'object', distance: 8.0 }
+        { id: 'Old Man', distance: 3.0, pos: { x: -4, z: -2 } },
+        { id: 'Wooden House', distance: 5.7, pos: { x: 4, z: -4 } },
+        { id: 'Water Well', distance: 5.0, pos: { x: 0, z: -4 } }
       ];
     }
 
@@ -306,20 +362,30 @@
       if (el) el.innerText = text;
     }
 
-    // Cognitive Loop Execution
+    // Dynamic Execution Loop
     function runSimulation() {
-      const perceptions = getPerceptions();
-
       try {
+        const perceptions = getPerceptions();
         const output = brain.step(perceptions);
 
+        // Update 3D Navigation Target
+        if (output.action && output.action.target && output.action.target.pos) {
+          currentVectorTarget = output.action.target.pos;
+        }
+
+        // HUD Updates
         setDOMText('hud-cycle', `CYCLE: ${output.cycle}`);
+        setDOMText('hud-time', `TIME: ${output.timeString}`);
         setDOMText('hud-goal', output.activeGoal);
-        setDOMText('val-surprise', typeof output.surpriseScore === 'number' ? output.surpriseScore.toFixed(2) : "0.20");
+        setDOMText('val-surprise', output.surpriseScore.toFixed(2));
         setDOMText('hud-reflection', output.latestReflection);
 
+        setDOMText('val-energy', `${(output.energy * 100).toFixed(0)}%`);
+        const energyBar = document.getElementById('bar-energy');
+        if (energyBar) energyBar.style.width = `${output.energy * 100}%`;
+
         if (output.action) {
-          setDOMText('hud-action', `ACTION: ${output.action.type} -> ${output.action.target}`);
+          setDOMText('hud-action', `ACTION: ${output.action.type} -> ${output.action.target.id}`);
         }
 
         const subGoalsElem = document.getElementById('hud-subgoals');
@@ -328,7 +394,7 @@
         }
 
         const surpriseBar = document.getElementById('bar-surprise');
-        if (surpriseBar && typeof output.surpriseScore === 'number') {
+        if (surpriseBar) {
           surpriseBar.style.width = `${Math.min(100, output.surpriseScore * 100)}%`;
         }
 
@@ -342,17 +408,17 @@
 
         const percHUD = document.getElementById('hud-perceptions');
         if (percHUD) {
-          percHUD.innerHTML = perceptions.map(p => `<div class="log-entry">⦿ ${p.id} (${p.distance || 0}m)</div>`).join('');
+          percHUD.innerHTML = perceptions.map(p => `<div class="log-entry">⦿ ${p.id} (${p.distance}m)</div>`).join('');
         }
 
       } catch (err) {
-        console.error("Simulation Execution Error:", err);
+        console.error("Simulation Loop Exception:", err);
       }
     }
 
-    // Run immediately, then repeat every 1.5s
+    // Run every 2 seconds
     runSimulation();
-    setInterval(runSimulation, 1500);
+    setInterval(runSimulation, 2000);
   </script>
 </body>
 </html>
