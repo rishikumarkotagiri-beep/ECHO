@@ -1,45 +1,74 @@
+// Import the v3 brain module from the core folder
 import { EchoBrainV3 } from '../core/echo.js';
 
-// 1. Initialize the V3 Brain
-const echoBrain = new EchoBrainV3();
+// 1. Instantiate the ECHO Brain
+const brain = new EchoBrainV3();
 
-// 2. Simulated Perception Feed from Three.js scene
+// Initial console check to confirm initialization
+console.log("ECHO Brain V3 Active:", brain.step([]));
+
+// 2. Define surrounding environment observations (Perceptions)
 function getSurroundingPerceptions() {
   return [
-    { id: 'Old Man', type: 'npc', distance: 3.0, description: 'Sitting on a bench' },
-    { id: 'Wooden House', type: 'building', distance: 12.0, state: 'closed' },
-    { id: 'Tree', type: 'nature', distance: 5.0 },
-    { id: 'Water Well', type: 'object', distance: 8.0 }
+    { id: 'Old Man', type: 'npc', distance: 3.0, description: 'Sitting on a bench', state: 'static' },
+    { id: 'Wooden House', type: 'building', distance: 12.0, description: 'Looks like housing', state: 'closed' },
+    { id: 'Tree', type: 'nature', distance: 5.0, description: 'Tall and green', state: 'static' },
+    { id: 'Water Well', type: 'object', distance: 8.0, description: 'Clean water source', state: 'static' }
   ];
 }
 
-// 3. Main Simulation Loop Step
+// 3. Main Cognitive Loop Execution
 function runCognitiveCycle() {
-  const currentPerceptions = getSurroundingPerceptions();
-
-  // Run the brain cycle
-  const output = echoBrain.step(currentPerceptions);
-
-  // Update HUD - Cycle & Goals
-  document.querySelector('.cycle-counter').innerText = `CYCLE: ${output.cycle}`;
-  document.querySelector('.current-goal').innerText = output.activeGoal;
+  const observations = getSurroundingPerceptions();
   
-  const subGoalsContainer = document.querySelector('.sub-goals');
-  if (subGoalsContainer && output.subGoals) {
-    subGoalsContainer.innerHTML = output.subGoals.map(sg => `<li>${sg}</li>`).join('');
+  // Step the brain
+  const output = brain.step(observations);
+
+  // Log execution step to Browser Console
+  console.log(`[Cycle ${output.cycle}] Goal: "${output.activeGoal}" | Surprise: ${output.surpriseScore}`);
+
+  // --- HUD UI UPDATES ---
+
+  // Update Cycle Count
+  const cycleElem = document.getElementById('hud-cycle') || document.querySelector('.cycle-counter');
+  if (cycleElem) cycleElem.innerText = `CYCLE: ${output.cycle}`;
+
+  // Update Active Goal & Sub-goals
+  const goalElem = document.getElementById('hud-goal') || document.querySelector('.current-goal');
+  if (goalElem) goalElem.innerText = output.activeGoal;
+
+  const subGoalElem = document.getElementById('hud-subgoals') || document.querySelector('.sub-goals');
+  if (subGoalElem && output.subGoals) {
+    subGoalElem.innerHTML = output.subGoals.map(sg => `<li>${sg}</li>`).join('');
   }
 
-  // Update HUD - Thought Stream & Reflection
-  const thoughtStream = document.querySelector('.thought-stream');
-  if (thoughtStream && output.latestReflection) {
-    const newEntry = document.createElement('p');
-    newEntry.innerText = output.latestReflection;
-    thoughtStream.prepend(newEntry);
+  // Update Internal State & Surprise Metrics
+  const surpriseVal = document.getElementById('val-surprise');
+  if (surpriseVal) surpriseVal.innerText = output.surpriseScore.toFixed(2);
+
+  const surpriseBar = document.getElementById('bar-surprise');
+  if (surpriseBar) surpriseBar.style.width = `${Math.min(100, output.surpriseScore * 100)}%`;
+
+  // Update Thought Stream & Metacognitive Reflection
+  const thoughtLog = document.getElementById('hud-thoughts') || document.querySelector('.thought-stream');
+  if (thoughtLog && output.latestReflection) {
+    const entry = document.createElement('div');
+    entry.className = 'log-entry';
+    entry.innerText = `[Cycle ${output.cycle}] ${output.latestReflection}`;
+    thoughtLog.prepend(entry);
   }
 
-  // Action Dispatch
-  console.log(`Action Executed: ${output.action.type} -> ${output.action.target}`);
+  const reflectionElem = document.getElementById('hud-reflection');
+  if (reflectionElem && output.latestReflection) {
+    reflectionElem.innerText = output.latestReflection;
+  }
+
+  // Update Current Action
+  const actionElem = document.getElementById('hud-action');
+  if (actionElem && output.action) {
+    actionElem.innerText = `ACTION: ${output.action.type} -> ${output.action.target}`;
+  }
 }
 
-// Run loop at fixed interval (e.g., every 1000ms)
-setInterval(runCognitiveCycle, 1000);
+// 4. Run loop automatically every 1.5 seconds
+setInterval(runCognitiveCycle, 1500);
