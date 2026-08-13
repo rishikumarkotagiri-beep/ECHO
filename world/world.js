@@ -57,17 +57,17 @@ treePositions.forEach((p,i)=>{
 this.nature.push({id:`tree-${i}`,type:"tree",x:p[0],z:p[1]});
 });
 this.people=[
-this.person("Mira","resident",-16,-10,"walking",0.035),
-this.person("Arjun","resident",-10,3,"walking",0.045),
-this.person("Raman","elder",3,18,"sitting",0.01),
-this.person("Student", "student",-15,8,"walking",0.045),
+this.person("Mira","resident",-16,-10,"walking",.035),
+this.person("Arjun","resident",-10,3,"walking",.045),
+this.person("Raman","elder",3,18,"sitting",.01),
+this.person("Student","student",-15,8,"walking",.045),
 this.person("Shopkeeper","worker",8,-12,"working",0),
-this.person("Jogger","runner",-4,20,"running",0.065),
-this.person("Anika","resident",15,-10,"walking",0.035),
-this.person("Cyclist","cyclist",12,9,"cycling",0.075),
-this.person("Tourist","visitor",25,8,"exploring",0.035),
+this.person("Jogger","runner",-4,20,"running",.065),
+this.person("Anika","resident",15,-10,"walking",.035),
+this.person("Cyclist","cyclist",12,9,"cycling",.075),
+this.person("Tourist","visitor",25,8,"exploring",.035),
 this.person("Musician","artist",15,-9,"playing music",0),
-this.person("Dog Walker","resident",5,20,"walking dog",0.03),
+this.person("Dog Walker","resident",5,20,"walking dog",.03),
 this.person("Teacher","worker",-17,10,"working",0),
 this.person("Gym Member","resident",20,1,"exercising",0),
 this.person("Reader","resident",7,11,"reading",0),
@@ -200,7 +200,9 @@ if(distance<=radius)result.push({
 name:object.name,
 type:object.type,
 distance,
-activity:object.activity
+activity:object.activity,
+x:object.x,
+z:object.z
 });
 });
 this.parks.forEach(object=>{
@@ -209,7 +211,9 @@ if(distance<=radius)result.push({
 name:object.name,
 type:"park",
 distance,
-activity:object.activity
+activity:object.activity,
+x:object.x,
+z:object.z
 });
 });
 this.people.forEach(person=>{
@@ -219,7 +223,9 @@ name:person.name,
 type:"person",
 distance,
 activity:person.activity,
-mood:person.mood
+mood:person.mood,
+x:person.x,
+z:person.z
 });
 });
 return result.sort((a,b)=>a.distance-b.distance);
