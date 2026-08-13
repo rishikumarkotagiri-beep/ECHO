@@ -1,68 +1,67 @@
-export class EnvironmentLearner {
-  constructor() {
-    this.knowledge = {};
-    this.episodes = [];
-  }
-
-  observe(observation) {
-    const key = observation.id;
-
-    if (!this.knowledge[key]) {
-      this.knowledge[key] = {
-        id: key,
-        observations: 0,
-        properties: {},
-        hypotheses: {},
-        confidence: 0
-      };
-    }
-
-    const object = this.knowledge[key];
-
-    object.observations++;
-
-    for (const [property, value] of Object.entries(observation.properties || {})) {
-      object.properties[property] = value;
-    }
-
-    this.episodes.push({
-      time: Date.now(),
-      observation
-    });
-
-    if (this.episodes.length > 500) {
-      this.episodes.shift();
-    }
-
-    return object;
-  }
-
-  learn(id, hypothesis, predictionCorrect) {
-    const object = this.knowledge[id];
-
-    if (!object) return;
-
-    if (!object.hypotheses[hypothesis]) {
-      object.hypotheses[hypothesis] = {
-        confidence: 0.5,
-        tests: 0
-      };
-    }
-
-    const h = object.hypotheses[hypothesis];
-
-    h.tests++;
-
-    if (predictionCorrect) {
-      h.confidence += 0.08;
-    } else {
-      h.confidence -= 0.12;
-    }
-
-    h.confidence = Math.max(0, Math.min(1, h.confidence));
-  }
-
-  getKnowledge(id) {
-    return this.knowledge[id] || null;
-  }
+class EchoLearning{
+constructor(){
+this.hypotheses=new Map();
+this.predictions=[];
+this.totalError=0;
+}
+key(entityId,label){
+return`${entityId}|${label}`;
+}
+hypothesize(entityId,label,prior=.5){
+const key=this.key(entityId,label);
+if(!this.hypotheses.has(key)){
+this.hypotheses.set(key,{
+entityId,
+label,
+confidence:prior,
+tests:0,
+correct:0,
+incorrect:0
+});
+}
+return this.hypotheses.get(key);
+}
+test(entityId,label,observed,expected){
+const h=this.hypothesize(entityId,label);
+const correct=observed===expected;
+h.tests++;
+if(correct){
+h.correct++;
+h.confidence+=.10*(1-h.confidence);
+}else{
+h.incorrect++;
+h.confidence-=.14*h.confidence;
+}
+h.confidence=Math.max(
+.01,
+Math.min(.99,h.confidence)
+);
+const error=correct?0:1;
+this.totalError+=error;
+this.predictions.unshift({
+entityId,
+label,
+expected,
+observed,
+correct,
+error,
+time:Date.now()
+});
+if(this.predictions.length>300){
+this.predictions.length=300;
+}
+return{
+correct,
+confidence:h.confidence,
+error
+};
+}
+confidence(entityId,label){
+return this.hypothesize(entityId,label).confidence;
+}
+topHypotheses(entityId){
+return[...this.hypotheses.values()]
+.filter(h=>h.entityId===entityId)
+.sort((a,b)=>b.confidence-a.confidence);
+}
 }
