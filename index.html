@@ -365,7 +365,7 @@ scene.add(lamp);
 }
 
 function personMesh(p){
-const body=new THREE.Mesh(new THREE.CapsuleGeometry(.27,.75,5,10),mat(choose([0x4d82c5,0xc76b5d,0x5da56b,0xc28b49,0x8766a8])));
+const body=new THREE.Mesh(new THREE.CylinderGeometry(.27,.32,.9,10),mat(choose([0x4d82c5,0xc76b5d,0x5da56b,0xc28b49,0x8766a8])));
 body.position.set(p.x,.75,p.z);
 body.castShadow=true;
 scene.add(body);
