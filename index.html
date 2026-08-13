@@ -1,3979 +1,609 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
 <meta charset="UTF-8">
-
-<meta name="viewport"
-      content="width=device-width, initial-scale=1.0">
-
-<title>ECHO v0.5 — Living World</title>
-
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>ECHO v0.6 — Greenhaven</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-
 <style>
-
-/* =========================================================
-   RESET
-========================================================= */
-
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:#071018;color:#d9fff8;font-family:Inter,Segoe UI,Arial,sans-serif}
+#world{position:fixed;inset:0;z-index:1}
+#world canvas{display:block}
+.panel{position:absolute;z-index:10;background:rgba(5,12,20,.82);border:1px solid rgba(0,255,204,.2);border-radius:12px;backdrop-filter:blur(12px);box-shadow:0 10px 40px rgba(0,0,0,.25)}
+.header{top:14px;left:14px;right:14px;height:58px;padding:0 18px;display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center}
+.logo{font-size:17px;font-weight:700;letter-spacing:4px;color:#fff}
+.version{font-size:10px;color:#748398;margin-left:8px;letter-spacing:1px}
+.online{font-size:10px;color:#00ffcc;margin-left:10px;letter-spacing:1px}
+.center{text-align:center;font-size:11px;color:#8da1bb}
+.right{text-align:right;font-size:11px;color:#00ffcc}
+.left{top:86px;left:14px;width:290px;bottom:210px;padding:16px;overflow:auto}
+.right-panel{top:86px;right:14px;width:290px;bottom:210px;padding:16px;overflow:auto}
+.bottom{left:14px;right:14px;bottom:14px;height:180px;padding:15px;display:grid;grid-template-columns:2fr 1fr 1fr;gap:18px}
+h3{font-size:10px;letter-spacing:1.8px;color:#71839d;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,.08)}
+.stat{display:flex;justify-content:space-between;font-size:11px;margin:7px 0;color:#aab8c9}
+.value{color:#00ffcc}
+.bar{height:5px;background:#172333;border-radius:10px;overflow:hidden;margin-bottom:10px}
+.fill{height:100%;background:#00e6c8;transition:width .5s}
+.goal{font-size:13px;line-height:1.45;color:#fff;margin-bottom:12px}
+.log{height:125px;overflow:auto;display:flex;flex-direction:column;gap:5px}
+.thought{font-size:10px;line-height:1.45;color:#b9c5d7;padding:7px;border-left:2px solid #00ffcc;background:rgba(255,255,255,.025)}
+.memory{font-size:10px;line-height:1.4;color:#00d9b5;padding:6px 3px;border-bottom:1px solid rgba(255,255,255,.05)}
+.perception{padding:7px;margin-bottom:6px;background:rgba(255,255,255,.025);border-left:2px solid #00ffcc;font-size:10px;line-height:1.4}
+.perception strong{color:#e1fff9}
+.muted{color:#758198}
+.event{color:#d2fff7;font-size:10px;line-height:1.5}
+.action{color:#00ffcc;font-size:11px;margin-top:8px}
+.learning{color:#8996aa;font-size:10px;margin-top:8px;line-height:1.5}
+.city-label{position:absolute;z-index:8;left:50%;top:84px;transform:translateX(-50%);font-size:10px;letter-spacing:3px;color:rgba(255,255,255,.5);pointer-events:none}
+.controls{position:absolute;z-index:12;right:325px;bottom:205px;display:flex;gap:6px}
+.control{background:rgba(5,12,20,.8);color:#9db0c7;border:1px solid rgba(0,255,204,.15);padding:7px 10px;border-radius:7px;font-size:10px;cursor:pointer}
+.control:hover{color:#00ffcc;border-color:#00ffcc}
+@media(max-width:1000px){
+body{overflow:auto}
+.header{grid-template-columns:1fr;height:auto;min-height:90px;gap:6px;padding:12px}
+.center,.right{text-align:left}
+.left,.right-panel,.bottom{position:relative;top:auto;left:auto;right:auto;bottom:auto;width:calc(100% - 28px);margin:105px 14px 14px}
+.right-panel{margin-top:14px}
+.bottom{height:auto;grid-template-columns:1fr}
+.controls{right:14px;bottom:14px}
+.city-label{display:none}
 }
-
-html,
-body {
-
-    width: 100%;
-    height: 100%;
-
-}
-
-body {
-
-    background: #080d16;
-
-    color: #00ffcc;
-
-    font-family:
-        "Courier New",
-        monospace;
-
-    overflow: hidden;
-
-}
-
-
-/* =========================================================
-   WORLD
-========================================================= */
-
-#world {
-
-    position: fixed;
-
-    inset: 0;
-
-    z-index: 1;
-
-}
-
-
-/* =========================================================
-   HUD
-========================================================= */
-
-.panel {
-
-    position: absolute;
-
-    z-index: 10;
-
-    background:
-        rgba(7, 13, 23, 0.91);
-
-    border:
-        1px solid
-        rgba(0,255,204,0.24);
-
-    border-radius: 8px;
-
-    padding: 15px;
-
-    backdrop-filter:
-        blur(7px);
-
-    box-shadow:
-        0 0 20px
-        rgba(0,255,204,0.05);
-
-}
-
-
-/* =========================================================
-   HEADER
-========================================================= */
-
-.header {
-
-    top: 15px;
-
-    left: 15px;
-
-    right: 15px;
-
-    height: 54px;
-
-    display: grid;
-
-    grid-template-columns:
-        1fr 1fr 1fr;
-
-    align-items: center;
-
-}
-
-.logo {
-
-    font-size: 16px;
-
-    font-weight: bold;
-
-    letter-spacing: 3px;
-
-}
-
-.version {
-
-    color: #77859e;
-
-    font-size: 11px;
-
-    margin-left: 8px;
-
-}
-
-.online {
-
-    color: #00ffcc;
-
-    font-size: 11px;
-
-    margin-left: 10px;
-
-}
-
-.center {
-
-    text-align: center;
-
-}
-
-.right {
-
-    text-align: right;
-
-}
-
-
-/* =========================================================
-   SIDE PANELS
-========================================================= */
-
-.left {
-
-    top: 84px;
-
-    left: 15px;
-
-    width: 305px;
-
-    bottom: 220px;
-
-    overflow-y: auto;
-
-}
-
-.right-panel {
-
-    top: 84px;
-
-    right: 15px;
-
-    width: 305px;
-
-    bottom: 220px;
-
-    overflow-y: auto;
-
-}
-
-
-/* =========================================================
-   BOTTOM
-========================================================= */
-
-.bottom {
-
-    bottom: 15px;
-
-    left: 15px;
-
-    right: 15px;
-
-    height: 190px;
-
-    display: grid;
-
-    grid-template-columns:
-        2fr 1fr 1.3fr;
-
-    gap: 16px;
-
-}
-
-
-/* =========================================================
-   HEADINGS
-========================================================= */
-
-h3 {
-
-    color: #879bc1;
-
-    font-size: 11px;
-
-    letter-spacing: 1px;
-
-    padding-bottom: 7px;
-
-    margin-bottom: 10px;
-
-    border-bottom:
-        1px solid
-        rgba(135,155,193,0.25);
-
-}
-
-
-/* =========================================================
-   BARS
-========================================================= */
-
-.stat {
-
-    display: flex;
-
-    justify-content:
-        space-between;
-
-    font-size: 11px;
-
-    margin-bottom: 6px;
-
-}
-
-.value {
-
-    color: #00ffcc;
-
-}
-
-.bar {
-
-    width: 100%;
-
-    height: 7px;
-
-    background: #172037;
-
-    border-radius: 5px;
-
-    overflow: hidden;
-
-    margin-bottom: 12px;
-
-}
-
-.fill {
-
-    height: 100%;
-
-    background: #00e6c8;
-
-    transition:
-        width 0.5s ease;
-
-}
-
-
-/* =========================================================
-   TEXT
-========================================================= */
-
-.goal {
-
-    color: white;
-
-    font-size: 13px;
-
-    line-height: 1.5;
-
-    margin-bottom: 12px;
-
-}
-
-.thought {
-
-    color: #b9c5d7;
-
-    font-size: 10px;
-
-    line-height: 1.5;
-
-    padding: 5px;
-
-    border-left:
-        2px solid
-        #00ffcc;
-
-    background:
-        rgba(255,255,255,0.025);
-
-}
-
-.log {
-
-    height: 135px;
-
-    overflow-y: auto;
-
-    display: flex;
-
-    flex-direction: column;
-
-    gap: 5px;
-
-}
-
-
-/* =========================================================
-   MEMORY
-========================================================= */
-
-.memory {
-
-    font-size: 10px;
-
-    color: #00d9b5;
-
-    padding: 6px 3px;
-
-    border-bottom:
-        1px solid
-        rgba(255,255,255,0.04);
-
-}
-
-
-/* =========================================================
-   PERCEPTION
-========================================================= */
-
-.perception {
-
-    padding: 7px;
-
-    margin-bottom: 6px;
-
-    background:
-        rgba(255,255,255,0.025);
-
-    border-left:
-        2px solid
-        #00ffcc;
-
-    font-size: 10px;
-
-}
-
-.perception strong {
-
-    color: #d9fff8;
-
-}
-
-.muted {
-
-    color: #758198;
-
-}
-
-
-/* =========================================================
-   EVENT
-========================================================= */
-
-.event {
-
-    color: #d2fff7;
-
-    font-size: 10px;
-
-    line-height: 1.5;
-
-}
-
-
-/* =========================================================
-   ACTION
-========================================================= */
-
-.action {
-
-    color: #00ffcc;
-
-    font-size: 11px;
-
-    margin-top: 8px;
-
-}
-
-.learning {
-
-    color: #8996aa;
-
-    font-size: 10px;
-
-    margin-top: 8px;
-
-    line-height: 1.5;
-
-}
-
-
-/* =========================================================
-   MOBILE
-========================================================= */
-
-@media(max-width:1000px) {
-
-    body {
-
-        overflow: auto;
-
-    }
-
-    .header {
-
-        grid-template-columns: 1fr;
-
-        height: auto;
-
-        gap: 6px;
-
-    }
-
-    .center,
-    .right {
-
-        text-align: left;
-
-    }
-
-    .left,
-    .right-panel,
-    .bottom {
-
-        position: relative;
-
-        top: auto;
-
-        left: auto;
-
-        right: auto;
-
-        bottom: auto;
-
-        width:
-            calc(100% - 30px);
-
-        margin:
-            90px 15px 15px;
-
-    }
-
-    .right-panel {
-
-        margin-top: 15px;
-
-    }
-
-    .bottom {
-
-        height: auto;
-
-        grid-template-columns: 1fr;
-
-    }
-
-}
-
 </style>
-
 </head>
-
-
 <body>
-
-
-<!-- =========================================================
-     THREE.JS WORLD
-========================================================= -->
-
 <div id="world"></div>
-
-
-<!-- =========================================================
-     HEADER
-========================================================= -->
+<div class="city-label">GREENHAVEN • LIVING CITY</div>
 
 <div class="panel header">
-
-    <div class="logo">
-
-        ECHO
-
-        <span class="version">
-            v0.5
-        </span>
-
-        <span class="online">
-            ● LIVING WORLD
-        </span>
-
-    </div>
-
-
-    <div
-        id="cycle"
-        class="center"
-    >
-
-        CYCLE: 0
-
-    </div>
-
-
-    <div
-        id="time"
-        class="right"
-    >
-
-        DAY 1 — 08:00 AM
-
-    </div>
-
+<div class="logo">ECHO <span class="version">v0.6</span><span class="online">● CITY ONLINE</span></div>
+<div id="cycle" class="center">CYCLE: 0</div>
+<div id="time" class="right">DAY 1 — 08:00 AM</div>
 </div>
-
-
-<!-- =========================================================
-     LEFT
-========================================================= -->
 
 <div class="panel left">
+<h3>INTERNAL STATE</h3>
+<div class="stat"><span>Energy</span><span id="energy" class="value">80%</span></div>
+<div class="bar"><div id="energyBar" class="fill" style="width:80%"></div></div>
+<div class="stat"><span>Curiosity</span><span id="curiosity" class="value">70%</span></div>
+<div class="bar"><div id="curiosityBar" class="fill" style="width:70%"></div></div>
+<div class="stat"><span>Wonder</span><span id="wonder" class="value">50%</span></div>
+<div class="bar"><div id="wonderBar" class="fill" style="width:50%"></div></div>
+<div class="stat"><span>Social</span><span id="social" class="value">40%</span></div>
+<div class="bar"><div id="socialBar" class="fill" style="width:40%"></div></div>
 
+<h3>CURRENT INTENTION</h3>
+<div id="goal" class="goal">I am observing Greenhaven.</div>
 
-    <h3>
-        INTERNAL STATE
-    </h3>
-
-
-    <div class="stat">
-
-        <span>
-            Energy
-        </span>
-
-        <span
-            id="energy"
-            class="value"
-        >
-            80%
-        </span>
-
-    </div>
-
-
-    <div class="bar">
-
-        <div
-            id="energyBar"
-            class="fill"
-            style="width:80%"
-        ></div>
-
-    </div>
-
-
-    <div class="stat">
-
-        <span>
-            Curiosity
-        </span>
-
-        <span
-            id="curiosity"
-            class="value"
-        >
-            70%
-        </span>
-
-    </div>
-
-
-    <div class="bar">
-
-        <div
-            id="curiosityBar"
-            class="fill"
-            style="width:70%"
-        ></div>
-
-    </div>
-
-
-    <div class="stat">
-
-        <span>
-            Wonder
-        </span>
-
-        <span
-            id="wonder"
-            class="value"
-        >
-            50%
-        </span>
-
-    </div>
-
-
-    <div class="bar">
-
-        <div
-            id="wonderBar"
-            class="fill"
-            style="width:50%"
-        ></div>
-
-    </div>
-
-
-    <div class="stat">
-
-        <span>
-            Social
-        </span>
-
-        <span
-            id="social"
-            class="value"
-        >
-            40%
-        </span>
-
-    </div>
-
-
-    <div class="bar">
-
-        <div
-            id="socialBar"
-            class="fill"
-            style="width:40%"
-        ></div>
-
-    </div>
-
-
-    <!-- =====================================================
-         CURRENT INTENTION
-    ====================================================== -->
-
-    <h3>
-
-        CURRENT INTENTION
-
-    </h3>
-
-
-    <div
-        id="goal"
-        class="goal"
-    >
-
-        I am observing the world.
-
-    </div>
-
-
-    <!-- =====================================================
-         MEMORY
-    ====================================================== -->
-
-    <h3>
-
-        MEMORY
-
-    </h3>
-
-
-    <div
-        id="memory"
-        class="log"
-    >
-
-        <div class="memory">
-
-            No experiences yet.
-
-        </div>
-
-    </div>
-
-
+<h3>MEMORY</h3>
+<div id="memory" class="log"><div class="memory">ECHO has just entered Greenhaven.</div></div>
 </div>
-
-
-<!-- =========================================================
-     RIGHT
-========================================================= -->
 
 <div class="panel right-panel">
+<h3>WHAT ECHO PERCEIVES</h3>
+<div id="perceptions"></div>
 
+<h3 style="margin-top:16px">EMOTIONAL STATE</h3>
+<div class="stat"><span>Calm</span><span id="calm" class="value">60%</span></div>
+<div class="stat"><span>Excitement</span><span id="excitement" class="value">30%</span></div>
+<div class="stat"><span>Curiosity</span><span id="emotionCuriosity" class="value">70%</span></div>
+<div class="stat"><span>Unease</span><span id="unease" class="value">10%</span></div>
 
-    <h3>
-        WHAT ECHO PERCEIVES
-    </h3>
-
-
-    <div
-        id="perceptions"
-    ></div>
-
-
-    <h3 style="margin-top:15px">
-
-        EMOTIONAL STATE
-
-    </h3>
-
-
-    <div class="stat">
-
-        <span>
-            Calm
-        </span>
-
-        <span
-            id="calm"
-            class="value"
-        >
-            60%
-        </span>
-
-    </div>
-
-
-    <div class="stat">
-
-        <span>
-            Excitement
-        </span>
-
-        <span
-            id="excitement"
-            class="value"
-        >
-            30%
-        </span>
-
-    </div>
-
-
-    <div class="stat">
-
-        <span>
-            Curiosity
-        </span>
-
-        <span
-            id="emotionCuriosity"
-            class="value"
-        >
-            70%
-        </span>
-
-    </div>
-
-
-    <div class="stat">
-
-        <span>
-            Unease
-        </span>
-
-        <span
-            id="unease"
-            class="value"
-        >
-            10%
-        </span>
-
-    </div>
-
-
-    <h3 style="margin-top:18px">
-
-        LAST WORLD EVENT
-
-    </h3>
-
-
-    <div
-        id="event"
-        class="event"
-    >
-
-        The village is quiet.
-
-    </div>
-
-
+<h3 style="margin-top:16px">LAST WORLD EVENT</h3>
+<div id="event" class="event">Greenhaven is beginning its day.</div>
 </div>
-
-
-<!-- =========================================================
-     BOTTOM
-========================================================= -->
 
 <div class="panel bottom">
-
-
-    <!-- THOUGHTS -->
-
-    <div>
-
-        <h3>
-            STREAM OF THOUGHT
-        </h3>
-
-
-        <div
-            id="thoughts"
-            class="log"
-        ></div>
-
-    </div>
-
-
-    <!-- REFLECTION -->
-
-    <div>
-
-        <h3>
-            REFLECTION
-        </h3>
-
-
-        <div
-            id="reflection"
-            class="event"
-        >
-
-            I am beginning to observe my environment.
-
-        </div>
-
-    </div>
-
-
-    <!-- WORLD -->
-
-    <div>
-
-        <h3>
-            WORLD
-        </h3>
-
-
-        <div class="event">
-
-            Location:
-            <span style="color:#00ffcc">
-                Greenhaven
-            </span>
-
-        </div>
-
-
-        <div
-            id="weather"
-            class="event"
-        >
-
-            Weather: Clear
-
-        </div>
-
-
-        <div
-            id="action"
-            class="action"
-        >
-
-            ACTION: Observing
-
-        </div>
-
-
-        <div
-            id="learning"
-            class="learning"
-        >
-
-            LEARNING:
-            Nothing yet.
-
-        </div>
-
-    </div>
-
-
+<div>
+<h3>STREAM OF THOUGHT</h3>
+<div id="thoughts" class="log"></div>
+</div>
+<div>
+<h3>REFLECTION</h3>
+<div id="reflection" class="event">A new city. I wonder what happens here.</div>
+</div>
+<div>
+<h3>WORLD</h3>
+<div class="event">Location: <span style="color:#00ffcc">Greenhaven</span></div>
+<div id="weather" class="event">Weather: Clear</div>
+<div id="population" class="event">Population: 0 nearby</div>
+<div id="action" class="action">ACTION: Observing</div>
+<div id="learning" class="learning">LEARNING: Nothing yet.</div>
+</div>
 </div>
 
+<div class="controls">
+<button class="control" id="zoomIn">＋</button>
+<button class="control" id="zoomOut">−</button>
+<button class="control" id="resetCamera">RESET</button>
+</div>
 
 <script>
+const clamp=(v,min=0,max=1)=>Math.max(min,Math.min(max,v));
+const random=(min,max)=>Math.random()*(max-min)+min;
+const choose=a=>a[Math.floor(Math.random()*a.length)];
 
-/* =========================================================
-   ECHO v0.5
-   LIVING WORLD
-========================================================= */
-
-
-/* =========================================================
-   UTILITIES
-========================================================= */
-
-function clamp(
-    value,
-    min = 0,
-    max = 1
-) {
-
-    return Math.max(
-        min,
-        Math.min(
-            max,
-            value
-        )
-    );
-
+class Greenhaven{
+constructor(){
+this.day=1;
+this.minute=8*60;
+this.weather="Clear";
+this.events=["Greenhaven is beginning its day."];
+this.people=[];
+this.buildings=[];
+this.parks=[];
+this.roads=[];
+this.cars=[];
+this.trees=[];
+this.createCity();
+this.createPeople();
+this.createCars();
+}
+createCity(){
+this.buildings=[
+{id:"house1",name:"Maple House",type:"house",x:-18,z:-13,w:4,h:3.2,d:4},
+{id:"house2",name:"Oak House",type:"house",x:-12,z:-13,w:4,h:3.5,d:4},
+{id:"house3",name:"Pine House",type:"house",x:-6,z:-13,w:4,h:3,d:4},
+{id:"apartments",name:"Greenhaven Apartments",type:"apartment",x:-16,z:-5,w:7,h:7,d:6},
+{id:"market",name:"Greenhaven Market",type:"market",x:8,z:-13,w:6,h:4.2,d:5},
+{id:"cafe",name:"Corner Café",type:"cafe",x:16,z:-13,w:5,h:3.2,d:4},
+{id:"bank",name:"Greenhaven Bank",type:"bank",x:23,z:-13,w:5,h:5,d:5},
+{id:"gym",name:"Greenhaven Gym",type:"gym",x:18,z:5,w:7,h:5,d:7},
+{id:"library",name:"Greenhaven Library",type:"library",x:7,z:8,w:6,h:4,d:5},
+{id:"clinic",name:"Greenhaven Clinic",type:"clinic",x:-5,z:8,w:5,h:4,d:5},
+{id:"school",name:"Greenhaven School",type:"school",x:-16,z:8,w:7,h:4.5,d:6},
+{id:"station",name:"Greenhaven Station",type:"station",x:21,z:15,w:9,h:4,d:5}
+];
+this.roads=[
+{x:0,z:-1,w:5,l:58,dir:"x"},
+{x:0,z:9,w:4,l:58,dir:"x"},
+{x:0,z:-11,w:4,l:58,dir:"x"},
+{x:-3,z:3,w:4,l:38,dir:"z"},
+{x:18,z:5,w:4,l:38,dir:"z"}
+];
+this.parks=[
+{id:"centralPark",name:"Central Park",x:0,z:17,w:20,d:10,activities:["walk","run","relax","socialize"]},
+{id:"riverside",name:"Riverside Walk",x:-22,z:18,w:12,d:6,activities:["walk","run","observe"]}
+];
+for(let i=0;i<30;i++)this.trees.push({x:random(-28,28),z:random(-19,25)});
+}
+createPeople(){
+const data=[
+["Mira","young",10,2,"walking",.035],
+["Arjun","young",-9,3,"walking",.045],
+["Raman","elder",2,16,"sitting",.018],
+["Student",-12,7,"walking",.045],
+["Shopkeeper",8,-9,"working",.018],
+["Jogger",-4,17,"running",.065],
+["Dog Walker",5,17,"walking dog",.03],
+["Cyclist",13,10,"cycling",.075],
+["Tourist",25,7,"exploring",.035],
+["Musician",14,-7,"playing music",.02]
+];
+this.people=data.map((p,i)=>({
+id:"person"+i,
+name:p[0],
+x:p[2]??p[1],
+z:p[3]??p[2],
+activity:p[4]??"walking",
+speed:p[5]??.03,
+mood:choose(["calm","happy","busy","curious","relaxed"]),
+destination:null
+}));
+}
+createCars(){
+for(let i=0;i<7;i++)this.cars.push({x:-28+i*8,z:-1,dir:i%2?1:-1,speed:random(.04,.09)});
+}
+tick(){
+this.minute+=3;
+if(this.minute>=1440){this.minute-=1440;this.day++}
+this.updateWeather();
+this.updatePeople();
+this.updateCars();
+if(Math.random()<.015)this.randomEvent();
+}
+time(){
+let h=Math.floor(this.minute/60),m=this.minute%60,s=h>=12?"PM":"AM",dh=h%12||12;
+return `DAY ${this.day} — ${String(dh).padStart(2,"0")}:${String(m).padStart(2,"0")} ${s}`;
+}
+updateWeather(){
+if(Math.random()<.008)this.weather=choose(["Clear","Cloudy","Windy","Rain"]);
+}
+updatePeople(){
+this.people.forEach(p=>{
+if(!p.destination||Math.hypot(p.x-p.destination.x,p.z-p.destination.z)<.5){
+let places=[...this.parks,...this.buildings];
+let target=choose(places);
+p.destination={x:target.x+random(-2,2),z:target.z+random(-2,2)};
+p.activity=choose(["walking","observing","talking","wandering","shopping"]);
+if(p.name==="Jogger")p.activity="running";
+}
+let dx=p.destination.x-p.x,dz=p.destination.z-p.z,d=Math.hypot(dx,dz)||1;
+p.x+=dx/d*p.speed;
+p.z+=dz/d*p.speed;
+});
+}
+updateCars(){
+this.cars.forEach(c=>{
+c.x+=c.speed*c.dir;
+if(c.x>31)c.x=-31;
+if(c.x<-31)c.x=31;
+});
+}
+randomEvent(){
+const e=choose([
+"A cyclist passes through Main Street.",
+"Several people gather outside the café.",
+"A bus arrives at Greenhaven Station.",
+"A street musician starts playing.",
+"Someone runs across the park.",
+"A dog suddenly chases a bird.",
+"Rain clouds appear above the city.",
+"A delivery vehicle stops near the market."
+]);
+this.events.unshift(e);
+if(this.events.length>20)this.events.pop();
+}
+perceive(x,z,r=12){
+const list=[];
+this.buildings.forEach(b=>{
+let d=Math.hypot(x-b.x,z-b.z);
+if(d<r)list.push({name:b.name,type:b.type,distance:d,activity:"stationary"});
+});
+this.parks.forEach(p=>{
+let d=Math.hypot(x-p.x,z-p.z);
+if(d<r)list.push({name:p.name,type:"park",distance:d,activity:"green space"});
+});
+this.people.forEach(p=>{
+let d=Math.hypot(x-p.x,z-p.z);
+if(d<r)list.push({name:p.name,type:"person",distance:d,activity:p.activity,mood:p.mood});
+});
+return list.sort((a,b)=>a.distance-b.distance);
+}
 }
 
+const city=new Greenhaven();
 
-function random(
-    min,
-    max
-) {
+const mind={
+cycle:0,
+energy:.8,
+curiosity:.7,
+wonder:.5,
+social:.4,
+calm:.6,
+excitement:.3,
+unease:.1,
+thought:"I am looking at Greenhaven.",
+question:"What kind of place is this?",
+intention:"Explore the city.",
+action:"Observing",
+learning:"The city is larger than I expected.",
+memories:[]
+};
 
-    return (
-        Math.random() *
-        (max - min)
-    ) + min;
+let scene,camera,renderer,echo;
+let cityMeshes=[];
+let peopleMeshes=[];
+let carMeshes=[];
+let cameraTarget=new THREE.Vector3(0,0,0);
+let cameraDistance=42;
 
+function mat(color,rough=.8,emissive=0){
+return new THREE.MeshStandardMaterial({color,roughness:rough,emissive,emissiveIntensity:emissive?0.25:0});
 }
 
-
-function choose(
-    array
-) {
-
-    return array[
-        Math.floor(
-            Math.random() *
-            array.length
-        )
-    ];
-
+function box(w,h,d,color,x,y,z){
+const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat(color));
+m.position.set(x,y,z);
+m.castShadow=true;
+m.receiveShadow=true;
+scene.add(m);
+return m;
 }
 
-
-/* =========================================================
-   WORLD
-========================================================= */
-
-class LivingWorld {
-
-
-    constructor() {
-
-
-        this.minute =
-            8 * 60;
-
-
-        this.weather =
-            "Clear";
-
-
-        this.events = [];
-
-
-        this.entities = [];
-
-
-        this.createEntities();
-
-    }
-
-
-    /* =====================================================
-       CREATE WORLD
-    ===================================================== */
-
-
-    createEntities() {
-
-
-        this.entities = [
-
-            {
-
-                id:
-                    "old_man",
-
-                name:
-                    "Old Man",
-
-                type:
-                    "person",
-
-                x:
-                    -4,
-
-                z:
-                    -2,
-
-                speed:
-                    0.025,
-
-                mood:
-                    "quiet",
-
-                activity:
-                    "walking",
-
-                destination:
-                    null,
-
-                memory:
-                    [],
-
-                relationship:
-                    0
-
-            },
-
-
-            {
-
-                id:
-                    "mira",
-
-                name:
-                    "Mira",
-
-                type:
-                    "person",
-
-                x:
-                    3,
-
-                z:
-                    1,
-
-                speed:
-                    0.03,
-
-                mood:
-                    "cheerful",
-
-                activity:
-                    "wandering",
-
-                destination:
-                    null,
-
-                memory:
-                    [],
-
-                relationship:
-                    0
-
-            },
-
-
-            {
-
-                id:
-                    "dog",
-
-                name:
-                    "Dog",
-
-                type:
-                    "animal",
-
-                x:
-                    -1,
-
-                z:
-                    -5,
-
-                speed:
-                    0.045,
-
-                mood:
-                    "playful",
-
-                activity:
-                    "wandering",
-
-                destination:
-                    null,
-
-                memory:
-                    [],
-
-                relationship:
-                    0
-
-            },
-
-
-            {
-
-                id:
-                    "well",
-
-                name:
-                    "Water Well",
-
-                type:
-                    "object",
-
-                x:
-                    0,
-
-                z:
-                    -4
-
-            },
-
-
-            {
-
-                id:
-                    "house",
-
-                name:
-                    "Wooden House",
-
-                type:
-                    "location",
-
-                x:
-                    4,
-
-                z:
-                    -4
-
-            },
-
-
-            {
-
-                id:
-                    "tree",
-
-                name:
-                    "Large Tree",
-
-                type:
-                    "object",
-
-                x:
-                    -6,
-
-                z:
-                    3
-
-            }
-
-        ];
-
-    }
-
-
-    /* =====================================================
-       GET ENTITY
-    ===================================================== */
-
-
-    get(
-        id
-    ) {
-
-        return this.entities.find(
-            e =>
-                e.id === id
-        );
-
-    }
-
-
-    /* =====================================================
-       WORLD TICK
-    ===================================================== */
-
-
-    tick() {
-
-
-        this.minute++;
-
-
-        this.updateWeather();
-
-
-        this.updatePeople();
-
-
-        this.updateEvents();
-
-    }
-
-
-    /* =====================================================
-       TIME
-    ===================================================== */
-
-
-    getTime() {
-
-
-        const hour =
-            Math.floor(
-                this.minute / 60
-            ) % 24;
-
-
-        const minute =
-            this.minute % 60;
-
-
-        const suffix =
-            hour >= 12
-                ? "PM"
-                : "AM";
-
-
-        let displayHour =
-            hour % 12;
-
-
-        if (
-            displayHour === 0
-        ) {
-
-            displayHour =
-                12;
-
-        }
-
-
-        return {
-
-            hour,
-            minute,
-
-            text:
-                `Day 1 — ${
-                    String(
-                        displayHour
-                    ).padStart(
-                        2,
-                        "0"
-                    )
-                }:${
-                    String(
-                        minute
-                    ).padStart(
-                        2,
-                        "0"
-                    )
-                } ${suffix}`
-
-        };
-
-    }
-
-
-    /* =====================================================
-       WEATHER
-    ===================================================== */
-
-
-    updateWeather() {
-
-
-        const roll =
-            Math.random();
-
-
-        if (
-            roll < 0.015
-        ) {
-
-            this.weather =
-                "Cloudy";
-
-
-            this.addEvent(
-                "Clouds are slowly gathering."
-            );
-
-        }
-
-
-        else if (
-            roll < 0.025
-        ) {
-
-            this.weather =
-                "Windy";
-
-
-            this.addEvent(
-                "A strange wind moves through the village."
-            );
-
-        }
-
-
-        else if (
-            roll < 0.035
-        ) {
-
-            this.weather =
-                "Clear";
-
-        }
-
-    }
-
-
-    /* =====================================================
-       NPC MOVEMENT
-    ===================================================== */
-
-
-    updatePeople() {
-
-
-        const people =
-            this.entities.filter(
-                e =>
-                    e.type ===
-                    "person" ||
-                    e.type ===
-                    "animal"
-            );
-
-
-        people.forEach(
-            person => {
-
-
-                if (
-                    !person.destination ||
-                    distance(
-                        person,
-                        person.destination
-                    ) < 0.4
-                ) {
-
-
-                    person.destination = {
-
-                        x:
-                            random(
-                                -7,
-                                7
-                            ),
-
-                        z:
-                            random(
-                                -7,
-                                7
-                            )
-
-                    };
-
-
-                    if (
-                        person.id ===
-                        "old_man"
-                    ) {
-
-
-                        person.activity =
-                            choose([
-
-                                "walking",
-
-                                "visiting the well",
-
-                                "returning home",
-
-                                "watching the village"
-
-                            ]);
-
-                    }
-
-
-                    else if (
-                        person.id ===
-                        "mira"
-                    ) {
-
-                        person.activity =
-                            choose([
-
-                                "wandering",
-
-                                "looking around",
-
-                                "walking"
-
-                            ]);
-
-                    }
-
-
-                    else {
-
-                        person.activity =
-                            "wandering";
-
-                    }
-
-                }
-
-
-                moveEntity(
-                    person,
-                    person.destination,
-                    person.speed
-                );
-
-            }
-        );
-
-    }
-
-
-    /* =====================================================
-       WORLD EVENTS
-    ===================================================== */
-
-
-    updateEvents() {
-
-
-        const oldMan =
-            this.get(
-                "old_man"
-            );
-
-
-        const well =
-            this.get(
-                "well"
-            );
-
-
-        if (
-            oldMan &&
-            well &&
-            distance(
-                oldMan,
-                well
-            ) < 1
-        ) {
-
-
-            if (
-                Math.random()
-                < 0.08
-            ) {
-
-                oldMan.activity =
-                    "collecting water";
-
-
-                this.addEvent(
-                    "The Old Man is standing near the well."
-                );
-
-            }
-
-        }
-
-
-        if (
-            Math.random()
-            < 0.015
-        ) {
-
-            this.addEvent(
-                choose([
-
-                    "A distant sound echoes through the village.",
-
-                    "A bird suddenly flies from the tree.",
-
-                    "Someone seems to have opened the house door.",
-
-                    "The village becomes unusually quiet."
-
-                ])
-            );
-
-        }
-
-    }
-
-
-    /* =====================================================
-       EVENT
-    ===================================================== */
-
-
-    addEvent(
-        text
-    ) {
-
-
-        this.events.unshift({
-
-            text,
-
-            minute:
-                this.minute
-
-        });
-
-
-        if (
-            this.events.length >
-            30
-        ) {
-
-            this.events.pop();
-
-        }
-
-    }
-
-
-    /* =====================================================
-       PERCEPTION
-    ===================================================== */
-
-
-    perceive(
-        echo,
-        radius = 8
-    ) {
-
-
-        const visible = [];
-
-
-        this.entities.forEach(
-            entity => {
-
-
-                const d =
-                    distance(
-                        echo,
-                        entity
-                    );
-
-
-                if (
-                    d <= radius
-                ) {
-
-
-                    visible.push({
-
-                        id:
-                            entity.id,
-
-                        name:
-                            entity.name,
-
-                        type:
-                            entity.type,
-
-                        distance:
-                            Number(
-                                d.toFixed(
-                                    1
-                                )
-                            ),
-
-                        activity:
-                            entity.activity ||
-                            "still",
-
-                        mood:
-                            entity.mood ||
-                            null,
-
-                        x:
-                            entity.x,
-
-                        z:
-                            entity.z
-
-                    });
-
-                }
-
-            }
-        );
-
-
-        return visible;
-
-    }
-
+function tree(x,z){
+box(.3,2,.3,0x66432d,x,1,z);
+const crown=new THREE.Mesh(new THREE.SphereGeometry(1.4,12,12),mat(0x2e6b36));
+crown.position.set(x,2.6,z);
+crown.castShadow=true;
+scene.add(crown);
 }
 
-
-/* =========================================================
-   MOVEMENT HELPERS
-========================================================= */
-
-function distance(
-    a,
-    b
-) {
-
-    const dx =
-        a.x -
-        b.x;
-
-
-    const dz =
-        a.z -
-        b.z;
-
-
-    return Math.sqrt(
-        dx * dx +
-        dz * dz
-    );
-
+function building(b){
+const colors={house:0xc89469,apartment:0x8795a5,market:0xd5ad55,cafe:0xb8795b,bank:0x718698,gym:0x4e8b82,library:0x756a98,clinic:0xd7d7d7,school:0xd2a45e,station:0x63798b};
+box(b.w,b.h,b.d,colors[b.type]||0x888888,b.x,b.h/2,b.z);
+const roof= new THREE.Mesh(new THREE.ConeGeometry(Math.max(b.w,b.d)*.72,.65,4),mat(0x493b36));
+roof.position.set(b.x,b.h+.32,b.z);
+roof.rotation.y=Math.PI/4;
+roof.castShadow=true;
+scene.add(roof);
+const door=box(.85,1.65,.12,0x4a3025,b.x,.82,b.z-b.d/2-.08);
+for(let row=0;row<Math.max(1,Math.floor(b.h/1.8));row++){
+for(let col=0;col<Math.max(1,Math.floor(b.w/1.6));col++){
+const w=box(.52,.62,.08,0x91d8e5,b.x-b.w/2+1+col*1.45,1.2+row*1.45,b.z-b.d/2-.05);
+w.material.emissive=0x17353b;
+}
+}
+if(["gym","market","cafe","bank","library","clinic","school","station"].includes(b.type)){
+const sign=box(Math.min(b.w*.75,4),.48,.1,0x202b32,b.x,Math.min(b.h-.45,3.4),b.z-b.d/2-.1);
+}
 }
 
-
-function moveEntity(
-    entity,
-    destination,
-    speed
-) {
-
-
-    if (!destination) {
-
-        return;
-
-    }
-
-
-    const dx =
-        destination.x -
-        entity.x;
-
-
-    const dz =
-        destination.z -
-        entity.z;
-
-
-    const d =
-        Math.sqrt(
-            dx * dx +
-            dz * dz
-        );
-
-
-    if (
-        d < 0.01
-    ) {
-
-        return;
-
-    }
-
-
-    entity.x +=
-        (
-            dx / d
-        ) *
-        speed;
-
-
-    entity.z +=
-        (
-            dz / d
-        ) *
-        speed;
-
+function road(r){
+const geo=r.dir==="x"?new THREE.PlaneGeometry(r.l,r.w):new THREE.PlaneGeometry(r.w,r.l);
+const m=new THREE.Mesh(geo,mat(0x30353a,.95));
+m.rotation.x=-Math.PI/2;
+m.position.set(r.x,.02,r.z);
+scene.add(m);
+const count=Math.floor(r.l/4);
+for(let i=-count;i<count;i++){
+const x=r.dir==="x"?r.x+i*4:r.x;
+const z=r.dir==="x"?r.z:r.z+i*4;
+const line=box(r.dir==="x"?1.7:.08,.015,r.dir==="x"?.08:1.7,0xe7d66b,x,.045,z);
+}
 }
 
-
-/* =========================================================
-   MEMORY
-========================================================= */
-
-class Memory {
-
-
-    constructor() {
-
-        this.episodes = [];
-
-        this.facts = [];
-
-        this.people = {};
-
-        this.places = {};
-
-        this.hypotheses = [];
-
-    }
-
-
-    rememberEpisode(
-        text
-    ) {
-
-
-        this.episodes.unshift({
-
-            text,
-
-            time:
-                Date.now()
-
-        });
-
-
-        if (
-            this.episodes.length >
-            50
-        ) {
-
-            this.episodes.pop();
-
-        }
-
-    }
-
-
-    learnFact(
-        fact
-    ) {
-
-
-        if (
-            !this.facts.includes(
-                fact
-            )
-        ) {
-
-            this.facts.unshift(
-                fact
-            );
-
-        }
-
-    }
-
-
-    rememberPerson(
-        id,
-        observation
-    ) {
-
-
-        if (
-            !this.people[id]
-        ) {
-
-            this.people[id] = [];
-
-        }
-
-
-        this.people[id].unshift(
-            observation
-        );
-
-
-        if (
-            this.people[id].length >
-            15
-        ) {
-
-            this.people[id].pop();
-
-        }
-
-    }
-
-
-    addHypothesis(
-        text
-    ) {
-
-
-        this.hypotheses.unshift({
-
-            text,
-
-            confidence:
-                random(
-                    0.35,
-                    0.75
-                ),
-
-            created:
-                Date.now()
-
-        });
-
-
-        if (
-            this.hypotheses.length >
-            20
-        ) {
-
-            this.hypotheses.pop();
-
-        }
-
-    }
-
-
-    recent(
-        count = 6
-    ) {
-
-        return this.episodes.slice(
-            0,
-            count
-        );
-
-    }
-
+function park(p){
+const grass=new THREE.Mesh(new THREE.PlaneGeometry(p.w,p.d),mat(0x3f8147));
+grass.rotation.x=-Math.PI/2;
+grass.position.set(p.x,.035,p.z);
+grass.receiveShadow=true;
+scene.add(grass);
+const path=new THREE.Mesh(new THREE.PlaneGeometry(p.w*.78,1.1),mat(0xb7aa8e));
+path.rotation.x=-Math.PI/2;
+path.position.set(p.x,.065,p.z);
+scene.add(path);
+for(let i=0;i<7;i++)tree(p.x+random(-p.w*.42,p.w*.42),p.z+random(-p.d*.38,p.d*.38));
+for(let i=0;i<3;i++)box(1.8,.18,.45,0x6b4932,p.x-4+i*4,.65,p.z+2);
 }
 
-
-/* =========================================================
-   ECHO MIND
-========================================================= */
-
-class EchoMind {
-
-
-    constructor() {
-
-
-        this.energy =
-            0.80;
-
-
-        this.curiosity =
-            0.70;
-
-
-        this.wonder =
-            0.50;
-
-
-        this.social =
-            0.40;
-
-
-        this.calm =
-            0.60;
-
-
-        this.excitement =
-            0.30;
-
-
-        this.unease =
-            0.10;
-
-
-        this.memory =
-            new Memory();
-
-
-        this.thoughts =
-            [];
-
-
-        this.currentThought =
-            "I am observing.";
-
-
-        this.question =
-            "";
-
-
-        this.hypothesis =
-            "";
-
-
-        this.intention =
-            "Observe the village.";
-
-
-        this.action =
-            "observe";
-
-
-        this.focus =
-            null;
-
-
-        this.cycle =
-            0;
-
-
-        this.lastEvent =
-            "The village is quiet.";
-
-
-        this.lastLearning =
-            "Nothing yet.";
-
-    }
-
-
-    /* =====================================================
-       ATTENTION
-    ===================================================== */
-
-
-    attend(
-        perceptions,
-        world
-    ) {
-
-
-        if (
-            perceptions.length ===
-            0
-        ) {
-
-            return null;
-
-        }
-
-
-        /*
-         * ECHO does not simply choose
-         * the closest object.
-         *
-         * Attention is influenced by:
-         *
-         * novelty
-         * movement
-         * social relevance
-         * distance
-         * randomness
-         * existing memory
-         */
-
-
-        const candidates =
-            perceptions.map(
-                p => {
-
-
-                    let score =
-                        random(
-                            0,
-                            0.35
-                        );
-
-
-                    /*
-                     * Movement catches attention.
-                     */
-
-                    if (
-                        p.activity &&
-                        p.activity !==
-                        "still"
-                    ) {
-
-                        score +=
-                            0.30;
-
-                    }
-
-
-                    /*
-                     * People naturally
-                     * attract social attention.
-                     */
-
-                    if (
-                        p.type ===
-                        "person"
-                    ) {
-
-                        score +=
-                            this.social *
-                            0.35;
-
-                    }
-
-
-                    /*
-                     * Animals can be interesting.
-                     */
-
-                    if (
-                        p.type ===
-                        "animal"
-                    ) {
-
-                        score +=
-                            this.curiosity *
-                            0.20;
-
-                    }
-
-
-                    /*
-                     * Unknown places gain
-                     * wonder.
-                     */
-
-                    if (
-                        p.type ===
-                        "location"
-                    ) {
-
-                        score +=
-                            this.wonder *
-                            0.25;
-
-                    }
-
-
-                    /*
-                     * Closer perception.
-                     */
-
-                    score +=
-                        Math.max(
-                            0,
-                            1 -
-                            p.distance / 8
-                        )
-                        *
-                        0.20;
-
-
-                    /*
-                     * Previously remembered
-                     * people get extra meaning.
-                     */
-
-                    if (
-                        p.id ===
-                        "old_man" &&
-                        this.memory.people.old_man
-                    ) {
-
-                        score +=
-                            0.25;
-
-                    }
-
-
-                    return {
-
-                        perception:
-                            p,
-
-                        score
-
-                    };
-
-                }
-            );
-
-
-        candidates.sort(
-            (
-                a,
-                b
-            ) =>
-                b.score -
-                a.score
-        );
-
-
-        return candidates[0].perception;
-
-    }
-
-
-    /* =====================================================
-       THINK
-    ===================================================== */
-
-
-    think(
-        perceptions,
-        world
-    ) {
-
-
-        this.cycle++;
-
-
-        /*
-         * Natural state drift.
-         */
-
-        this.energy =
-            clamp(
-                this.energy -
-                0.004
-            );
-
-
-        this.curiosity =
-            clamp(
-                this.curiosity +
-                random(
-                    -0.015,
-                    0.015
-                )
-            );
-
-
-        this.wonder =
-            clamp(
-                this.wonder +
-                random(
-                    -0.02,
-                    0.02
-                )
-            );
-
-
-        /*
-         * Choose what currently
-         * deserves attention.
-         */
-
-        const focus =
-            this.attend(
-                perceptions,
-                world
-            );
-
-
-        this.focus =
-            focus;
-
-
-        if (!focus) {
-
-            return;
-
-        }
-
-
-        /*
-         * The mind creates an
-         * interpretation.
-         */
-
-        let thought;
-
-
-        let question;
-
-
-        let intention;
-
-
-        let action;
-
-
-        let hypothesis;
-
-
-        /* =================================================
-           PEOPLE
-        ================================================= */
-
-
-        if (
-            focus.type ===
-            "person"
-        ) {
-
-
-            const remembered =
-                this.memory.people[
-                    focus.id
-                ];
-
-
-            if (
-                remembered
-            ) {
-
-
-                thought =
-                    `I remember ${focus.name}. Something about their behavior feels familiar.`;
-
-
-                question =
-                    `I wonder what ${focus.name} is doing now.`;
-
-
-                hypothesis =
-                    `${focus.name} may be following a routine I have not understood yet.`;
-
-
-            }
-
-
-            else {
-
-
-                thought =
-                    `There is someone here. I do not know much about them yet.`;
-
-
-                question =
-                    `Who is ${focus.name}?`;
-
-
-                hypothesis =
-                    `${focus.name} may know something about this place.`;
-
-            }
-
-
-            this.social =
-                clamp(
-                    this.social +
-                    0.025
-                );
-
-
-            this.excitement =
-                clamp(
-                    this.excitement +
-                    0.02
-                );
-
-
-            /*
-             * ECHO may approach,
-             * observe, or simply watch.
-             */
-
-            const choice =
-                Math.random();
-
-
-            if (
-                choice < 0.35
-            ) {
-
-                intention =
-                    `Watch ${focus.name} for a moment.`;
-
-                action =
-                    "observe";
-
-            }
-
-            else if (
-                choice < 0.65
-            ) {
-
-                intention =
-                    `Move closer to ${focus.name}.`;
-
-                action =
-                    "approach";
-
-            }
-
-            else {
-
-                intention =
-                    `Follow ${focus.name} and see where they go.`;
-
-                action =
-                    "follow";
-
-            }
-
-        }
-
-
-        /* =================================================
-           ANIMAL
-        ================================================= */
-
-
-        else if (
-            focus.type ===
-            "animal"
-        ) {
-
-
-            thought =
-                `The ${focus.name} is moving differently from the people. I find that interesting.`;
-
-
-            question =
-                `Where is the ${focus.name} going?`;
-
-
-            hypothesis =
-                `The ${focus.name} may have its own reason for moving around the village.`;
-
-
-            this.wonder =
-                clamp(
-                    this.wonder +
-                    0.04
-                );
-
-
-            intention =
-                `Observe the ${focus.name}.`;
-
-
-            action =
-                "observe";
-
-        }
-
-
-        /* =================================================
-           LOCATION
-        ================================================= */
-
-
-        else if (
-            focus.type ===
-            "location"
-        ) {
-
-
-            thought =
-                `The ${focus.name} has been here the whole time, but I still do not understand what happens inside it.`;
-
-
-            question =
-                `What happens at the ${focus.name} when nobody is watching?`;
-
-
-            hypothesis =
-                `There may be events happening here that I have not witnessed.`;
-
-
-            this.wonder =
-                clamp(
-                    this.wonder +
-                    0.05
-                );
-
-
-            intention =
-                `Observe ${focus.name} without assuming I understand it.`;
-
-
-            action =
-                "approach";
-
-        }
-
-
-        /* =================================================
-           OBJECT
-        ================================================= */
-
-
-        else {
-
-
-            thought =
-                `I notice the ${focus.name}. I have seen it before, but seeing something is not the same as understanding it.`;
-
-
-            question =
-                `What purpose might the ${focus.name} have?`;
-
-
-            hypothesis =
-                `The ${focus.name} may be connected to something else in the village.`;
-
-
-            this.curiosity =
-                clamp(
-                    this.curiosity +
-                    0.03
-                );
-
-
-            intention =
-                `Look at the ${focus.name} from a different perspective.`;
-
-
-            action =
-                "approach";
-
-        }
-
-
-        /*
-         * Unexpected events can override
-         * normal thinking.
-         */
-
-        if (
-            world.events.length >
-            0
-        ) {
-
-
-            const recent =
-                world.events[0];
-
-
-            if (
-                Math.random()
-                <
-                0.30
-            ) {
-
-
-                thought =
-                    `Something changed. ${recent.text}`;
-
-
-                question =
-                    `Why did that happen?`;
-
-
-                hypothesis =
-                    `The change may be connected to something I have not noticed yet.`;
-
-
-                intention =
-                    "Observe the change before acting.";
-
-
-                action =
-                    "observe";
-
-
-                this.wonder =
-                    clamp(
-                        this.wonder +
-                        0.08
-                    );
-
-            }
-
-        }
-
-
-        /* =================================================
-           MEMORY
-        ================================================= */
-
-
-        this.memory.rememberEpisode(
-
-            `I noticed ${focus.name}. ${thought}`
-
-        );
-
-
-        if (
-            focus.type ===
-            "person"
-        ) {
-
-
-            this.memory.rememberPerson(
-
-                focus.id,
-
-                `${focus.name} was ${focus.activity}.`
-
-            );
-
-        }
-
-
-        this.memory.addHypothesis(
-            hypothesis
-        );
-
-
-        this.lastLearning =
-            hypothesis;
-
-
-        this.currentThought =
-            thought;
-
-
-        this.question =
-            question;
-
-
-        this.hypothesis =
-            hypothesis;
-
-
-        this.intention =
-            intention;
-
-
-        this.action =
-            action;
-
-
-        this.lastEvent =
-            world.events.length
-                ? world.events[0].text
-                : "The village continues.";
-
-    }
-
-
-    /* =====================================================
-       REFLECT
-    ===================================================== */
-
-
-    reflect() {
-
-
-        if (
-            !this.focus
-        ) {
-
-            return "I am still observing.";
-
-        }
-
-
-        const memories =
-            this.memory.recent(
-                3
-            );
-
-
-        if (
-            memories.length >=
-            2
-        ) {
-
-
-            return `I keep encountering patterns. ${this.focus.name} is becoming part of my understanding of this place. I am not sure my interpretation is correct.`;
-
-        }
-
-
-        return `I have experienced something new. I do not know what it means yet, but I want to find out.`;
-
-    }
-
+function streetLight(x,z){
+box(.08,3,.08,0x34383b,x,1.5,z);
+const lamp=new THREE.Mesh(new THREE.SphereGeometry(.17,10,10),mat(0xffd98a,.5,0xffa000));
+lamp.position.set(x,3.15,z);
+scene.add(lamp);
 }
 
-
-/* =========================================================
-   CREATE WORLD + MIND
-========================================================= */
-
-const world =
-    new LivingWorld();
-
-
-const mind =
-    new EchoMind();
-
-
-/* =========================================================
-   THREE.JS
-========================================================= */
-
-const container =
-    document.getElementById(
-        "world"
-    );
-
-
-let scene;
-
-let camera;
-
-let renderer;
-
-let echoMesh;
-
-const meshes = {};
-
-
-if (
-    typeof THREE !==
-    "undefined"
-) {
-
-
-    scene =
-        new THREE.Scene();
-
-
-    scene.background =
-        new THREE.Color(
-            0x0d1420
-        );
-
-
-    camera =
-        new THREE.PerspectiveCamera(
-
-            55,
-
-            window.innerWidth /
-            window.innerHeight,
-
-            0.1,
-
-            1000
-
-        );
-
-
-    camera.position.set(
-        0,
-        11,
-        16
-    );
-
-
-    camera.lookAt(
-        0,
-        0,
-        0
-    );
-
-
-    renderer =
-        new THREE.WebGLRenderer({
-
-            antialias:
-                true
-
-        });
-
-
-    renderer.setPixelRatio(
-        Math.min(
-            window.devicePixelRatio,
-            2
-        )
-    );
-
-
-    renderer.setSize(
-        window.innerWidth,
-        window.innerHeight
-    );
-
-
-    container.appendChild(
-        renderer.domElement
-    );
-
-
-    /* =====================================================
-       LIGHT
-    ===================================================== */
-
-
-    scene.add(
-        new THREE.AmbientLight(
-            0xffffff,
-            0.72
-        )
-    );
-
-
-    const light =
-        new THREE.DirectionalLight(
-            0xffffff,
-            0.8
-        );
-
-
-    light.position.set(
-        10,
-        20,
-        10
-    );
-
-
-    scene.add(
-        light
-    );
-
-
-    /* =====================================================
-       GROUND
-    ===================================================== */
-
-
-    const ground =
-        new THREE.Mesh(
-
-            new THREE.PlaneGeometry(
-                40,
-                40
-            ),
-
-            new THREE.MeshStandardMaterial({
-
-                color:
-                    0x203b24,
-
-                roughness:
-                    0.9
-
-            })
-
-        );
-
-
-    ground.rotation.x =
-        -Math.PI / 2;
-
-
-    scene.add(
-        ground
-    );
-
-
-    /* =====================================================
-       GRID
-    ===================================================== */
-
-
-    const grid =
-        new THREE.GridHelper(
-
-            40,
-
-            40,
-
-            0x254d39,
-
-            0x183525
-
-        );
-
-
-    grid.position.y =
-        0.01;
-
-
-    scene.add(
-        grid
-    );
-
-
-    /* =====================================================
-       ECHO
-    ===================================================== */
-
-
-    echoMesh =
-        new THREE.Mesh(
-
-            new THREE.SphereGeometry(
-                0.65,
-                32,
-                32
-            ),
-
-            new THREE.MeshStandardMaterial({
-
-                color:
-                    0xffffff,
-
-                emissive:
-                    0x008f78,
-
-                emissiveIntensity:
-                    0.55,
-
-                roughness:
-                    0.15
-
-            })
-
-        );
-
-
-    echoMesh.position.set(
-        0,
-        0.7,
-        4
-    );
-
-
-    scene.add(
-        echoMesh
-    );
-
-
-    /* =====================================================
-       ECHO LIGHT
-    ===================================================== */
-
-
-    const echoLight =
-        new THREE.PointLight(
-            0x00ffcc,
-            1.5,
-            6
-        );
-
-
-    echoMesh.add(
-        echoLight
-    );
-
-
-    /* =====================================================
-       CREATE WORLD MESHES
-    ===================================================== */
-
-
-    world.entities.forEach(
-        entity => {
-
-
-            if (
-                entity.type ===
-                "person"
-            ) {
-
-
-                const mesh =
-                    new THREE.Mesh(
-
-                        new THREE.CylinderGeometry(
-                            0.35,
-                            0.35,
-                            1.2,
-                            16
-                        ),
-
-                        new THREE.MeshStandardMaterial({
-
-                            color:
-                                entity.id ===
-                                "old_man"
-                                    ? 0xe58b13
-                                    : 0x4aa3df
-
-                        })
-
-                    );
-
-
-                mesh.position.set(
-                    entity.x,
-                    0.6,
-                    entity.z
-                );
-
-
-                scene.add(
-                    mesh
-                );
-
-
-                meshes[
-                    entity.id
-                ] =
-                    mesh;
-
-            }
-
-
-            else if (
-                entity.type ===
-                "animal"
-            ) {
-
-
-                const mesh =
-                    new THREE.Mesh(
-
-                        new THREE.SphereGeometry(
-                            0.38,
-                            16,
-                            16
-                        ),
-
-                        new THREE.MeshStandardMaterial({
-
-                            color:
-                                0x9b8060
-
-                        })
-
-                    );
-
-
-                mesh.position.set(
-                    entity.x,
-                    0.38,
-                    entity.z
-                );
-
-
-                scene.add(
-                    mesh
-                );
-
-
-                meshes[
-                    entity.id
-                ] =
-                    mesh;
-
-            }
-
-
-            else if (
-                entity.id ===
-                "well"
-            ) {
-
-
-                const mesh =
-                    new THREE.Mesh(
-
-                        new THREE.CylinderGeometry(
-                            0.8,
-                            0.8,
-                            0.8,
-                            20
-                        ),
-
-                        new THREE.MeshStandardMaterial({
-
-                            color:
-                                0x68758a
-
-                        })
-
-                    );
-
-
-                mesh.position.set(
-                    entity.x,
-                    0.4,
-                    entity.z
-                );
-
-
-                scene.add(
-                    mesh
-                );
-
-
-                meshes[
-                    entity.id
-                ] =
-                    mesh;
-
-
-                const water =
-                    new THREE.Mesh(
-
-                        new THREE.CylinderGeometry(
-                            0.55,
-                            0.55,
-                            0.05,
-                            20
-                        ),
-
-                        new THREE.MeshStandardMaterial({
-
-                            color:
-                                0x00a8c6
-
-                        })
-
-                    );
-
-
-                water.position.set(
-                    entity.x,
-                    0.82,
-                    entity.z
-                );
-
-
-                scene.add(
-                    water
-                );
-
-            }
-
-
-            else if (
-                entity.id ===
-                "house"
-            ) {
-
-
-                const house =
-                    new THREE.Mesh(
-
-                        new THREE.BoxGeometry(
-                            3,
-                            2.4,
-                            3
-                        ),
-
-                        new THREE.MeshStandardMaterial({
-
-                            color:
-                                0x8a451e
-
-                        })
-
-                    );
-
-
-                house.position.set(
-                    entity.x,
-                    1.2,
-                    entity.z
-                );
-
-
-                scene.add(
-                    house
-                );
-
-
-                meshes[
-                    entity.id
-                ] =
-                    house;
-
-
-                const roof =
-                    new THREE.Mesh(
-
-                        new THREE.ConeGeometry(
-                            2.4,
-                            1.2,
-                            4
-                        ),
-
-                        new THREE.MeshStandardMaterial({
-
-                            color:
-                                0x4f2919
-
-                        })
-
-                    );
-
-
-                roof.position.set(
-                    entity.x,
-                    3,
-                    entity.z
-                );
-
-
-                roof.rotation.y =
-                    Math.PI / 4;
-
-
-                scene.add(
-                    roof
-                );
-
-            }
-
-
-            else if (
-                entity.id ===
-                "tree"
-            ) {
-
-
-                const trunk =
-                    new THREE.Mesh(
-
-                        new THREE.CylinderGeometry(
-                            0.3,
-                            0.4,
-                            2
-                        ),
-
-                        new THREE.MeshStandardMaterial({
-
-                            color:
-                                0x654321
-
-                        })
-
-                    );
-
-
-                trunk.position.set(
-                    entity.x,
-                    1,
-                    entity.z
-                );
-
-
-                scene.add(
-                    trunk
-                );
-
-
-                const leaves =
-                    new THREE.Mesh(
-
-                        new THREE.SphereGeometry(
-                            1.5,
-                            16,
-                            16
-                        ),
-
-                        new THREE.MeshStandardMaterial({
-
-                            color:
-                                0x285c32
-
-                        })
-
-                    );
-
-
-                leaves.position.set(
-                    entity.x,
-                    2.6,
-                    entity.z
-                );
-
-
-                scene.add(
-                    leaves
-                );
-
-
-                meshes[
-                    entity.id
-                ] =
-                    leaves;
-
-            }
-
-        }
-    );
-
-
-    /* =====================================================
-       ANIMATION
-    ===================================================== */
-
-
-    function animate() {
-
-
-        requestAnimationFrame(
-            animate
-        );
-
-
-        /*
-         * Smoothly synchronize
-         * world entities with meshes.
-         */
-
-
-        world.entities.forEach(
-            entity => {
-
-
-                const mesh =
-                    meshes[
-                        entity.id
-                    ];
-
-
-                if (
-                    mesh
-                ) {
-
-
-                    mesh.position.x =
-                        entity.x;
-
-
-                    mesh.position.z =
-                        entity.z;
-
-                }
-
-            }
-        );
-
-
-        /*
-         * ECHO movement is based
-         * on its current intention.
-         */
-
-
-        if (
-            echoMesh &&
-            mind.focus
-        ) {
-
-
-            const focus =
-                world.get(
-                    mind.focus.id
-                );
-
-
-            if (
-                focus
-            ) {
-
-
-                const dx =
-                    focus.x -
-                    echoMesh.position.x;
-
-
-                const dz =
-                    focus.z -
-                    echoMesh.position.z;
-
-
-                const d =
-                    Math.sqrt(
-                        dx * dx +
-                        dz * dz
-                    );
-
-
-                /*
-                 * ECHO doesn't have to
-                 * touch the object.
-                 *
-                 * It approaches,
-                 * observes,
-                 * then may change
-                 * its mind.
-                 */
-
-
-                if (
-                    mind.action ===
-                    "approach" &&
-                    d > 2
-                ) {
-
-
-                    const speed =
-                        0.035;
-
-
-                    echoMesh.position.x +=
-                        (
-                            dx / d
-                        ) *
-                        speed;
-
-
-                    echoMesh.position.z +=
-                        (
-                            dz / d
-                        ) *
-                        speed;
-
-                }
-
-
-                else if (
-                    mind.action ===
-                    "follow" &&
-                    d > 2.5
-                ) {
-
-
-                    const speed =
-                        0.04;
-
-
-                    echoMesh.position.x +=
-                        (
-                            dx / d
-                        ) *
-                        speed;
-
-
-                    echoMesh.position.z +=
-                        (
-                            dz / d
-                        ) *
-                        speed;
-
-                }
-
-            }
-
-        }
-
-
-        /*
-         * Floating animation.
-         */
-
-        if (
-            echoMesh
-        ) {
-
-
-            echoMesh.position.y =
-
-                0.7 +
-
-                Math.sin(
-                    Date.now() *
-                    0.004
-                )
-                *
-                0.08;
-
-
-            const pulse =
-
-                1 +
-
-                Math.sin(
-                    Date.now() *
-                    0.005
-                )
-                *
-                0.025;
-
-
-            echoMesh.scale.set(
-                pulse,
-                pulse,
-                pulse
-            );
-
-        }
-
-
-        renderer.render(
-            scene,
-            camera
-        );
-
-    }
-
-
-    animate();
-
-
-    window.addEventListener(
-        "resize",
-        () => {
-
-
-            camera.aspect =
-                window.innerWidth /
-                window.innerHeight;
-
-
-            camera.updateProjectionMatrix();
-
-
-            renderer.setSize(
-                window.innerWidth,
-                window.innerHeight
-            );
-
-        }
-    );
-
+function personMesh(p){
+const body=new THREE.Mesh(new THREE.CapsuleGeometry(.27,.75,5,10),mat(choose([0x4d82c5,0xc76b5d,0x5da56b,0xc28b49,0x8766a8])));
+body.position.set(p.x,.75,p.z);
+body.castShadow=true;
+scene.add(body);
+const head=new THREE.Mesh(new THREE.SphereGeometry(.24,12,12),mat(0xc58b68));
+head.position.set(p.x,1.48,p.z);
+scene.add(head);
+return {body,head};
 }
 
-
-/* =========================================================
-   HUD
-========================================================= */
-
-function setText(
-    id,
-    value
-) {
-
-
-    const element =
-        document.getElementById(
-            id
-        );
-
-
-    if (
-        element
-    ) {
-
-        element.innerText =
-            value;
-
-    }
-
+function carMesh(c){
+const body=box(1.8,.5,3.3,choose([0xb84f48,0x4b78a8,0xd0a34f,0x5c8b68,0x85858a]),c.x,.45,c.z);
+const roof=box(1.4,.45,1.5,0x313940,c.x,.85,c.z);
+return {body,roof};
 }
 
+function createScene(){
+scene=new THREE.Scene();
+scene.background=new THREE.Color(0x86b8d4);
+scene.fog=new THREE.Fog(0x86b8d4,55,100);
 
-function setBar(
-    id,
-    value
-) {
+camera=new THREE.PerspectiveCamera(55,innerWidth/innerHeight,.1,300);
+camera.position.set(0,30,38);
+camera.lookAt(cameraTarget);
 
+renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setSize(innerWidth,innerHeight);
+renderer.shadowMap.enabled=true;
+renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+document.getElementById("world").appendChild(renderer.domElement);
 
-    const element =
-        document.getElementById(
-            id
-        );
+scene.add(new THREE.AmbientLight(0xffffff,.65));
+const sun=new THREE.DirectionalLight(0xffffff,1.15);
+sun.position.set(-30,45,20);
+sun.castShadow=true;
+sun.shadow.mapSize.width=2048;
+sun.shadow.mapSize.height=2048;
+sun.shadow.camera.left=-70;
+sun.shadow.camera.right=70;
+sun.shadow.camera.top=70;
+sun.shadow.camera.bottom=-70;
+scene.add(sun);
 
+const ground=new THREE.Mesh(new THREE.PlaneGeometry(100,100),mat(0x4c7548,1));
+ground.rotation.x=-Math.PI/2;
+ground.receiveShadow=true;
+scene.add(ground);
 
-    if (
-        element
-    ) {
+city.roads.forEach(road);
+city.buildings.forEach(building);
+city.parks.forEach(park);
+city.trees.forEach(t=>tree(t.x,t.z));
 
-        element.style.width =
-            `${value * 100}%`;
-
-    }
-
+for(let x=-24;x<=26;x+=6){
+streetLight(x,-4);
+streetLight(x,3);
 }
 
-
-/* =========================================================
-   COGNITIVE CYCLE
-========================================================= */
-
-function cognitiveCycle() {
-
-
-    /*
-     * World continues existing.
-     */
-
-    world.tick();
-
-
-    /*
-     * ECHO only receives what
-     * it can perceive.
-     */
-
-    const perceptions =
-        world.perceive(
-            {
-
-                x:
-                    echoMesh
-                        ? echoMesh.position.x
-                        : 0,
-
-                z:
-                    echoMesh
-                        ? echoMesh.position.z
-                        : 4
-
-            },
-
-            8
-
-        );
-
-
-    /*
-     * Think.
-     */
-
-    mind.think(
-        perceptions,
-        world
-    );
-
-
-    /*
-     * Reflection.
-     */
-
-    const reflection =
-        mind.reflect();
-
-
-    /* =====================================================
-       HEADER
-    ===================================================== */
-
-
-    const time =
-        world.getTime();
-
-
-    setText(
-        "cycle",
-        `CYCLE: ${mind.cycle}`
-    );
-
-
-    setText(
-        "time",
-        time.text
-    );
-
-
-    /* =====================================================
-       INTERNAL STATE
-    ===================================================== */
-
-
-    setText(
-        "energy",
-        `${(
-            mind.energy *
-            100
-        ).toFixed(0)}%`
-    );
-
-
-    setBar(
-        "energyBar",
-        mind.energy
-    );
-
-
-    setText(
-        "curiosity",
-        `${(
-            mind.curiosity *
-            100
-        ).toFixed(0)}%`
-    );
-
-
-    setBar(
-        "curiosityBar",
-        mind.curiosity
-    );
-
-
-    setText(
-        "wonder",
-        `${(
-            mind.wonder *
-            100
-        ).toFixed(0)}%`
-    );
-
-
-    setBar(
-        "wonderBar",
-        mind.wonder
-    );
-
-
-    setText(
-        "social",
-        `${(
-            mind.social *
-            100
-        ).toFixed(0)}%`
-    );
-
-
-    setBar(
-        "socialBar",
-        mind.social
-    );
-
-
-    /* =====================================================
-       INTENTION
-    ===================================================== */
-
-
-    setText(
-        "goal",
-        mind.intention
-    );
-
-
-    /* =====================================================
-       EMOTION
-    ===================================================== */
-
-
-    setText(
-        "calm",
-        `${(
-            mind.calm *
-            100
-        ).toFixed(0)}%`
-    );
-
-
-    setText(
-        "excitement",
-        `${(
-            mind.excitement *
-            100
-        ).toFixed(0)}%`
-    );
-
-
-    setText(
-        "emotionCuriosity",
-        `${(
-            mind.curiosity *
-            100
-        ).toFixed(0)}%`
-    );
-
-
-    setText(
-        "unease",
-        `${(
-            mind.unease *
-            100
-        ).toFixed(0)}%`
-    );
-
-
-    /* =====================================================
-       THOUGHT
-    ===================================================== */
-
-
-    const thoughts =
-        document.getElementById(
-            "thoughts"
-        );
-
-
-    if (
-        thoughts
-    ) {
-
-
-        const block =
-            document.createElement(
-                "div"
-            );
-
-
-        block.className =
-            "thought";
-
-
-        block.innerHTML =
-
-            `<b>Thought:</b>
-             ${mind.currentThought}
-             <br>
-             <span class="muted">
-             Question:
-             ${mind.question}
-             </span>
-             <br>
-             <span class="muted">
-             Hypothesis:
-             ${mind.hypothesis}
-             </span>`;
-
-
-        thoughts.prepend(
-            block
-        );
-
-
-        while (
-            thoughts.children.length >
-            10
-        ) {
-
-            thoughts.removeChild(
-                thoughts.lastChild
-            );
-
-        }
-
-    }
-
-
-    /* =====================================================
-       REFLECTION
-    ===================================================== */
-
-
-    setText(
-        "reflection",
-        reflection
-    );
-
-
-    /* =====================================================
-       EVENT
-    ===================================================== */
-
-
-    if (
-        world.events.length
-    ) {
-
-
-        setText(
-            "event",
-            world.events[0].text
-        );
-
-    }
-
-
-    /* =====================================================
-       WEATHER
-    ===================================================== */
-
-
-    setText(
-        "weather",
-        `Weather: ${world.weather}`
-    );
-
-
-    /* =====================================================
-       ACTION
-    ===================================================== */
-
-
-    setText(
-        "action",
-
-        `ACTION: ${
-            mind.action
-        }`
-
-    );
-
-
-    /* =====================================================
-       LEARNING
-    ===================================================== */
-
-
-    setText(
-        "learning",
-
-        `LEARNING:
-         ${mind.lastLearning}`
-
-    );
-
-
-    /* =====================================================
-       PERCEPTIONS
-    ===================================================== */
-
-
-    const perceptionHUD =
-        document.getElementById(
-            "perceptions"
-        );
-
-
-    if (
-        perceptionHUD
-    ) {
-
-
-        perceptionHUD.innerHTML =
-
-            perceptions
-                .map(
-                    p => `
-
-                    <div class="perception">
-
-                        <strong>
-                            ◉ ${p.name}
-                        </strong>
-
-                        <br>
-
-                        <span class="muted">
-
-                            Distance:
-                            ${p.distance}m
-
-                        </span>
-
-                        <br>
-
-                        <span class="muted">
-
-                            Activity:
-                            ${p.activity}
-
-                        </span>
-
-                    </div>
-
-                `
-                )
-                .join("");
-
-    }
-
-
-    /* =====================================================
-       MEMORY
-    ===================================================== */
-
-
-    const memoryHUD =
-        document.getElementById(
-            "memory"
-        );
-
-
-    if (
-        memoryHUD
-    ) {
-
-
-        memoryHUD.innerHTML =
-
-            mind.memory
-                .recent(
-                    8
-                )
-
-                .map(
-                    memory => `
-
-                        <div class="memory">
-
-                            ${memory.text}
-
-                        </div>
-
-                    `
-                )
-
-                .join("");
-
-
-    }
-
-}
-
-
-/* =========================================================
-   START
-========================================================= */
-
-cognitiveCycle();
-
-
-/*
- * World tick.
- *
- * The world changes every second.
- */
-
-setInterval(
-    () => {
-
-        world.tick();
-
-    },
-    1000
+city.people.forEach(p=>peopleMeshes.push(personMesh(p)));
+city.cars.forEach(c=>carMeshes.push(carMesh(c)));
+
+echo=new THREE.Mesh(
+new THREE.SphereGeometry(.62,24,24),
+new THREE.MeshStandardMaterial({color:0xffffff,emissive:0x00a88d,emissiveIntensity:.8,roughness:.18})
 );
+echo.position.set(0,.75,2);
+echo.castShadow=true;
+scene.add(echo);
 
+const glow=new THREE.PointLight(0x00ffcc,1.5,7);
+echo.add(glow);
 
-/*
- * ECHO thinks every 3 seconds.
- */
+window.addEventListener("resize",resize);
+document.getElementById("zoomIn").onclick=()=>{cameraDistance=Math.max(20,cameraDistance-5)};
+document.getElementById("zoomOut").onclick=()=>{cameraDistance=Math.min(70,cameraDistance+5)};
+document.getElementById("resetCamera").onclick=()=>{cameraTarget.set(0,0,0);cameraDistance=42};
 
-setInterval(
-    cognitiveCycle,
-    3000
+animate();
+}
+
+function updatePeople(){
+city.people.forEach((p,i)=>{
+const m=peopleMeshes[i];
+if(!m)return;
+m.body.position.x=p.x;
+m.body.position.z=p.z;
+m.head.position.x=p.x;
+m.head.position.z=p.z;
+const bounce=Math.sin(Date.now()*.01+i)*.025;
+m.body.position.y=.75+bounce;
+m.head.position.y=1.48+bounce;
+});
+}
+
+function updateCars(){
+city.cars.forEach((c,i)=>{
+const m=carMeshes[i];
+if(!m)return;
+m.body.position.x=c.x;
+m.roof.position.x=c.x;
+});
+}
+
+function updateCamera(){
+const desired=new THREE.Vector3(
+cameraTarget.x,
+cameraDistance*.68,
+cameraTarget.z+cameraDistance
 );
+camera.position.lerp(desired,.035);
+camera.lookAt(cameraTarget);
+}
 
+function animate(){
+requestAnimationFrame(animate);
+updatePeople();
+updateCars();
+updateCamera();
+const pulse=1+Math.sin(Date.now()*.004)*.035;
+echo.scale.set(pulse,pulse,pulse);
+echo.position.y=.75+Math.sin(Date.now()*.004)*.07;
+renderer.render(scene,camera);
+}
+
+function resize(){
+camera.aspect=innerWidth/innerHeight;
+camera.updateProjectionMatrix();
+renderer.setSize(innerWidth,innerHeight);
+}
+
+function think(){
+mind.cycle++;
+mind.energy=clamp(mind.energy-random(.001,.004));
+mind.curiosity=clamp(mind.curiosity+random(-.012,.012));
+mind.wonder=clamp(mind.wonder+random(-.015,.015));
+mind.social=clamp(mind.social+random(-.01,.015));
+
+const nearby=city.perceive(echo.position.x,echo.position.z,12);
+const focus=nearby.length?choose(nearby.slice(0,Math.min(5,nearby.length))):null;
+
+if(!focus){
+mind.thought="The city feels quiet from here.";
+mind.question="What is happening beyond what I can see?";
+mind.intention="Keep exploring.";
+mind.action="Wandering";
+}else if(focus.type==="park"){
+mind.thought=`${focus.name} looks peaceful. I feel like spending some time there.`;
+mind.question="Would I enjoy walking or running there?";
+mind.intention=`Consider visiting ${focus.name}.`;
+mind.action="Exploring";
+}else if(focus.type==="gym"){
+mind.thought="There is a gym nearby. I have never really explored it.";
+mind.question="What do people do inside?";
+mind.intention="Maybe visit the gym later.";
+mind.action="Observing";
+}else if(focus.type==="person"){
+mind.thought=`${focus.name} is ${focus.activity}. I wonder where they are going.`;
+mind.question=`What is ${focus.name} doing today?`;
+mind.intention=`Observe ${focus.name}.`;
+mind.action="Observing";
+}else{
+mind.thought=`I notice ${focus.name}. I don't fully understand this place yet.`;
+mind.question=`What happens inside ${focus.name}?`;
+mind.intention=`Explore ${focus.name} sometime.`;
+mind.action="Thinking";
+}
+
+mind.learning=focus?`I noticed ${focus.name} ${focus.type==="person"?"is part of the city's daily life":"is part of Greenhaven"}.`:"I am learning how Greenhaven changes.";
+mind.memories.unshift(`${mind.thought}`);
+if(mind.memories.length>8)mind.memories.pop();
+updateHUD(nearby);
+}
+
+function updateHUD(nearby){
+const t=city.time();
+document.getElementById("cycle").textContent=`CYCLE: ${mind.cycle}`;
+document.getElementById("time").textContent=t;
+document.getElementById("energy").textContent=`${Math.round(mind.energy*100)}%`;
+document.getElementById("energyBar").style.width=`${mind.energy*100}%`;
+document.getElementById("curiosity").textContent=`${Math.round(mind.curiosity*100)}%`;
+document.getElementById("curiosityBar").style.width=`${mind.curiosity*100}%`;
+document.getElementById("wonder").textContent=`${Math.round(mind.wonder*100)}%`;
+document.getElementById("wonderBar").style.width=`${mind.wonder*100}%`;
+document.getElementById("social").textContent=`${Math.round(mind.social*100)}%`;
+document.getElementById("socialBar").style.width=`${mind.social*100}%`;
+document.getElementById("goal").textContent=mind.intention;
+document.getElementById("calm").textContent=`${Math.round(mind.calm*100)}%`;
+document.getElementById("excitement").textContent=`${Math.round(mind.excitement*100)}%`;
+document.getElementById("emotionCuriosity").textContent=`${Math.round(mind.curiosity*100)}%`;
+document.getElementById("unease").textContent=`${Math.round(mind.unease*100)}%`;
+document.getElementById("weather").textContent=`Weather: ${city.weather}`;
+document.getElementById("population").textContent=`Population: ${nearby.filter(x=>x.type==="person").length} nearby`;
+document.getElementById("action").textContent=`ACTION: ${mind.action}`;
+document.getElementById("learning").textContent=`LEARNING: ${mind.learning}`;
+document.getElementById("event").textContent=city.events[0];
+
+const p=document.getElementById("perceptions");
+p.innerHTML=nearby.slice(0,7).map(x=>`<div class="perception"><strong>◉ ${x.name}</strong><br><span class="muted">${x.type} • ${x.distance.toFixed(1)}m${x.activity?` • ${x.activity}`:""}</span></div>`).join("");
+
+const thoughts=document.getElementById("thoughts");
+const block=document.createElement("div");
+block.className="thought";
+block.innerHTML=`<b>Thought:</b> ${mind.thought}<br><span class="muted">Question: ${mind.question}</span>`;
+thoughts.prepend(block);
+while(thoughts.children.length>8)thoughts.removeChild(thoughts.lastChild);
+
+document.getElementById("reflection").textContent=`I am beginning to understand Greenhaven. ${mind.learning}`;
+
+document.getElementById("memory").innerHTML=mind.memories.map(x=>`<div class="memory">${x}</div>`).join("");
+}
+
+createScene();
+think();
+
+setInterval(()=>{
+city.tick();
+},1000);
+
+setInterval(()=>{
+think();
+},4000);
+
+setInterval(()=>{
+const h=city.minute/60;
+if(h>=21||h<6){
+scene.background.set(0x07111e);
+scene.fog.color.set(0x07111e);
+}else if(h>=17){
+scene.background.set(0xd18d69);
+scene.fog.color.set(0xd18d69);
+}else if(h<9){
+scene.background.set(0x9bc5d8);
+scene.fog.color.set(0x9bc5d8);
+}else{
+scene.background.set(0x86b8d4);
+scene.fog.color.set(0x86b8d4);
+}
+},1000);
 </script>
-
 </body>
-
 </html>
