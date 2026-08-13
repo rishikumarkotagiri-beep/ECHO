@@ -1,5 +1,5 @@
 import * as THREE from "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.module.js";
-
+import { addBuildingDetails } from "./buildingDetails.js";
 export class CityRenderer {
   constructor(container, city) {
     this.container = container;
@@ -353,7 +353,14 @@ export class CityRenderer {
       height,
       depth
     );
-
+addBuildingDetails(
+  this,
+  group,
+  building,
+  width,
+  height,
+  depth
+);
     group.position.set(
       building.x,
       0,
