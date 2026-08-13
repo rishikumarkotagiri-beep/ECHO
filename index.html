@@ -3,24 +3,24 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>ECHO v0.7 — Greenhaven</title>
+<title>ECHO v0.8 — Greenhaven</title>
 <link rel="stylesheet" href="style.css">
 <style>
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#071019;color:#c8d4df;font-family:monospace}
 #world{position:fixed;inset:0;z-index:1}
-#world canvas{display:block}
+#world canvas{display:block;width:100%;height:100%}
 .hud{position:fixed;z-index:10;pointer-events:none}
-.panel{pointer-events:auto}
-.header{position:fixed;top:14px;left:14px;right:14px;height:58px;z-index:20;background:rgba(4,12,20,.88);border:1px solid rgba(0,255,204,.22);border-radius:12px;display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;padding:0 18px;backdrop-filter:blur(12px);font-family:monospace}
+.panel{pointer-events:auto;background:rgba(5,13,21,.88);border:1px solid rgba(0,255,204,.2);border-radius:12px;backdrop-filter:blur(12px);box-shadow:0 10px 35px rgba(0,0,0,.3);color:#c8d4df;font-family:monospace}
+.header{position:fixed;top:14px;left:14px;right:14px;height:58px;z-index:20;background:rgba(4,12,20,.9);border:1px solid rgba(0,255,204,.22);border-radius:12px;display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;padding:0 18px;backdrop-filter:blur(12px)}
 .logo{font-size:18px;font-weight:bold;letter-spacing:4px;color:white}
 .version{font-size:10px;color:#7d8ba0;margin-left:8px;letter-spacing:1px}
 .online{font-size:10px;color:#00ffcc;margin-left:10px;letter-spacing:1px}
 .center{text-align:center;color:#8ea1b8;font-size:11px}
 .clock{text-align:right;color:#00ffcc;font-size:11px}
-.panel{background:rgba(5,13,21,.86);border:1px solid rgba(0,255,204,.18);border-radius:12px;backdrop-filter:blur(12px);box-shadow:0 10px 35px rgba(0,0,0,.25);color:#c8d4df;font-family:monospace}
 .left{position:fixed;z-index:15;left:14px;top:86px;bottom:205px;width:305px;padding:16px;overflow:auto}
 .right{position:fixed;z-index:15;right:14px;top:86px;bottom:205px;width:305px;padding:16px;overflow:auto}
 .bottom{position:fixed;z-index:15;left:14px;right:14px;bottom:14px;height:175px;padding:15px;display:grid;grid-template-columns:2fr 1fr 1fr;gap:18px}
-h3{font-size:10px;letter-spacing:2px;color:#8091a8;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,.08)}
+h3{font-size:10px;letter-spacing:2px;color:#8091a8;margin:0 0 10px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,.08)}
 .stat{display:flex;justify-content:space-between;font-size:11px;margin:7px 0}
 .value{color:#00ffcc}
 .bar{height:5px;background:#182535;border-radius:5px;overflow:hidden;margin-bottom:10px}
@@ -37,7 +37,7 @@ h3{font-size:10px;letter-spacing:2px;color:#8091a8;margin-bottom:10px;padding-bo
 .learning{font-size:10px;color:#8190a4;margin-top:9px;line-height:1.5}
 .city-title{position:fixed;z-index:8;top:82px;left:50%;transform:translateX(-50%);font:10px monospace;letter-spacing:4px;color:rgba(255,255,255,.5);pointer-events:none}
 .controls{position:fixed;z-index:30;right:335px;bottom:190px;display:flex;gap:6px}
-.control{pointer-events:auto;background:rgba(5,13,21,.9);border:1px solid rgba(0,255,204,.2);color:#9db0c7;border-radius:7px;padding:8px 12px;cursor:pointer}
+.control{pointer-events:auto;background:rgba(5,13,21,.92);border:1px solid rgba(0,255,204,.2);color:#9db0c7;border-radius:7px;padding:8px 12px;cursor:pointer}
 .control:hover{border-color:#00ffcc;color:#00ffcc}
 @media(max-width:1000px){
 .header{grid-template-columns:1fr;height:auto;min-height:90px;gap:7px;padding:12px}
@@ -51,12 +51,11 @@ h3{font-size:10px;letter-spacing:2px;color:#8091a8;margin-bottom:10px;padding-bo
 </style>
 </head>
 <body>
-
 <div id="world"></div>
 <div class="city-title">GREENHAVEN • LIVING CITY</div>
 
 <div class="header">
-<div class="logo">ECHO <span class="version">v0.7</span><span class="online">● CITY ONLINE</span></div>
+<div class="logo">ECHO <span class="version">v0.8</span><span class="online">● CITY ONLINE</span></div>
 <div id="cycle" class="center">CYCLE: 0</div>
 <div id="time" class="clock">DAY 1 — 08:00 AM</div>
 </div>
@@ -130,9 +129,7 @@ import {VillageWorld} from "./world/world.js";
 import {CityRenderer} from "./frontend/cityRenderer.js";
 
 const world=new VillageWorld();
-
-const worldContainer=document.getElementById("world");
-const renderer=new CityRenderer(worldContainer,world);
+const renderer=new CityRenderer(document.getElementById("world"),world);
 
 const mind={
 cycle:0,
@@ -151,27 +148,31 @@ learning:"The city is larger than I expected.",
 memories:[]
 };
 
-const clamp=(v,min=0,max=1)=>Math.max(min,Math.min(max,v));
-const choose=a=>a[Math.floor(Math.random()*a.length)];
+function clamp(value,min=0,max=1){
+return Math.max(min,Math.min(max,value));
+}
+
+function choose(array){
+return array[Math.floor(Math.random()*array.length)];
+}
 
 function remember(text){
 mind.memories.unshift(text);
-if(mind.memories.length>10)mind.memories.pop();
+if(mind.memories.length>10){
+mind.memories.pop();
+}
 }
 
 function perceive(){
-const nearby=world.getNearby(
+return world.getNearby(
 renderer.echoPosition.x,
 renderer.echoPosition.z,
-14
+16
 );
-
-return nearby;
 }
 
 function decide(){
 mind.cycle++;
-
 mind.energy=clamp(mind.energy-.002);
 mind.curiosity=clamp(mind.curiosity+(Math.random()-.48)*.025);
 mind.wonder=clamp(mind.wonder+(Math.random()-.5)*.02);
@@ -185,8 +186,7 @@ mind.question="What might be happening somewhere else?";
 mind.intention="Explore somewhere unfamiliar.";
 mind.action="Exploring";
 mind.learning="There are parts of Greenhaven I have not seen.";
-}
-else{
+}else{
 const focus=choose(nearby.slice(0,Math.min(5,nearby.length)));
 
 if(focus.type==="person"){
@@ -194,42 +194,37 @@ mind.thought=`I noticed ${focus.name}. They are ${focus.activity}.`;
 mind.question=`Why are they doing that? Where are they going?`;
 mind.intention=`Observe ${focus.name}.`;
 mind.action="Observing";
-mind.learning=`People in Greenhaven have different routines.`;
-}
-else if(focus.type==="park"){
+mind.learning="People in Greenhaven have different routines.";
+}else if(focus.type==="park"){
 mind.thought=`${focus.name} looks interesting. People seem to use it differently throughout the day.`;
 mind.question="Would I enjoy spending time there?";
 mind.intention=`Consider visiting ${focus.name}.`;
 mind.action="Considering";
 mind.learning=`${focus.name} is a place where people relax and move around.`;
-}
-else if(focus.name==="Greenhaven Gym"){
+}else if(focus.name==="Greenhaven Gym"){
 mind.thought="I keep noticing people going into the gym.";
 mind.question="Why do they choose to exercise here?";
 mind.intention="Maybe I should investigate the gym.";
 mind.action="Considering";
 mind.learning="The gym appears to be part of people's routines.";
-}
-else if(focus.name==="Corner Cafe"){
+}else if(focus.name==="Corner Cafe"){
 mind.thought="People seem to gather around the cafe.";
 mind.question="Are they here for food, conversation, or both?";
 mind.intention="Watch the cafe for a while.";
 mind.action="Observing";
 mind.learning="The cafe seems to be a social place.";
-}
-else if(focus.name==="Greenhaven Library"){
+}else if(focus.name==="Greenhaven Library"){
 mind.thought="The library is quiet compared with the streets.";
 mind.question="What do people find here that they cannot find outside?";
 mind.intention="Explore the library later.";
 mind.action="Considering";
 mind.learning="Different places in the city serve different purposes.";
-}
-else{
+}else{
 mind.thought=`I noticed ${focus.name}. I do not understand everything about it yet.`;
-mind.question=`What happens here?`;
+mind.question="What happens here?";
 mind.intention=`Learn more about ${focus.name}.`;
 mind.action="Thinking";
-mind.learning=`I am discovering how Greenhaven is organized.`;
+mind.learning="I am discovering how Greenhaven is organized.";
 }
 
 remember(mind.thought);
@@ -237,15 +232,13 @@ updateHUD(nearby);
 }
 
 function updateHUD(nearby){
-
 document.getElementById("cycle").textContent=`CYCLE: ${mind.cycle}`;
 
-const t=world.getTime();
-let hour=t.hour%12||12;
-let suffix=t.hour>=12?"PM":"AM";
+const time=world.getTime();
+const hour=time.hour%12||12;
+const suffix=time.hour>=12?"PM":"AM";
 
-document.getElementById("time").textContent=
-`DAY ${t.day} — ${String(hour).padStart(2,"0")}:${String(t.minute).padStart(2,"0")} ${suffix}`;
+document.getElementById("time").textContent=`DAY ${time.day} — ${String(hour).padStart(2,"0")}:${String(time.minute).padStart(2,"0")} ${suffix}`;
 
 document.getElementById("energy").textContent=`${Math.round(mind.energy*100)}%`;
 document.getElementById("energyBar").style.width=`${mind.energy*100}%`;
@@ -260,7 +253,6 @@ document.getElementById("social").textContent=`${Math.round(mind.social*100)}%`;
 document.getElementById("socialBar").style.width=`${mind.social*100}%`;
 
 document.getElementById("intention").textContent=mind.intention;
-
 document.getElementById("calm").textContent=`${Math.round(mind.calm*100)}%`;
 document.getElementById("excitement").textContent=`${Math.round(mind.excitement*100)}%`;
 document.getElementById("emotionCuriosity").textContent=`${Math.round(mind.curiosity*100)}%`;
@@ -268,36 +260,28 @@ document.getElementById("unease").textContent=`${Math.round(mind.unease*100)}%`;
 
 document.getElementById("weather").textContent=`Weather: ${world.weather}`;
 
-const people=nearby.filter(x=>x.type==="person").length;
+const people=nearby.filter(item=>item.type==="person").length;
 document.getElementById("population").textContent=`Population: ${people} nearby`;
 
 document.getElementById("action").textContent=`ACTION: ${mind.action}`;
 document.getElementById("learning").textContent=`LEARNING: ${mind.learning}`;
 
-document.getElementById("event").textContent=
-world.events.length?world.events[0]:"Greenhaven is quiet.";
+document.getElementById("event").textContent=world.events.length?world.events[0]:"Greenhaven is quiet.";
 
-document.getElementById("perceptions").innerHTML=
-nearby.slice(0,8).map(item=>`
+document.getElementById("perceptions").innerHTML=nearby.slice(0,8).map(item=>`
 <div class="perception">
 <strong>◉ ${item.name}</strong><br>
-<span class="muted">
-${item.type} • ${item.distance.toFixed(1)}m • ${item.activity}
-${item.mood?` • ${item.mood}`:""}
-</span>
+<span class="muted">${item.type} • ${item.distance.toFixed(1)}m • ${item.activity}${item.mood?` • ${item.mood}`:""}</span>
 </div>
 `).join("");
 
-document.getElementById("memory").innerHTML=
-mind.memories.map(m=>`<div class="memory">${m}</div>`).join("");
+document.getElementById("memory").innerHTML=mind.memories.map(item=>`<div class="memory">${item}</div>`).join("");
 
 const thoughts=document.getElementById("thoughts");
-
 const block=document.createElement("div");
+
 block.className="thought";
-block.innerHTML=
-`<b>Thought:</b> ${mind.thought}<br>
-<span class="muted">Question: ${mind.question}</span>`;
+block.innerHTML=`<b>Thought:</b> ${mind.thought}<br><span class="muted">Question: ${mind.question}</span>`;
 
 thoughts.prepend(block);
 
@@ -305,37 +289,39 @@ while(thoughts.children.length>8){
 thoughts.removeChild(thoughts.lastChild);
 }
 
-document.getElementById("reflection").textContent=
-`I am beginning to understand Greenhaven. ${mind.learning}`;
+document.getElementById("reflection").textContent=`I am beginning to understand Greenhaven. ${mind.learning}`;
 }
 
-function worldTick(){
-world.tick();
-
-if(renderer.echoPosition){
+function moveEcho(){
 const current=renderer.echoPosition;
+const nearby=perceive();
 
-if(mind.action==="Exploring"){
-const target=world.parks[Math.floor(Math.random()*world.parks.length)];
+if(mind.action==="Exploring"&&world.parks.length){
+const target=choose(world.parks);
 renderer.setEchoPosition(target.x,target.z);
+return;
 }
-else if(mind.action==="Observing"){
-const nearby=world.getNearby(current.x,current.z,10);
-if(nearby.length){
-const p=nearby[0];
-if(p.type==="person"){
+
+if(mind.action==="Observing"&&nearby.length){
+const person=nearby.find(item=>item.type==="person");
+
+if(person){
 renderer.setEchoPosition(
-p.x||current.x,
-p.z||current.z
+person.x||current.x,
+person.z||current.z
 );
 }
 }
 }
-}
+
+function worldTick(){
+world.tick();
+moveEcho();
+updateHUD(perceive());
 }
 
 document.getElementById("zoomIn").onclick=()=>{
-renderer.cameraDistance=Math.max(16,renderer.cameraDistance-5);
+renderer.cameraDistance=Math.max(14,renderer.cameraDistance-5);
 };
 
 document.getElementById("zoomOut").onclick=()=>{
@@ -349,31 +335,8 @@ renderer.cameraDistance=22;
 
 decide();
 
-setInterval(()=>{
-worldTick();
-},2000);
-
-setInterval(()=>{
-decide();
-},4000);
-
-setInterval(()=>{
-const hour=world.hour;
-
-if(hour>=20||hour<6){
-renderer.scene.background.set(0x071421);
-renderer.scene.fog.color.set(0x071421);
-}
-else if(hour>=17){
-renderer.scene.background.set(0xd28f70);
-renderer.scene.fog.color.set(0xd28f70);
-}
-else{
-renderer.scene.background.set(0x8fc5df);
-renderer.scene.fog.color.set(0x8fc5df);
-}
-},1000);
-
+setInterval(worldTick,2000);
+setInterval(decide,4000);
 </script>
 </body>
 </html>
