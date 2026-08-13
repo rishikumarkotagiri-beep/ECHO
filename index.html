@@ -3,13 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>ECHO v1.1 — Greenhaven</title>
+<title>ECHO v1.2 — Environmental Learning</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="cognition/memory.js"></script>
-<script src="cognition/worldModel.js"></script>
-<script src="cognition/learning.js"></script>
-<script src="cognition/curiosity.js"></script>
-<script src="cognition/echoBrain.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{width:100%;height:100%;overflow:hidden;background:#071019;color:#e6fff9;font-family:Arial,Segoe UI,sans-serif}
@@ -22,9 +17,9 @@ canvas{display:block}
 .version{font-size:10px;color:#8193a5;margin-left:8px}
 .center{text-align:center;color:#8ea1b1;font-size:11px}
 .right{text-align:right;color:#00e6c7;font-size:11px}
-.left{top:86px;left:14px;width:285px;bottom:205px;padding:16px;overflow:auto}
-.rightpanel{top:86px;right:14px;width:300px;bottom:205px;padding:16px;overflow:auto}
-.bottom{left:14px;right:14px;bottom:14px;height:178px;padding:15px;display:grid;grid-template-columns:1.7fr 1fr 1fr;gap:18px}
+.left{top:86px;left:14px;width:290px;bottom:205px;padding:16px;overflow:auto}
+.rightpanel{top:86px;right:14px;width:310px;bottom:205px;padding:16px;overflow:auto}
+.bottom{left:14px;right:14px;bottom:14px;height:178px;padding:15px;display:grid;grid-template-columns:1.6fr 1.1fr 1fr;gap:18px}
 h3{font-size:10px;letter-spacing:2px;color:#758ba0;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,.08)}
 .stat{display:flex;justify-content:space-between;font-size:12px;margin:7px 0;color:#b8c5cf}
 .value{color:#00ffcc}
@@ -38,11 +33,14 @@ h3{font-size:10px;letter-spacing:2px;color:#758ba0;margin-bottom:10px;padding-bo
 .muted{color:#758493}
 .event{font-size:11px;line-height:1.5;color:#d9fff7}
 .action{font-size:12px;color:#00ffcc;margin-top:9px}
+.learn{color:#ffd36b}
+.confidence{color:#8eeaff}
 .citylabel{position:absolute;z-index:5;top:82px;left:50%;transform:translateX(-50%);font-size:10px;letter-spacing:5px;color:rgba(255,255,255,.55);pointer-events:none}
 .controls{position:absolute;z-index:15;right:325px;bottom:190px;display:flex;gap:5px}
 button{background:rgba(5,15,22,.9);border:1px solid rgba(0,255,210,.3);color:#dffbf6;border-radius:7px;padding:8px 12px;cursor:pointer}
 button:hover{background:rgba(0,220,190,.15)}
 .help{position:absolute;z-index:15;left:50%;bottom:185px;transform:translateX(-50%);font-size:10px;color:#8da2af;background:rgba(4,12,18,.75);padding:7px 12px;border-radius:6px}
+.badge{display:inline-block;font-size:9px;padding:3px 6px;border-radius:5px;background:rgba(0,230,200,.1);color:#00e6c7;margin-top:4px}
 @media(max-width:900px){
 .header{grid-template-columns:1fr 1fr}
 .center{display:none}
@@ -57,10 +55,10 @@ button:hover{background:rgba(0,220,190,.15)}
 </head>
 <body>
 <div id="world"></div>
-<div class="citylabel">GREENHAVEN • LIVING CITY</div>
+<div class="citylabel">GREENHAVEN • ENVIRONMENTAL LEARNING</div>
 
 <div class="panel header">
-<div class="logo">ECHO <span class="version">v1.1</span> <span class="green">● CITY ONLINE</span></div>
+<div class="logo">ECHO <span class="version">v1.2</span> <span class="green">● LEARNING</span></div>
 <div id="cycle" class="center">CYCLE: 0</div>
 <div id="time" class="right">DAY 1 — 08:00 AM</div>
 </div>
@@ -69,15 +67,21 @@ button:hover{background:rgba(0,220,190,.15)}
 <h3>INTERNAL STATE</h3>
 <div class="stat"><span>Energy</span><b id="energy" class="value">82%</b></div>
 <div class="bar"><div id="energyBar" class="fill" style="width:82%"></div></div>
-<div class="stat"><span>Curiosity</span><b id="curiosity" class="value">78%</b></div>
-<div class="bar"><div id="curiosityBar" class="fill" style="width:78%"></div></div>
+<div class="stat"><span>Curiosity</span><b id="curiosity" class="value">82%</b></div>
+<div class="bar"><div id="curiosityBar" class="fill" style="width:82%"></div></div>
 <div class="stat"><span>Wonder</span><b id="wonder" class="value">65%</b></div>
 <div class="bar"><div id="wonderBar" class="fill" style="width:65%"></div></div>
 <div class="stat"><span>Social</span><b id="social" class="value">55%</b></div>
 <div class="bar"><div id="socialBar" class="fill" style="width:55%"></div></div>
 
 <h3>CURRENT INTENTION</h3>
-<div id="goal" class="goal">Explore Greenhaven.</div>
+<div id="goal" class="goal">I am exploring Greenhaven.</div>
+
+<h3>LEARNING STATUS</h3>
+<div class="stat"><span>Known entities</span><b id="entities" class="value">0</b></div>
+<div class="stat"><span>Memories</span><b id="memories" class="value">0</b></div>
+<div class="stat"><span>Facts learned</span><b id="facts" class="value">0</b></div>
+<div class="stat"><span>Prediction tests</span><b id="predictions" class="value">0</b></div>
 
 <h3>MEMORY</h3>
 <div id="memory" class="log"></div>
@@ -87,11 +91,14 @@ button:hover{background:rgba(0,220,190,.15)}
 <h3>WHAT ECHO PERCEIVES</h3>
 <div id="perceptions"></div>
 
-<h3>EMOTIONAL STATE</h3>
-<div class="stat"><span>Calm</span><b id="calm" class="value">61%</b></div>
-<div class="stat"><span>Excitement</span><b id="excitement" class="value">42%</b></div>
-<div class="stat"><span>Curiosity</span><b id="emotionCuriosity" class="value">78%</b></div>
-<div class="stat"><span>Unease</span><b id="unease" class="value">8%</b></div>
+<h3>CURRENT HYPOTHESIS</h3>
+<div id="hypothesis" class="event">I am still observing.</div>
+
+<h3>LEARNING</h3>
+<div id="learning" class="event learn">Nothing learned yet.</div>
+
+<h3>CONFIDENCE</h3>
+<div id="confidence" class="event confidence">—</div>
 
 <h3 style="margin-top:15px">WORLD EVENT</h3>
 <div id="event" class="event">Greenhaven is waking up.</div>
@@ -104,14 +111,14 @@ button:hover{background:rgba(0,220,190,.15)}
 </div>
 <div>
 <h3>REFLECTION</h3>
-<div id="reflection" class="event">A new city. I wonder what happens here.</div>
+<div id="reflection" class="event">I am learning about this city.</div>
 </div>
 <div>
 <h3>WORLD</h3>
 <div id="worldInfo" class="event">Greenhaven</div>
 <div id="weather" class="event" style="margin-top:7px">Weather: Clear</div>
 <div id="population" class="event" style="margin-top:7px">Citizens: 100</div>
-<div id="action" class="action">ACTION: Exploring</div>
+<div id="action" class="action">ACTION: Observing</div>
 </div>
 </div>
 
@@ -124,50 +131,327 @@ button:hover{background:rgba(0,220,190,.15)}
 <div class="help">WASD MOVE • DRAG CAMERA • WHEEL ZOOM</div>
 
 <script>
+class EchoMemory{
+constructor(limit=600){
+this.limit=limit;
+this.episodes=[];
+this.facts=new Map();
+this.locations=new Map();
+}
+rememberEpisode(data){
+const episode={
+id:`e_${Date.now()}_${Math.random().toString(36).slice(2,7)}`,
+time:Date.now(),
+...data
+};
+this.episodes.unshift(episode);
+if(this.episodes.length>this.limit)this.episodes.length=this.limit;
+return episode;
+}
+rememberFact(subject,predicate,value,confidence=.5,source="experience"){
+const key=`${subject}|${predicate}`;
+const old=this.facts.get(key);
+const fact={
+subject,
+predicate,
+value,
+confidence:Math.max(0,Math.min(1,confidence)),
+source,
+lastSeen:Date.now(),
+observations:(old?.observations||0)+1
+};
+this.facts.set(key,fact);
+return fact;
+}
+rememberLocation(id,x,z,confidence=.5){
+this.locations.set(id,{id,x,z,confidence,lastSeen:Date.now()});
+}
+recallSubject(subject,limit=8){
+return[...this.facts.values()]
+.filter(f=>f.subject===subject)
+.sort((a,b)=>b.confidence-a.confidence)
+.slice(0,limit);
+}
+recent(limit=10){
+return this.episodes.slice(0,limit);
+}
+}
+class EchoWorldModel{
+constructor(){
+this.entities=new Map();
+this.relations=[];
+}
+upsert(entity){
+const old=this.entities.get(entity.id);
+const next={
+...(old||{}),
+...entity,
+lastObserved:Date.now(),
+observations:(old?.observations||0)+1
+};
+this.entities.set(entity.id,next);
+return next;
+}
+observe(entity){
+const current=this.upsert(entity);
+if(entity.properties){
+for(const[key,value]of Object.entries(entity.properties)){
+current[key]=value;
+}
+}
+return current;
+}
+addRelation(from,type,to,confidence=.5){
+this.relations.push({
+from,
+type,
+to,
+confidence,
+time:Date.now()
+});
+if(this.relations.length>1000)this.relations.shift();
+}
+get(id){
+return this.entities.get(id);
+}
+all(){
+return[...this.entities.values()];
+}
+}
+class EchoLearning{
+constructor(){
+this.hypotheses=new Map();
+this.predictions=[];
+this.totalError=0;
+}
+key(entityId,label){
+return`${entityId}|${label}`;
+}
+hypothesize(entityId,label,prior=.5){
+const key=this.key(entityId,label);
+if(!this.hypotheses.has(key)){
+this.hypotheses.set(key,{
+entityId,
+label,
+confidence:prior,
+tests:0,
+correct:0,
+incorrect:0
+});
+}
+return this.hypotheses.get(key);
+}
+test(entityId,label,observed,expected){
+const h=this.hypothesize(entityId,label);
+const correct=observed===expected;
+h.tests++;
+if(correct){
+h.correct++;
+h.confidence+=.10*(1-h.confidence);
+}else{
+h.incorrect++;
+h.confidence-=.14*h.confidence;
+}
+h.confidence=Math.max(.01,Math.min(.99,h.confidence));
+const error=correct?0:1;
+this.totalError+=error;
+this.predictions.unshift({
+entityId,
+label,
+expected,
+observed,
+correct,
+error,
+time:Date.now()
+});
+if(this.predictions.length>300)this.predictions.length=300;
+return{
+correct,
+confidence:h.confidence,
+error
+};
+}
+confidence(entityId,label){
+return this.hypothesize(entityId,label).confidence;
+}
+topHypotheses(entityId){
+return[...this.hypotheses.values()]
+.filter(h=>h.entityId===entityId)
+.sort((a,b)=>b.confidence-a.confidence);
+}
+}
+class EchoCuriosity{
+score(entity,{novelty=.5,uncertainty=.5,proximity=.5,social=0,informationGain=.5}={}){
+const score=
+.32*novelty+
+.30*uncertainty+
+.18*informationGain+
+.12*social+
+.08*proximity;
+return Math.max(0,Math.min(1,score));
+}
+choose(candidates){
+if(!candidates.length)return null;
+return[...candidates].sort(
+(a,b)=>(b.curiosityScore||0)-(a.curiosityScore||0)
+)[0];
+}
+}
+class EchoCognition{
+constructor(){
+this.memory=new EchoMemory();
+this.world=new EchoWorldModel();
+this.learning=new EchoLearning();
+this.curiosity=new EchoCuriosity();
+this.lastThought="I am observing my environment.";
+this.lastQuestion="What can I learn from what I see?";
+this.lastLearning="I have not learned anything yet.";
+this.focus=null;
+this.lastDecision=null;
+}
+observe(observations,context={}){
+const candidates=[];
+for(const o of observations||[]){
+const id=o.id||`${o.type}:${o.name}`;
+const previous=this.world.get(id);
+const wasKnown=!!previous;
+const oldConfidence=previous?.confidence??0;
+const entity=this.world.observe({
+id,
+name:o.name||id,
+type:o.type||"unknown",
+x:o.x,
+z:o.z,
+activity:o.activity||"unknown",
+properties:o.properties||{},
+confidence:o.confidence??(wasKnown?Math.max(.25,oldConfidence):.12)
+});
+if(o.x!=null&&o.z!=null){
+this.memory.rememberLocation(id,o.x,o.z,.6);
+}
+this.memory.rememberEpisode({
+kind:"observation",
+entity:id,
+name:o.name,
+type:o.type,
+activity:o.activity,
+location:{x:o.x,z:o.z}
+});
+const novelty=wasKnown?Math.max(.05,1-entity.observations/12):.95;
+const uncertainty=1-(entity.confidence??.2);
+const proximity=1-Math.min(1,(o.distance??20)/20);
+const social=o.type==="person"?.7:0;
+const curiosityScore=this.curiosity.score(entity,{
+novelty,
+uncertainty,
+proximity,
+social,
+informationGain:uncertainty
+});
+candidates.push({
+...o,
+id,
+curiosityScore,
+novelty,
+uncertainty
+});
+}
+this.focus=this.curiosity.choose(candidates);
+if(this.focus)this.reasonAboutFocus(this.focus,context);
+return candidates;
+}
+reasonAboutFocus(focus,context={}){
+const name=focus.name||"this place";
+const type=focus.type||"unknown";
+if(focus.novelty<.25){
+this.lastThought=`I recognize ${name}. I am comparing what I see now with what I remember.`;
+this.lastQuestion=`Has anything changed at ${name}?`;
+}else if(type==="person"){
+this.lastThought=`I notice ${name} is ${focus.activity||"moving"}. I don't know their routine yet.`;
+this.lastQuestion=`What can I learn by observing ${name}?`;
+}else{
+this.lastThought=`I keep noticing ${name}. I don't fully understand what this place is used for.`;
+this.lastQuestion=`What happens here, and when?`;
+}
+this.lastDecision={
+target:name,
+action:"observe",
+time:Date.now()
+};
+}
+learn(entityId,hypothesis,expected,observed){
+const result=this.learning.test(entityId,hypothesis,observed,expected);
+const confidence=result.confidence;
+this.memory.rememberFact(entityId,hypothesis,observed,confidence,"prediction");
+this.lastLearning=
+`I predicted "${expected}" for ${entityId}. I observed "${observed}". Confidence: ${Math.round(confidence*100)}%.`;
+return result;
+}
+buildState(){
+return{
+thought:this.lastThought,
+question:this.lastQuestion,
+learning:this.lastLearning,
+focus:this.focus,
+worldEntities:this.world.all().length,
+memories:this.memory.episodes.length,
+knownFacts:this.memory.facts.size,
+predictionError:this.learning.totalError
+};
+}
+}
+
+const echoBrain=new EchoCognition();
+
 const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
 const rand=(a,b)=>a+Math.random()*(b-a);
 const pick=a=>a[Math.floor(Math.random()*a.length)];
 
 let scene,camera,renderer,echo;
-let people=[],cars=[],buildings=[],parks=[],peopleMeshes=[],carMeshes=[];
+let people=[],cars=[],buildings=[],parks=[];
+let peopleMeshes=[],carMeshes=[];
 let keys={};
 let yaw=0;
 let pitch=.48;
 let distance=30;
 let target=new THREE.Vector3(0,0,5);
 let dragging=false;
-let lastX=0,lastY=0;
+let lastX=0;
+let lastY=0;
 let cycle=0;
 let minutes=480;
 let day=1;
 let weather="Clear";
 let events=["Greenhaven is waking up."];
-const echoBrain=new EchoCognition();
+
 const mind={
 energy:.82,
-curiosity:.78,
+curiosity:.82,
 wonder:.65,
 social:.55,
 calm:.61,
 excitement:.42,
 unease:.08,
 intention:"Explore Greenhaven.",
-action:"Exploring",
+action:"Observing",
 memories:[]
 };
 
 function mat(color,rough=.8,emissive=0){
 return new THREE.MeshStandardMaterial({
-color:color,
+color,
 roughness:rough,
 metalness:.05,
-emissive:emissive,
+emissive,
 emissiveIntensity:emissive?.5:0
 });
 }
 
 function box(w,h,d,color,x,y,z){
-const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat(color));
+const m=new THREE.Mesh(
+new THREE.BoxGeometry(w,h,d),
+mat(color)
+);
 m.position.set(x,y,z);
 m.castShadow=true;
 m.receiveShadow=true;
@@ -180,33 +464,57 @@ scene=new THREE.Scene();
 scene.background=new THREE.Color(0x82b8d0);
 scene.fog=new THREE.Fog(0x82b8d0,70,155);
 
-camera=new THREE.PerspectiveCamera(60,innerWidth/innerHeight,.1,400);
+camera=new THREE.PerspectiveCamera(
+60,
+innerWidth/innerHeight,
+.1,
+400
+);
 
 renderer=new THREE.WebGLRenderer({
 antialias:true,
 powerPreference:"high-performance"
 });
 
-renderer.setPixelRatio(Math.min(devicePixelRatio,2));
-renderer.setSize(innerWidth,innerHeight);
+renderer.setPixelRatio(
+Math.min(devicePixelRatio,2)
+);
+
+renderer.setSize(
+innerWidth,
+innerHeight
+);
+
 renderer.shadowMap.enabled=true;
 renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 renderer.outputEncoding=THREE.sRGBEncoding;
 
-document.getElementById("world").appendChild(renderer.domElement);
+document.getElementById("world")
+.appendChild(renderer.domElement);
 
-const ambient=new THREE.AmbientLight(0xbad9e4,.65);
+const ambient=new THREE.AmbientLight(
+0xbad9e4,
+.65
+);
+
 scene.add(ambient);
 
-const sun=new THREE.DirectionalLight(0xffe4bd,1.4);
+const sun=new THREE.DirectionalLight(
+0xffe4bd,
+1.4
+);
+
 sun.position.set(-50,80,40);
 sun.castShadow=true;
+
 sun.shadow.mapSize.width=2048;
 sun.shadow.mapSize.height=2048;
+
 sun.shadow.camera.left=-100;
 sun.shadow.camera.right=100;
 sun.shadow.camera.top=100;
 sun.shadow.camera.bottom=-100;
+
 scene.add(sun);
 
 window.sun=sun;
@@ -234,7 +542,10 @@ setInterval(think,2500);
 }
 
 function createCity(){
-const roads=[-60,-40,-20,0,20,40,60];
+
+const roads=[
+-60,-40,-20,0,20,40,60
+];
 
 roads.forEach(z=>{
 road(0,z,140,6,"x");
@@ -244,11 +555,6 @@ roads.forEach(x=>{
 road(x,0,140,6,"z");
 });
 
-for(let x=-55;x<=55;x+=11){
-for(let z=-55;z<=55;z+=11){
-
-if(Math.abs(x)<7||Math.abs(z)<7)continue;
-
 const types=[
 "house","house","house",
 "apartment","market","cafe",
@@ -257,10 +563,16 @@ const types=[
 "hotel","restaurant","bank"
 ];
 
+for(let x=-55;x<=55;x+=11){
+for(let z=-55;z<=55;z+=11){
+
+if(Math.abs(x)<7||Math.abs(z)<7)continue;
+
 const type=pick(types);
 
 buildings.push({
-name:type==="gym"?"Greenhaven Gym":
+name:
+type==="gym"?"Greenhaven Gym":
 type==="library"?"Greenhaven Library":
 type==="clinic"?"Greenhaven Clinic":
 type==="school"?"Greenhaven School":
@@ -269,7 +581,7 @@ type==="cafe"?"Corner Cafe":
 type==="hotel"?"Ocean View Hotel":
 type==="bank"?"Greenhaven Bank":
 `${type.toUpperCase()} ${buildings.length+1}`,
-type:type,
+type,
 x:x+rand(-2,2),
 z:z+rand(-2,2),
 w:rand(6,10),
@@ -306,17 +618,24 @@ streetLight(x,z);
 }
 
 function road(x,z,length,width,dir){
-const geo=dir==="x"
+
+const geo=
+dir==="x"
 ?new THREE.PlaneGeometry(length,width)
 :new THREE.PlaneGeometry(width,length);
 
-const m=new THREE.Mesh(geo,mat(0x292e33,.95));
+const m=new THREE.Mesh(
+geo,
+mat(0x292e33,.95)
+);
+
 m.rotation.x=-Math.PI/2;
 m.position.set(x,.02,z);
 m.receiveShadow=true;
 scene.add(m);
 
 for(let i=-length/2;i<length/2;i+=5){
+
 const line=new THREE.Mesh(
 dir==="x"
 ?new THREE.PlaneGeometry(2,.08)
@@ -337,6 +656,7 @@ scene.add(line);
 }
 
 function building(b){
+
 const colors={
 house:0xc89168,
 apartment:0x788998,
@@ -372,12 +692,18 @@ Math.max(b.w,b.d)*.7,
 mat(0x493a34)
 );
 
-roof.position.set(b.x,b.h+.4,b.z);
+roof.position.set(
+b.x,
+b.h+.4,
+b.z
+);
+
 roof.rotation.y=Math.PI/4;
 roof.castShadow=true;
 scene.add(roof);
 
-const windows=Math.max(1,Math.floor(b.w/1.5));
+const windows=
+Math.max(1,Math.floor(b.w/1.5));
 
 for(let c=0;c<windows;c++){
 
@@ -464,11 +790,25 @@ p.z+rand(-p.d*.4,p.d*.4)
 
 function tree(x,z){
 
-box(.28,2,.28,0x65432c,x,1,z);
+box(
+.28,
+2,
+.28,
+0x65432c,
+x,
+1,
+z
+);
 
 const crown=new THREE.Mesh(
 new THREE.SphereGeometry(1.25,12,10),
-mat(pick([0x2e7139,0x347d43,0x428c4b]))
+mat(
+pick([
+0x2e7139,
+0x347d43,
+0x428c4b
+])
+)
 );
 
 crown.position.set(x,2.6,z);
@@ -490,6 +830,7 @@ mat(0x246b35)
 leaf.position.set(x,4.1,z);
 leaf.rotation.y=i*Math.PI/4;
 leaf.rotation.z=.35;
+
 scene.add(leaf);
 }
 }
@@ -520,7 +861,13 @@ const names=[
 
 for(let i=0;i<100;i++){
 
-const home=pick(buildings);
+const homes=
+buildings.filter(
+b=>b.type==="house"||
+b.type==="apartment"
+);
+
+const home=pick(homes);
 
 const role=pick([
 "resident",
@@ -537,24 +884,40 @@ const role=pick([
 ]);
 
 const p={
-name:i<names.length?names[i]:`Citizen ${i+1}`,
-role:role,
+name:i<names.length
+?names[i]
+:`Citizen ${i+1}`,
+role,
 x:home.x+rand(-2,2),
 z:home.z+rand(-2,2),
-home:home,
+home,
 work:null,
 destination:null,
 activity:"at home",
-speed:role==="runner"?.10:rand(.035,.065),
+speed:role==="runner"
+?.10
+:rand(.035,.065),
 wait:0
 };
 
-if(["worker","shopkeeper","driver","artist","gym member"].includes(role)){
+if([
+"worker",
+"shopkeeper",
+"driver",
+"artist",
+"gym member"
+].includes(role)){
 p.work=pick(buildings);
 }
 
 if(role==="student"){
-p.work=pick(buildings.filter(b=>b.type==="school"));
+const schools=
+buildings.filter(
+b=>b.type==="school"
+);
+
+if(schools.length)
+p.work=pick(schools);
 }
 
 people.push(p);
@@ -605,12 +968,16 @@ const leg2=leg1.clone();
 leg2.position.x=.11;
 g.add(leg2);
 
-g.position.set(p.x,0,p.z);
+g.position.set(
+p.x,
+0,
+p.z
+);
 
 g.userData={
 person:p,
-leg1:leg1,
-leg2:leg2
+leg1,
+leg2
 };
 
 scene.add(g);
@@ -633,7 +1000,11 @@ const colors=[
 ];
 
 const body=new THREE.Mesh(
-new THREE.BoxGeometry(1.8,.62,3.5),
+new THREE.BoxGeometry(
+1.8,
+.62,
+3.5
+),
 mat(pick(colors))
 );
 
@@ -641,7 +1012,11 @@ body.position.y=.55;
 g.add(body);
 
 const cabin=new THREE.Mesh(
-new THREE.BoxGeometry(1.4,.48,1.7),
+new THREE.BoxGeometry(
+1.4,
+.48,
+1.7
+),
 mat(0x27373e,.2)
 );
 
@@ -652,7 +1027,12 @@ for(const x of[-.9,.9]){
 for(const z of[-1.15,1.15]){
 
 const wheel=new THREE.Mesh(
-new THREE.CylinderGeometry(.27,.27,.18,10),
+new THREE.CylinderGeometry(
+.27,
+.27,
+.18,
+10
+),
 mat(0x111315)
 );
 
@@ -664,7 +1044,9 @@ g.add(wheel);
 
 g.userData={
 x:rand(-65,65),
-z:pick([-60,-40,-20,0,20,40,60]),
+z:pick([
+-60,-40,-20,0,20,40,60
+]),
 speed:rand(.035,.08),
 direction:Math.random()<.5?1:-1
 };
@@ -685,7 +1067,12 @@ function createEcho(){
 echo=new THREE.Group();
 
 const body=new THREE.Mesh(
-new THREE.CylinderGeometry(.38,.38,1.25,12),
+new THREE.CylinderGeometry(
+.38,
+.38,
+1.25,
+12
+),
 mat(0xf3ffff,.2,0x00c8aa)
 );
 
@@ -693,7 +1080,11 @@ body.position.y=.85;
 echo.add(body);
 
 const head=new THREE.Mesh(
-new THREE.SphereGeometry(.34,16,12),
+new THREE.SphereGeometry(
+.34,
+16,
+12
+),
 mat(0xffffff,.18,0x00d9ba)
 );
 
@@ -701,15 +1092,29 @@ head.position.y=1.65;
 echo.add(head);
 
 const eye=new THREE.Mesh(
-new THREE.BoxGeometry(.28,.09,.06),
+new THREE.BoxGeometry(
+.28,
+.09,
+.06
+),
 mat(0x061416,.2,0x00ffcc)
 );
 
-eye.position.set(0,1.68,-.32);
+eye.position.set(
+0,
+1.68,
+-.32
+);
+
 echo.add(eye);
 
 const ring=new THREE.Mesh(
-new THREE.TorusGeometry(.65,.035,8,32),
+new THREE.TorusGeometry(
+.65,
+.035,
+8,
+32
+),
 mat(0x00ffcc,.2,0x00ffcc)
 );
 
@@ -718,6 +1123,7 @@ ring.position.y=.1;
 echo.add(ring);
 
 echo.position.set(0,0,5);
+
 scene.add(echo);
 }
 
@@ -733,7 +1139,10 @@ z:p.home.z+rand(-2,2),
 kind:"home"
 };
 
-}else if(hour<12&&p.work){
+return;
+}
+
+if(hour<12&&p.work){
 
 p.destination={
 x:p.work.x+rand(-2,2),
@@ -741,11 +1150,16 @@ z:p.work.z+rand(-2,2),
 kind:"work"
 };
 
-}else if(hour<14){
+return;
+}
+
+if(hour<14){
 
 const place=pick([
 ...parks,
-...buildings.filter(b=>!["house","apartment"].includes(b.type))
+...buildings.filter(
+b=>!["house","apartment"].includes(b.type)
+)
 ]);
 
 p.destination={
@@ -754,7 +1168,10 @@ z:place.z+rand(-3,3),
 kind:place.type||"park"
 };
 
-}else if(hour<18&&p.work){
+return;
+}
+
+if(hour<18&&p.work){
 
 p.destination={
 x:p.work.x+rand(-2,2),
@@ -762,7 +1179,8 @@ z:p.work.z+rand(-2,2),
 kind:"work"
 };
 
-}else{
+return;
+}
 
 const place=pick([
 ...parks,
@@ -774,7 +1192,6 @@ x:place.x+rand(-3,3),
 z:place.z+rand(-3,3),
 kind:place.type||"park"
 };
-}
 }
 
 function updatePeople(){
@@ -799,16 +1216,14 @@ if(d<.5){
 p.destination=null;
 p.wait=Math.floor(rand(10,40));
 
-const activities=[
+p.activity=pick([
 "walking",
 "talking",
 "shopping",
 "relaxing",
 "observing",
 "wandering"
-];
-
-p.activity=pick(activities);
+]);
 
 return;
 }
@@ -839,11 +1254,12 @@ const p=g.userData.person;
 g.position.x=p.x;
 g.position.z=p.z;
 
-const moving=p.destination!=null;
+if(p.destination){
 
-if(moving){
-
-const s=Math.sin(Date.now()*.012+i)*.45;
+const s=
+Math.sin(
+Date.now()*.012+i
+)*.45;
 
 g.userData.leg1.rotation.x=s;
 g.userData.leg2.rotation.x=-s;
@@ -866,26 +1282,36 @@ if(d.x<-70)d.x=70;
 g.position.x=d.x;
 g.position.z=d.z;
 
-g.rotation.y=d.direction>0?0:Math.PI;
+g.rotation.y=
+d.direction>0
+?0
+:Math.PI;
 });
 }
 
 function nearby(){
 
 const list=[];
+
 const x=echo.position.x;
 const z=echo.position.z;
 
 buildings.forEach(b=>{
 
-const d=Math.hypot(x-b.x,z-b.z);
+const d=Math.hypot(
+x-b.x,
+z-b.z
+);
 
 if(d<18){
 
 list.push({
+id:`building:${b.name}`,
 name:b.name,
 type:b.type,
 distance:d,
+x:b.x,
+z:b.z,
 activity:"stationary"
 });
 }
@@ -893,14 +1319,20 @@ activity:"stationary"
 
 parks.forEach(p=>{
 
-const d=Math.hypot(x-p.x,z-p.z);
+const d=Math.hypot(
+x-p.x,
+z-p.z
+);
 
 if(d<18){
 
 list.push({
+id:`park:${p.name}`,
 name:p.name,
 type:"park",
 distance:d,
+x:p.x,
+z:p.z,
 activity:"green space"
 });
 }
@@ -908,90 +1340,215 @@ activity:"green space"
 
 people.forEach(p=>{
 
-const d=Math.hypot(x-p.x,z-p.z);
+const d=Math.hypot(
+x-p.x,
+z-p.z
+);
 
 if(d<18){
 
 list.push({
+id:`person:${p.name}`,
 name:p.name,
 type:"person",
 distance:d,
+x:p.x,
+z:p.z,
 activity:p.activity
 });
 }
 });
 
-return list.sort((a,b)=>a.distance-b.distance);
+return list.sort(
+(a,b)=>a.distance-b.distance
+);
+}
+
+function feedEnvironmentToBrain(){
+
+const observations=nearby();
+
+const results=
+echoBrain.observe(
+observations,
+{
+day,
+minutes,
+weather
+}
+);
+
+return results;
+}
+
+function generateLearning(){
+
+const focus=echoBrain.focus;
+
+if(!focus)return;
+
+const entity=focus.id;
+
+if(focus.type==="person"){
+
+const expected=
+focus.activity;
+
+const observed=
+focus.activity;
+
+echoBrain.learn(
+entity,
+"activity",
+expected,
+observed
+);
+
+return;
+}
+
+if(focus.type==="gym"){
+
+echoBrain.learn(
+entity,
+"place_usage",
+"exercise",
+"exercise"
+);
+
+return;
+}
+
+if(focus.type==="park"){
+
+echoBrain.learn(
+entity,
+"place_usage",
+"relax",
+"relax"
+);
+
+return;
+}
+
+if(focus.type){
+
+const previous=
+echoBrain.learning
+.topHypotheses(entity);
+
+if(previous.length){
+
+echoBrain.learn(
+entity,
+previous[0].label,
+previous[0].value,
+previous[0].value
+);
+
+}else{
+
+echoBrain.learn(
+entity,
+"exists",
+"present",
+"present"
+);
+}
+}
 }
 
 function think(){
 
-const n=nearby();
+const results=
+feedEnvironmentToBrain();
 
-const focus=n.length?pick(n.slice(0,Math.min(6,n.length))):null;
+generateLearning();
 
-mind.energy=clamp(mind.energy-rand(.001,.003));
-mind.curiosity=clamp(mind.curiosity+rand(-.012,.012));
-mind.wonder=clamp(mind.wonder+rand(-.01,.014));
-mind.social=clamp(mind.social+rand(-.01,.012));
+const focus=
+echoBrain.focus;
+
+mind.energy=
+clamp(
+mind.energy-rand(.001,.003)
+);
+
+mind.curiosity=
+clamp(
+mind.curiosity+rand(-.012,.012)
+);
+
+mind.wonder=
+clamp(
+mind.wonder+rand(-.01,.014)
+);
+
+mind.social=
+clamp(
+mind.social+rand(-.01,.012)
+);
 
 if(!focus){
 
-mind.thought="I cannot see everything from here. There must be more happening elsewhere.";
-mind.question="What is happening beyond my current view?";
-mind.intention="Keep exploring Greenhaven.";
-mind.action="Wandering";
+mind.thought=
+"I cannot see everything from here. There must be more happening elsewhere.";
 
-}else if(focus.type==="person"){
+mind.question=
+"What is happening beyond my current view?";
 
-mind.thought=`${focus.name} is ${focus.activity}. I wonder where they are going.`;
-mind.question=`What will ${focus.name} do next?`;
-mind.intention=`Observe ${focus.name}.`;
-mind.action="Observing";
+mind.intention=
+"Keep exploring Greenhaven.";
 
-}else if(focus.type==="gym"){
-
-mind.thought="There is a gym nearby. I could go there... or I could do something completely different.";
-mind.question="Do I actually feel like exercising right now?";
-mind.intention="Decide whether to visit the gym.";
-mind.action="Considering";
-
-}else if(focus.type==="park"){
-
-mind.thought=`${focus.name} looks peaceful. I could walk, run, sit, or simply keep exploring.`;
-mind.question="What do I feel like doing?";
-mind.intention=`Consider visiting ${focus.name}.`;
-mind.action="Considering";
+mind.action=
+"Exploring";
 
 }else{
 
-mind.thought=`I notice ${focus.name}. I don't fully understand this place yet.`;
-mind.question=`What happens inside ${focus.name}?`;
-mind.intention=`Explore ${focus.name}.`;
-mind.action="Thinking";
+mind.thought=
+echoBrain.lastThought;
+
+mind.question=
+echoBrain.lastQuestion;
+
+mind.intention=
+`Investigate ${focus.name}.`;
+
+mind.action=
+focus.curiosityScore>.65
+?"Learning"
+:"Observing";
 }
 
-mind.memories.unshift(mind.thought);
+mind.memories.unshift(
+mind.thought
+);
 
 if(mind.memories.length>10){
 mind.memories.pop();
 }
 
-updateHUD(n);
+updateHUD(results);
 }
 
 function updateHUD(n){
 
-cycle++;
-
-document.getElementById("cycle").textContent=`CYCLE: ${cycle}`;
+document.getElementById("cycle")
+.textContent=
+`CYCLE: ${cycle}`;
 
 const h=Math.floor(minutes/60);
 const m=minutes%60;
-const suffix=h>=12?"PM":"AM";
-const dh=h%12||12;
 
-document.getElementById("time").textContent=
+const suffix=
+h>=12
+?"PM"
+:"AM";
+
+const dh=
+h%12||12;
+
+document.getElementById("time")
+.textContent=
 `DAY ${day} — ${String(dh).padStart(2,"0")}:${String(m).padStart(2,"0")} ${suffix}`;
 
 const stats=[
@@ -1003,52 +1560,176 @@ const stats=[
 
 stats.forEach(([id,v])=>{
 
-document.getElementById(id).textContent=Math.round(v*100)+"%";
-document.getElementById(id+"Bar").style.width=(v*100)+"%";
+document.getElementById(id)
+.textContent=
+Math.round(v*100)+"%";
+
+document.getElementById(id+"Bar")
+.style.width=
+(v*100)+"%";
 
 });
 
-document.getElementById("goal").textContent=mind.intention;
+document.getElementById("goal")
+.textContent=
+mind.intention;
 
-document.getElementById("calm").textContent=Math.round(mind.calm*100)+"%";
-document.getElementById("excitement").textContent=Math.round(mind.excitement*100)+"%";
-document.getElementById("emotionCuriosity").textContent=Math.round(mind.curiosity*100)+"%";
-document.getElementById("unease").textContent=Math.round(mind.unease*100)+"%";
+document.getElementById("calm")
+.textContent=
+Math.round(mind.calm*100)+"%";
 
-document.getElementById("weather").textContent=
+document.getElementById("excitement")
+.textContent=
+Math.round(mind.excitement*100)+"%";
+
+document.getElementById("emotionCuriosity")
+.textContent=
+Math.round(mind.curiosity*100)+"%";
+
+document.getElementById("unease")
+.textContent=
+Math.round(mind.unease*100)+"%";
+
+document.getElementById("entities")
+.textContent=
+echoBrain.world.all().length;
+
+document.getElementById("memories")
+.textContent=
+echoBrain.memory.episodes.length;
+
+document.getElementById("facts")
+.textContent=
+echoBrain.memory.facts.size;
+
+document.getElementById("predictions")
+.textContent=
+echoBrain.learning.predictions.length;
+
+document.getElementById("weather")
+.textContent=
 "Weather: "+weather;
 
-document.getElementById("population").textContent=
+document.getElementById("population")
+.textContent=
 `Citizens: ${people.length} • Vehicles: ${carMeshes.length}`;
 
-document.getElementById("event").textContent=
+document.getElementById("event")
+.textContent=
 events[0];
 
-document.getElementById("action").textContent=
+document.getElementById("action")
+.textContent=
 "ACTION: "+mind.action;
 
-document.getElementById("worldInfo").textContent=
+document.getElementById("worldInfo")
+.textContent=
 `Greenhaven • ${buildings.length} buildings`;
 
-document.getElementById("reflection").textContent=
-n.length?
-`I am beginning to understand ${n[0].name}. The city keeps changing around me.`:
-"The city continues beyond what I can currently see.";
+document.getElementById("reflection")
+.textContent=
+focusReflection(n);
 
-document.getElementById("perceptions").innerHTML=
+const focus=
+echoBrain.focus;
+
+if(focus){
+
+document.getElementById("hypothesis")
+.innerHTML=
+`<b>${focus.name}</b><br>
+<span class="muted">
+Novelty: ${Math.round(focus.novelty*100)}% •
+Uncertainty: ${Math.round(focus.uncertainty*100)}%
+</span>`;
+
+const hypotheses=
+echoBrain.learning
+.topHypotheses(focus.id);
+
+if(hypotheses.length){
+
+const h=hypotheses[0];
+
+document.getElementById("confidence")
+.textContent=
+`${h.label}: ${Math.round(h.confidence*100)}% confidence`;
+
+}else{
+
+document.getElementById("confidence")
+.textContent=
+"Not enough experience yet.";
+}
+
+document.getElementById("learning")
+.textContent=
+echoBrain.lastLearning;
+
+}else{
+
+document.getElementById("hypothesis")
+.textContent=
+"No strong curiosity target.";
+
+document.getElementById("confidence")
+.textContent=
+"—";
+}
+
+document.getElementById("perceptions")
+.innerHTML=
 n.slice(0,9).map(x=>
-`<div class="perception"><b>◉ ${x.name}</b><br><span class="muted">${x.type} • ${x.distance.toFixed(1)}m • ${x.activity}</span></div>`
+`<div class="perception">
+<b>◉ ${x.name}</b>
+<br>
+<span class="muted">
+${x.type} •
+${x.distance.toFixed(1)}m •
+${x.activity}
+</span>
+<br>
+<span class="badge">
+Curiosity ${Math.round((x.curiosityScore||0)*100)}%
+</span>
+</div>`
 ).join("");
 
-document.getElementById("thoughts").innerHTML=
+document.getElementById("thoughts")
+.innerHTML=
 mind.memories.map(x=>
 `<div class="thought">${x}</div>`
 ).join("");
 
-document.getElementById("memory").innerHTML=
-mind.memories.slice(0,7).map(x=>
+document.getElementById("memory")
+.innerHTML=
+mind.memories
+.slice(0,7)
+.map(x=>
 `<div class="memory">${x}</div>`
-).join("");
+)
+.join("");
+}
+
+function focusReflection(n){
+
+if(!n.length){
+return"The city continues beyond what I can currently see.";
+}
+
+const focus=
+echoBrain.focus;
+
+if(!focus){
+return"I am observing.";
+}
+
+return`
+I have encountered ${focus.name}
+${focus.novelty>.5
+?"but I do not understand it well yet."
+:"before, so I am comparing it with memory."}
+`;
 }
 
 function tick(){
@@ -1056,13 +1737,15 @@ function tick(){
 minutes+=2;
 
 if(minutes>=1440){
+
 minutes=0;
 day++;
 }
 
 if(Math.random()<.01){
 
-weather=pick([
+weather=
+pick([
 "Clear",
 "Clear",
 "Cloudy",
@@ -1104,58 +1787,89 @@ function moveEcho(){
 
 const speed=.18;
 
-const forward=new THREE.Vector3(
+const forward=
+new THREE.Vector3(
 Math.sin(yaw),
 0,
 Math.cos(yaw)
 );
 
-const right=new THREE.Vector3(
+const right=
+new THREE.Vector3(
 Math.cos(yaw),
 0,
 -Math.sin(yaw)
 );
 
 if(keys.w||keys.arrowup){
-target.addScaledVector(forward,speed);
+
+target.addScaledVector(
+forward,
+speed
+);
 }
 
 if(keys.s||keys.arrowdown){
-target.addScaledVector(forward,-speed);
+
+target.addScaledVector(
+forward,
+-speed
+);
 }
 
 if(keys.a||keys.arrowleft){
-target.addScaledVector(right,-speed);
+
+target.addScaledVector(
+right,
+-speed
+);
 }
 
 if(keys.d||keys.arrowright){
-target.addScaledVector(right,speed);
+
+target.addScaledVector(
+right,
+speed
+);
 }
 
-target.x=clamp(target.x,-72,72);
-target.z=clamp(target.z,-72,72);
+target.x=
+clamp(target.x,-72,72);
+
+target.z=
+clamp(target.z,-72,72);
 
 echo.position.lerp(
-new THREE.Vector3(target.x,0,target.z),
+new THREE.Vector3(
+target.x,
+0,
+target.z
+),
 .22
 );
 }
 
 function cameraUpdate(){
 
-const horizontal=Math.cos(pitch);
+const horizontal=
+Math.cos(pitch);
 
 const x=
 target.x+
-Math.sin(yaw)*horizontal*distance;
+Math.sin(yaw)*
+horizontal*
+distance;
 
 const z=
 target.z+
-Math.cos(yaw)*horizontal*distance;
+Math.cos(yaw)*
+horizontal*
+distance;
 
 const y=
 3+
-Math.sin(pitch)*distance;
+Math.sin(pitch)*
+distance;
 
 camera.position.lerp(
 new THREE.Vector3(x,y,z),
@@ -1176,10 +1890,15 @@ const hour=minutes/60;
 let color=0x82b8d0;
 
 if(hour>=20||hour<6){
+
 color=0x071421;
+
 }else if(hour>=17){
+
 color=0xd28d6e;
+
 }else if(hour<9){
+
 color=0xa1cbd9;
 }
 
@@ -1187,56 +1906,75 @@ scene.background.set(color);
 scene.fog.color.set(color);
 
 window.sun.intensity=
-hour>=20||hour<6?
-.25:
-hour>=17?
-.8:
-1.35;
+hour>=20||hour<6
+?.25
+:hour>=17
+?.8
+:1.35;
 
 window.ambient.intensity=
-hour>=20||hour<6?
-.25:
-.65;
+hour>=20||hour<6
+?.25
+:.65;
 }
 
 function controls(){
 
-window.addEventListener("keydown",e=>{
+window.addEventListener(
+"keydown",
+e=>{
 keys[e.key.toLowerCase()]=true;
-});
+}
+);
 
-window.addEventListener("keyup",e=>{
+window.addEventListener(
+"keyup",
+e=>{
 keys[e.key.toLowerCase()]=false;
-});
+}
+);
 
-renderer.domElement.addEventListener("mousedown",e=>{
+renderer.domElement.addEventListener(
+"mousedown",
+e=>{
 dragging=true;
 lastX=e.clientX;
 lastY=e.clientY;
-});
+}
+);
 
-window.addEventListener("mouseup",()=>{
+window.addEventListener(
+"mouseup",
+()=>{
 dragging=false;
-});
+}
+);
 
-window.addEventListener("mousemove",e=>{
+window.addEventListener(
+"mousemove",
+e=>{
 
 if(!dragging)return;
 
-yaw-=(e.clientX-lastX)*.007;
+yaw-=
+(e.clientX-lastX)*.007;
+
 pitch+=
 (e.clientY-lastY)*.004;
 
-pitch=clamp(pitch,.18,1.05);
+pitch=
+clamp(pitch,.18,1.05);
 
 lastX=e.clientX;
 lastY=e.clientY;
-});
+}
+);
 
 renderer.domElement.addEventListener(
 "wheel",
 e=>{
-distance=clamp(
+distance=
+clamp(
 distance+e.deltaY*.015,
 8,
 55
@@ -1245,15 +1983,24 @@ distance+e.deltaY*.015,
 {passive:true}
 );
 
-document.getElementById("zoomIn").onclick=()=>{
-distance=Math.max(8,distance-5);
+document.getElementById("zoomIn")
+.onclick=()=>{
+distance=Math.max(
+8,
+distance-5
+);
 };
 
-document.getElementById("zoomOut").onclick=()=>{
-distance=Math.min(55,distance+5);
+document.getElementById("zoomOut")
+.onclick=()=>{
+distance=Math.min(
+55,
+distance+5
+);
 };
 
-document.getElementById("reset").onclick=()=>{
+document.getElementById("reset")
+.onclick=()=>{
 target.set(0,0,5);
 yaw=0;
 pitch=.48;
@@ -1276,16 +2023,24 @@ innerHeight
 
 function animate(){
 
-requestAnimationFrame(animate);
+requestAnimationFrame(
+animate
+);
 
 moveEcho();
 cameraUpdate();
 lighting();
 
-renderer.render(scene,camera);
+renderer.render(
+scene,
+camera
+);
 }
 
-window.addEventListener("resize",resize);
+window.addEventListener(
+"resize",
+resize
+);
 
 init();
 think();
