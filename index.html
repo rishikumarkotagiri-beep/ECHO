@@ -1,413 +1,502 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ECHO v1.0 — Greenhaven Living City</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>ECHO v1.1 — Greenhaven Living City</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <style>
-*{box-sizing:border-box}
-html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#07111c;color:#dce9ee;font-family:Arial,Helvetica,sans-serif}
-#app{width:100%;height:100%;position:relative}
-#canvas{position:absolute;inset:0}
-#hud{position:absolute;inset:14px;pointer-events:none;display:grid;grid-template-columns:280px 1fr 280px;grid-template-rows:64px 1fr 170px;gap:12px}
-.panel{background:rgba(5,13,21,.84);border:1px solid rgba(0,240,210,.25);border-radius:12px;padding:16px;backdrop-filter:blur(8px);overflow:hidden}
-.top{grid-column:1/4;display:flex;align-items:center;justify-content:space-between}
-.brand{font-size:20px;font-weight:800;letter-spacing:5px}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:#07111c;color:#dffbf6;font-family:Arial,Segoe UI,sans-serif}
+#world{position:fixed;inset:0;z-index:1}
+#world canvas{display:block}
+.panel{position:absolute;z-index:10;background:rgba(5,12,19,.86);border:1px solid rgba(0,255,210,.25);border-radius:12px;box-shadow:0 10px 35px rgba(0,0,0,.35);backdrop-filter:blur(8px)}
+.header{top:14px;left:14px;right:14px;height:58px;padding:0 18px;display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center}
+.logo{font-size:18px;font-weight:800;letter-spacing:5px;color:#fff}
 .green{color:#00e6c7}
-.small{font-size:12px;color:#91a8b5;letter-spacing:1px}
-.side{overflow:auto}
-.title{font-size:11px;letter-spacing:2px;color:#8da5b5;margin-bottom:12px}
-.bar{height:7px;background:#162633;border-radius:10px;overflow:hidden;margin:6px 0 13px}
-.fill{height:100%;background:#00ddc2}
-.stat{display:flex;justify-content:space-between;font-size:13px}
-.intent{font-size:14px;line-height:1.45;margin:8px 0 18px;color:#fff}
-.list{display:flex;flex-direction:column;gap:8px}
-.item{padding:9px;border-left:2px solid #00d9c0;background:rgba(255,255,255,.035);font-size:12px}
-.bottom{grid-column:1/4;display:grid;grid-template-columns:1.7fr 1fr 1fr;gap:18px}
-.scroll{height:120px;overflow:auto}
-.thought{padding:8px 0;border-bottom:1px solid rgba(255,255,255,.08);font-size:12px;line-height:1.35}
-.controls{position:absolute;right:310px;bottom:190px;background:rgba(5,13,21,.8);border:1px solid #1b6f6a;padding:8px;border-radius:8px;font-size:11px;color:#a9c0c9}
-.center{position:relative;pointer-events:none}
-.cityname{position:absolute;top:8px;left:0;right:0;text-align:center;font-size:11px;letter-spacing:5px;color:#b7cbd2;text-shadow:0 2px 8px #000}
-.footer{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);font-size:11px;color:#8fa4af;pointer-events:none}
+.version{font-size:10px;color:#8497a8;margin-left:8px}
+.center{text-align:center;color:#8ea3b0;font-size:11px}
+.right{text-align:right;color:#00e6c7;font-size:11px}
+.left{top:86px;left:14px;width:285px;bottom:205px;padding:16px;overflow:auto}
+.rightpanel{top:86px;right:14px;width:300px;bottom:205px;padding:16px;overflow:auto}
+.bottom{left:14px;right:14px;bottom:14px;height:178px;padding:15px;display:grid;grid-template-columns:1.7fr 1fr 1fr;gap:18px}
+h3{font-size:10px;letter-spacing:2px;color:#7890a3;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,.08)}
+.stat{display:flex;justify-content:space-between;font-size:12px;margin:7px 0;color:#b6c4ce}
+.value{color:#00ffcc}
+.bar{height:6px;background:#162532;border-radius:8px;overflow:hidden;margin-bottom:12px}
+.fill{height:100%;background:#00e6c7;transition:width .4s}
+.goal{font-size:14px;color:#fff;line-height:1.45;margin-bottom:15px}
+.log{height:120px;overflow:auto}
+.memory{font-size:11px;line-height:1.4;color:#00d8b8;padding:7px 2px;border-bottom:1px solid rgba(255,255,255,.06)}
+.thought{font-size:11px;line-height:1.45;color:#c6d3dc;padding:8px;border-left:2px solid #00ffcc;background:rgba(255,255,255,.025);margin-bottom:5px}
+.perception{font-size:11px;line-height:1.4;padding:8px;margin-bottom:6px;background:rgba(255,255,255,.035);border-left:2px solid #00e6c7}
+.muted{color:#718493}
+.event{font-size:11px;line-height:1.5;color:#d9fff7}
+.action{font-size:12px;color:#00ffcc;margin-top:9px}
+.citylabel{position:absolute;z-index:5;top:82px;left:50%;transform:translateX(-50%);font-size:10px;letter-spacing:5px;color:rgba(255,255,255,.55);pointer-events:none}
+.controls{position:absolute;z-index:15;right:325px;bottom:190px;display:flex;gap:5px}
+button{background:rgba(5,15,22,.9);border:1px solid rgba(0,255,210,.3);color:#dffbf6;border-radius:7px;padding:8px 12px;cursor:pointer}
+button:hover{background:rgba(0,220,190,.15)}
+.help{position:absolute;z-index:15;left:50%;bottom:185px;transform:translateX(-50%);font-size:10px;color:#8da2af;background:rgba(4,12,18,.75);padding:7px 12px;border-radius:6px}
 @media(max-width:900px){
-#hud{grid-template-columns:1fr;grid-template-rows:60px 150px 1fr 150px}
-.top{grid-column:1}
-.side.right{display:none}
-.bottom{grid-column:1;grid-template-columns:1fr}
-.controls{display:none}
+.header{grid-template-columns:1fr 1fr}
+.header .center{display:none}
+.left{width:230px}
+.rightpanel{display:none}
+.bottom{grid-template-columns:1fr;height:150px}
+.bottom>div:nth-child(2),.bottom>div:nth-child(3){display:none}
+.controls{right:15px;bottom:165px}
+.help{display:none}
 }
 </style>
 </head>
 <body>
-<div id="app">
-<div id="canvas"></div>
-
-<div id="hud">
-
-<div class="panel top">
-<div>
-<span class="brand">ECHO</span>
-<span class="small"> v1.0</span>
-<span class="green"> ● LIVING CITY</span>
+<div id="world"></div>
+<div class="citylabel">GREENHAVEN • LIVING CITY</div>
+<div class="panel header">
+<div class="logo">ECHO <span class="version">v1.1</span> <span class="green">● CITY ONLINE</span></div>
+<div id="cycle" class="center">CYCLE: 0</div>
+<div id="time" class="right">DAY 1 — 08:00 AM</div>
 </div>
-<div id="cycle">CYCLE: 0</div>
-<div id="time">DAY 1 — 08:00 AM</div>
+<div class="panel left">
+<h3>INTERNAL STATE</h3>
+<div class="stat"><span>Energy</span><b id="energy" class="value">82%</b></div>
+<div class="bar"><div id="energyBar" class="fill" style="width:82%"></div></div>
+<div class="stat"><span>Curiosity</span><b id="curiosity" class="value">78%</b></div>
+<div class="bar"><div id="curiosityBar" class="fill" style="width:78%"></div></div>
+<div class="stat"><span>Wonder</span><b id="wonder" class="value">66%</b></div>
+<div class="bar"><div id="wonderBar" class="fill" style="width:66%"></div></div>
+<div class="stat"><span>Social</span><b id="social" class="value">55%</b></div>
+<div class="bar"><div id="socialBar" class="fill" style="width:55%"></div></div>
+<h3>CURRENT INTENTION</h3>
+<div id="goal" class="goal">I am exploring Greenhaven.</div>
+<h3>MEMORY</h3>
+<div id="memory" class="log"></div>
 </div>
-
-<div class="panel side">
-
-<div class="title">INTERNAL STATE</div>
-
-<div class="stat">
-<span>Energy</span>
-<b id="energy">80%</b>
+<div class="panel rightpanel">
+<h3>WHAT ECHO PERCEIVES</h3>
+<div id="perceptions"></div>
+<h3>EMOTIONAL STATE</h3>
+<div class="stat"><span>Calm</span><b id="calm" class="value">61%</b></div>
+<div class="stat"><span>Excitement</span><b id="excitement" class="value">42%</b></div>
+<div class="stat"><span>Curiosity</span><b id="emotionCuriosity" class="value">78%</b></div>
+<div class="stat"><span>Unease</span><b id="unease" class="value">8%</b></div>
+<h3 style="margin-top:15px">WORLD EVENT</h3>
+<div id="event" class="event">Greenhaven is waking up.</div>
 </div>
-
-<div class="bar">
-<div class="fill" id="energyBar" style="width:80%"></div>
-</div>
-
-<div class="stat">
-<span>Curiosity</span>
-<b id="curiosity">70%</b>
-</div>
-
-<div class="bar">
-<div class="fill" id="curiosityBar" style="width:70%"></div>
-</div>
-
-<div class="stat">
-<span>Social</span>
-<b id="social">60%</b>
-</div>
-
-<div class="bar">
-<div class="fill" id="socialBar" style="width:60%"></div>
-</div>
-
-<div class="title">CURRENT INTENTION</div>
-
-<div class="intent" id="intent">
-Observing Greenhaven.
-</div>
-
-<div class="title">LATEST THOUGHT</div>
-
-<div id="thought">
-The city is waking up.
-</div>
-
-</div>
-
-<div class="center">
-<div class="cityname">
-GREENHAVEN • LIVING CITY
-</div>
-</div>
-
-<div class="panel side right">
-
-<div class="title">
-WHAT ECHO PERCEIVES
-</div>
-
-<div class="list" id="perceptions"></div>
-
-<div class="title" style="margin-top:16px">
-WORLD ACTIVITY
-</div>
-
-<div id="event">
-The city keeps moving.
-</div>
-
-<div style="margin-top:12px" class="small" id="population">
-Population nearby: 0
-</div>
-
-</div>
-
 <div class="panel bottom">
-
 <div>
-
-<div class="title">
-STREAM OF THOUGHT
+<h3>STREAM OF THOUGHT</h3>
+<div id="thoughts" class="log"></div>
 </div>
-
-<div class="scroll" id="thoughts"></div>
-
-</div>
-
 <div>
-
-<div class="title">
-REFLECTION
+<h3>REFLECTION</h3>
+<div id="reflection" class="event">A new city. I wonder what happens here.</div>
 </div>
-
-<div id="reflection">
-Greenhaven feels alive.
-</div>
-
-</div>
-
 <div>
-
-<div class="title">
-WORLD
+<h3>WORLD</h3>
+<div id="worldInfo" class="event">Greenhaven</div>
+<div id="weather" class="event" style="margin-top:7px">Weather: Clear</div>
+<div id="population" class="event" style="margin-top:7px">Citizens: 100</div>
+<div id="action" class="action">ACTION: Exploring</div>
 </div>
-
-<div id="world">
-90 NPCs • 28 vehicles • 100+ buildings
 </div>
-
-<div style="margin-top:12px" class="small">
-WASD / arrows = move ECHO • drag = camera • wheel = zoom
-</div>
-
-</div>
-
-</div>
-
-</div>
-
 <div class="controls">
-WASD MOVE • MOUSE DRAG CAMERA • WHEEL ZOOM
+<button id="zoomIn">＋</button>
+<button id="zoomOut">−</button>
+<button id="reset">RESET</button>
 </div>
-
-<div class="footer">
-ECHO is an original retro open-world simulation inspired by classic 1980s/90s open-world presentation.
-</div>
-
-</div>
-
-<script type="module">
-
-import {CityWorld}
-from "./world/world.js";
-
-import {CityRenderer}
-from "./frontend/cityRenderer.js";
-
-const city=
-new CityWorld();
-
-const view=
-new CityRenderer(
-document.getElementById("canvas"),
-city
-);
-
-const mind={
-energy:.8,
-curiosity:.7,
-social:.6,
-thought:"The city is waking up.",
-question:"What is happening around me?",
-intention:"Observe Greenhaven.",
-memory:[]
-};
-
-function think(){
-
-const nearby=
-city.getNearby(
-view.echoPos.x,
-view.echoPos.z,
-18
-);
-
-const focus=
-nearby[0];
-
-mind.energy=
-Math.max(
-.25,
-mind.energy-.002
-);
-
-mind.curiosity=
-Math.max(
-.2,
-Math.min(
-1,
-mind.curiosity+
-(Math.random()-.45)*.025
-)
-);
-
-mind.social=
-Math.max(
-.2,
-Math.min(
-1,
-mind.social+
-(Math.random()-.4)*.02
-)
-);
-
-if(focus?.type==="person"){
-
-mind.thought=
-`${focus.name} is ${focus.activity}. I wonder where they are going.`;
-
-mind.question=
-`What will ${focus.name} do next?`;
-
-mind.intention=
-`Observe ${focus.name}.`;
-
-}else if(focus?.type==="gym"){
-
-mind.thought=
-"The gym is active. Some people choose exercise while others choose different routines.";
-
-mind.question=
-"Would I want to exercise today?";
-
-mind.intention=
-"Consider visiting the gym.";
-
-}else if(focus?.type==="park"){
-
-mind.thought=
-`${focus.name} has people coming and going. It feels like a place where routines overlap.`;
-
-mind.question=
-"What happens here later?";
-
-mind.intention=
-`Consider visiting ${focus.name}.`;
-
-}else if(focus){
-
-mind.thought=
-`I notice ${focus.name}. The city keeps changing while I watch.`;
-
-mind.question=
-`What happens inside ${focus.name}?`;
-
-mind.intention=
-`Explore ${focus.name}.`;
-
+<div class="help">WASD / ARROWS MOVE ECHO • DRAG CAMERA • WHEEL ZOOM</div>
+<script>
+const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
+const rand=(a,b)=>a+Math.random()*(b-a);
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+let scene,camera,renderer,echo;
+let people=[],cars=[],buildings=[],parks=[],roads=[],trees=[];
+let peopleMeshes=[],carMeshes=[];
+let yaw=0,pitch=.52,distance=28;
+let target=new THREE.Vector3(0,0,4);
+let keys={};
+let dragging=false,lastX=0,lastY=0;
+let day=1,minutes=480,cycle=0,weather="Clear";
+let events=["Greenhaven is waking up.","People are beginning their morning routines."];
+const mind={energy:.82,curiosity:.78,wonder:.66,social:.55,calm:.61,excitement:.42,unease:.08,thought:"The city is waking up.",question:"What is happening around me?",intention:"Explore Greenhaven.",action:"Exploring",memories:[]};
+function material(color,rough=.75,emissive=0,intensity=0){
+return new THREE.MeshStandardMaterial({color,roughness:rough,metalness:.08,emissive,emissiveIntensity:intensity});
+}
+function addBox(w,h,d,color,x,y,z,rough=.75){
+const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),material(color,rough));
+m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;scene.add(m);return m;
+}
+function init(){
+scene=new THREE.Scene();
+scene.background=new THREE.Color(0x82b9d2);
+scene.fog=new THREE.Fog(0x82b9d2,65,150);
+camera=new THREE.PerspectiveCamera(60,innerWidth/innerHeight,.1,400);
+camera.position.set(0,18,28);
+renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:"high-performance"});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setSize(innerWidth,innerHeight);
+renderer.shadowMap.enabled=true;
+renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.outputEncoding=THREE.sRGBEncoding;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure=1.1;
+document.getElementById("world").appendChild(renderer.domElement);
+const ambient=new THREE.AmbientLight(0xc8e4ef,.6);scene.add(ambient);
+const sun=new THREE.DirectionalLight(0xffe4bd,1.3);
+sun.position.set(-50,80,40);sun.castShadow=true;
+sun.shadow.mapSize.width=2048;sun.shadow.mapSize.height=2048;
+sun.shadow.camera.left=-90;sun.shadow.camera.right=90;sun.shadow.camera.top=90;sun.shadow.camera.bottom=-90;
+scene.add(sun);
+window._sun=sun;window._ambient=ambient;
+const ground=new THREE.Mesh(new THREE.PlaneGeometry(180,180),material(0x47794b,1));
+ground.rotation.x=-Math.PI/2;ground.receiveShadow=true;scene.add(ground);
+createWorld();
+buildCity();
+createEcho();
+bindControls();
+resize();
+animate();
+}
+function createWorld(){
+const street=[-60,-40,-20,0,20,40,60];
+street.forEach((z,i)=>roads.push({x:0,z,width:i===3?8:6,length:140,dir:"x"}));
+street.forEach((x,i)=>roads.push({x,z:0,width:i===3?8:6,length:140,dir:"z"}));
+const types=["house","house","house","apartment","market","cafe","shop","office","gym","library","clinic","school","hotel","restaurant","workshop","bank"];
+let id=0;
+for(let x=-54;x<=54;x+=12){
+for(let z=-54;z<=54;z+=12){
+if(Math.abs(x)<8||Math.abs(z)<8)continue;
+const type=pick(types);
+const h=type==="apartment"||type==="office"?rand(9,17):rand(4.5,8);
+buildings.push({id:id++,name:type==="gym"?"Greenhaven Gym":type==="library"?"Greenhaven Library":type==="clinic"?"Greenhaven Clinic":type==="cafe"?"Corner Cafe":type==="market"?"Greenhaven Market":type==="school"?"Greenhaven School":type==="bank"?"Greenhaven Bank":type==="hotel"?"Ocean View Hotel":`${type[0].toUpperCase()+type.slice(1)} ${id}`,type,x:x+rand(-2,2),z:z+rand(-2,2),w:rand(6,10),h,d:rand(6,10)});
+}}
+parks=[
+{name:"Central Park",x:-30,z:32,w:22,d:18},
+{name:"Riverside Walk",x:30,z:34,w:20,d:13},
+{name:"Palm Garden",x:35,z:-34,w:18,d:15},
+{name:"Greenhaven Beach",x:-38,z:-42,w:30,d:16}
+];
+for(let i=0;i<115;i++){
+let home=pick(buildings.filter(b=>b.type==="house"||b.type==="apartment"));
+let role=pick(["resident","resident","worker","worker","student","runner","shopkeeper","driver","artist","tourist","gym member","reader"]);
+let p={id:i,name:i<30?["Mira","Arjun","Raman","Anika","Kiran","Sonia","Dev","Meera","Rahul","Priya","Vikram","Asha","Kabir","Nisha","Ravi","Tara","Neel","Isha","Sameer","Aarav","Diya","Rohan","Sana","Varun","Pooja","Aditya","Kavya","Manoj","Sneha","Amit"][i]:`Citizen ${i+1}`,role,x:home.x+rand(-2,2),z:home.z+rand(-2,2),home,work:null,destination:null,activity:"at home",mood:pick(["calm","happy","busy","curious","tired"]),speed:role==="runner"?.10:rand(.035,.06),wait:0};
+if(["worker","shopkeeper","driver","artist","gym member"].includes(role))p.work=pick(buildings.filter(b=>!["house","apartment"].includes(b.type)));
+if(role==="student")p.work=pick(buildings.filter(b=>b.type==="school"));
+if(role==="gym member")p.work=pick(buildings.filter(b=>b.type==="gym"));
+people.push(p);
+}
+for(let i=0;i<36;i++)cars.push({type:pick(["car","car","taxi","sport","van","bus"]),road:pick(roads),offset:rand(-65,65),speed:rand(.04,.09),dir:i%2?1:-1});
+for(let i=0;i<150;i++)trees.push({x:rand(-75,75),z:rand(-75,75)});
+}
+function road(r){
+const g=r.dir==="x"?new THREE.PlaneGeometry(r.length,r.width):new THREE.PlaneGeometry(r.width,r.length);
+const m=new THREE.Mesh(g,material(0x282d32,.95));m.rotation.x=-Math.PI/2;m.position.set(r.x,.025,r.z);m.receiveShadow=true;scene.add(m);
+for(let q=-r.length/2;q<r.length/2;q+=5){
+const line=new THREE.Mesh(r.dir==="x"?new THREE.PlaneGeometry(2,.08):new THREE.PlaneGeometry(.08,2),material(0xe6d05b,.7));
+line.rotation.x=-Math.PI/2;
+line.position.set(r.dir==="x"?r.x+q:r.x,.07,r.dir==="x"?r.z:r.z+q);
+scene.add(line);
+}
+}
+function building(b){
+const colors={house:0xc88d69,apartment:0x738695,market:0xd4aa4f,cafe:0xb86d50,shop:0x708e65,office:0x71818d,gym:0x328b78,library:0x75669a,clinic:0xd5d8d5,school:0xd2a45c,hotel:0x9d6878,restaurant:0xc17755,workshop:0x80654d,bank:0x5e7890};
+const group=new THREE.Group();
+const body=new THREE.Mesh(new THREE.BoxGeometry(b.w,b.h,b.d),material(colors[b.type]||0x888888,.72));
+body.position.y=b.h/2;body.castShadow=true;body.receiveShadow=true;group.add(body);
+const roof=new THREE.Mesh(new THREE.ConeGeometry(Math.max(b.w,b.d)*.72,.8,4),material(0x493b35,.9));
+roof.position.y=b.h+.4;roof.rotation.y=Math.PI/4;roof.castShadow=true;group.add(roof);
+const windowMat=material(0x80d7e4,.2,0x123e45,.4);
+const cols=Math.max(1,Math.floor(b.w/1.5));
+const rows=Math.max(1,Math.floor(b.h/1.7));
+for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){
+const w=new THREE.Mesh(new THREE.BoxGeometry(.52,.58,.08),windowMat);
+w.position.set(-b.w/2+.85+c*1.45,1.15+r*1.4,-b.d/2-.05);group.add(w);
+}
+const door=new THREE.Mesh(new THREE.BoxGeometry(.85,1.7,.12),material(0x432c25));
+door.position.set(0,.85,-b.d/2-.08);group.add(door);
+if(!["house","apartment"].includes(b.type)){
+const neon=b.type==="gym"?0x00e6c8:b.type==="clinic"?0xffffff:b.type==="library"?0xa880ff:b.type==="cafe"?0xff8c4e:0x65cce0;
+const sign=new THREE.Mesh(new THREE.BoxGeometry(Math.min(b.w*.7,4),.4,.1),material(neon,.3,neon,1));
+sign.position.set(0,Math.min(b.h-.4,3.5),-b.d/2-.12);group.add(sign);
+}
+group.position.set(b.x,0,b.z);scene.add(group);
+}
+function park(p){
+const grass=new THREE.Mesh(new THREE.PlaneGeometry(p.w,p.d),material(0x337944,1));
+grass.rotation.x=-Math.PI/2;grass.position.set(p.x,.045,p.z);scene.add(grass);
+const path=new THREE.Mesh(new THREE.PlaneGeometry(p.w*.82,.9),material(0xb7a98a,.95));
+path.rotation.x=-Math.PI/2;path.position.set(p.x,.07,p.z);scene.add(path);
+for(let i=0;i<8;i++)tree(p.x+rand(-p.w*.42,p.w*.42),p.z+rand(-p.d*.38,p.d*.38));
+for(let i=0;i<3;i++)addBox(2,.18,.45,0x67452e,p.x-4+i*4,.65,p.z+2);
+}
+function tree(x,z){
+addBox(.25,2,.25,0x65432c,x,1,z);
+const crown=new THREE.Mesh(new THREE.SphereGeometry(1.25,12,10),material(pick([0x2e743b,0x347f43,0x438c4b]),1));
+crown.position.set(x,2.65,z);crown.castShadow=true;scene.add(crown);
+}
+function palm(x,z){
+addBox(.22,4,.22,0x765034,x,2,z);
+for(let i=0;i<8;i++){
+const leaf=new THREE.Mesh(new THREE.BoxGeometry(.12,.08,3),material(0x246b35,1));
+leaf.position.set(x,4.15,z);leaf.rotation.y=i*Math.PI/4;leaf.rotation.z=.35;scene.add(leaf);
+}
+}
+function streetLight(x,z){
+addBox(.08,3.2,.08,0x303437,x,1.6,z);
+const lamp=new THREE.Mesh(new THREE.SphereGeometry(.14,8,8),material(0xffd27b,.2,0xff9b00,.8));
+lamp.position.set(x,3.15,z);scene.add(lamp);
+}
+function car(c){
+const g=new THREE.Group();
+const color=pick([0xb84e4e,0x4d78ad,0xd0a33f,0x4e8567,0x85858a,0x7d5fa0]);
+const width=c.type==="bus"?2.2:1.8;
+const length=c.type==="bus"?5:3.5;
+const body=new THREE.Mesh(new THREE.BoxGeometry(width,.62,length),material(c.type==="taxi"?0xd7b83d:color,.55));
+body.position.y=.55;body.castShadow=true;g.add(body);
+const cabin=new THREE.Mesh(new THREE.BoxGeometry(width*.78,.48,length*.48),material(0x25353c,.2));
+cabin.position.y=.95;g.add(cabin);
+for(const x of[-width/2,width/2])for(const z of[-length*.28,length*.28]){
+const wheel=new THREE.Mesh(new THREE.CylinderGeometry(.28,.28,.18,10),material(0x111315,.95));
+wheel.rotation.z=Math.PI/2;wheel.position.set(x,.3,z);g.add(wheel);
+}
+g.userData=c;scene.add(g);carMeshes.push(g);
+}
+function person(p,i){
+const g=new THREE.Group();
+const shirt=pick([0x4779b4,0xc55e50,0x4c9664,0xc08a46,0x8562a5,0x4b9999,0xd09a4c]);
+const body=new THREE.Mesh(new THREE.CylinderGeometry(.22,.28,.85,8),material(shirt));
+body.position.y=.78;g.add(body);
+const head=new THREE.Mesh(new THREE.SphereGeometry(.23,10,8),material(0xc58a69));
+head.position.y=1.4;g.add(head);
+const l=new THREE.Mesh(new THREE.BoxGeometry(.11,.58,.12),material(0x252a31));
+l.position.set(-.11,.29,0);g.add(l);
+const r=l.clone();r.position.x=.11;g.add(r);
+const a=new THREE.Mesh(new THREE.BoxGeometry(.1,.52,.1),material(shirt));
+a.position.set(-.34,.78,0);g.add(a);
+const ar=a.clone();ar.position.x=.34;g.add(ar);
+g.position.set(p.x,0,p.z);g.userData={p,l,r,a,ar};scene.add(g);peopleMeshes.push(g);
+}
+function createEcho(){
+echo=new THREE.Group();
+const body=new THREE.Mesh(new THREE.CylinderGeometry(.38,.38,1.25,12),material(0xf3ffff,.2,0x00c8aa,.45));
+body.position.y=.85;body.castShadow=true;echo.add(body);
+const head=new THREE.Mesh(new THREE.SphereGeometry(.34,16,12),material(0xffffff,.18,0x00d9ba,.3));
+head.position.y=1.65;echo.add(head);
+const eye=new THREE.Mesh(new THREE.BoxGeometry(.28,.09,.06),material(0x061416,.2,0x00ffcc,1.4));
+eye.position.set(0,1.68,-.32);echo.add(eye);
+const ring=new THREE.Mesh(new THREE.TorusGeometry(.65,.035,8,32),material(0x00ffcc,.2,0x00ffcc,1));
+ring.rotation.x=-Math.PI/2;ring.position.y=.1;echo.add(ring);
+const glow=new THREE.PointLight(0x00ffcc,2,9);glow.position.y=1;echo.add(glow);
+echo.position.set(0,0,4);scene.add(echo);
+}
+function buildCity(){
+roads.forEach(road);
+buildings.forEach(building);
+parks.forEach(park);
+for(let i=0;i<trees.length;i++)if(Math.random()<.65)tree(trees[i].x,trees[i].z);
+for(let i=0;i<30;i++)palm(rand(-65,65),rand(-65,65));
+for(let x=-60;x<=60;x+=10)for(let z=-60;z<=60;z+=20)streetLight(x,z);
+people.forEach((p,i)=>person(p,i));
+cars.forEach(car);
+}
+function chooseDestination(p){
+const h=minutes/60;
+if(h<9)p.destination={x:p.home.x+rand(-2,2),z:p.home.z+rand(-2,2),kind:"home"};
+else if(h<12&&p.work)p.destination={x:p.work.x+rand(-2,2),z:p.work.z+rand(-2,2),kind:"work"};
+else if(h<14){
+const t=pick([...parks,...buildings.filter(b=>!["house","apartment"].includes(b.type))]);
+p.destination={x:t.x+rand(-3,3),z:t.z+rand(-3,3),kind:t.type||"park"};
+}else if(h<18&&p.work)p.destination={x:p.work.x+rand(-2,2),z:p.work.z+rand(-2,2),kind:"work"};
+else if(h<21){
+const t=pick([...parks,...buildings.filter(b=>!["house","apartment"].includes(b.type))]);
+p.destination={x:t.x+rand(-3,3),z:t.z+rand(-3,3),kind:t.type||"park"};
+}else p.destination={x:p.home.x+rand(-2,2),z:p.home.z+rand(-2,2),kind:"home"};
+}
+function chooseActivity(p){
+if(p.role==="runner")return"running";
+if(p.role==="student")return"studying";
+if(p.role==="gym member")return"exercising";
+if(p.role==="worker"||p.role==="shopkeeper")return"working";
+if(p.destination?.kind==="home")return"at home";
+if(p.destination?.kind==="work")return"working";
+return pick(["walking","talking","shopping","relaxing","observing","wandering"]);
+}
+function updatePeople(){
+people.forEach(p=>{
+if(p.wait>0){p.wait--;return}
+if(!p.destination)chooseDestination(p);
+const dx=p.destination.x-p.x,dz=p.destination.z-p.z,d=Math.hypot(dx,dz);
+if(d<.5){p.destination=null;p.activity=chooseActivity(p);p.wait=Math.floor(rand(8,35));return}
+p.x+=dx/d*p.speed;p.z+=dz/d*p.speed;p.activity=chooseActivity(p);
+});
+peopleMeshes.forEach((g,i)=>{
+const p=g.userData.p;g.position.x=p.x;g.position.z=p.z;
+if(p.destination){
+const s=Math.sin(Date.now()*.009+i)*.45;
+g.userData.l.rotation.x=s;g.userData.r.rotation.x=-s;
+g.userData.a.rotation.x=-s*.6;g.userData.ar.rotation.x=s*.6;
 }else{
-
-mind.thought=
-"I cannot see everything from here. The city continues beyond my view.";
-
-mind.question=
-"What is happening somewhere else?";
-
-mind.intention=
-"Keep exploring.";
+g.userData.l.rotation.x=0;g.userData.r.rotation.x=0;
 }
-
-mind.memory.unshift(
-mind.thought
-);
-
-if(mind.memory.length>8)
-mind.memory.pop();
-
-document.getElementById("cycle")
-.textContent=
-`CYCLE: ${city.cycle}`;
-
-document.getElementById("time")
-.textContent=
-city.formatTime();
-
-document.getElementById("energy")
-.textContent=
-`${Math.round(mind.energy*100)}%`;
-
-document.getElementById("energyBar")
-.style.width=
-`${mind.energy*100}%`;
-
-document.getElementById("curiosity")
-.textContent=
-`${Math.round(mind.curiosity*100)}%`;
-
-document.getElementById("curiosityBar")
-.style.width=
-`${mind.curiosity*100}%`;
-
-document.getElementById("social")
-.textContent=
-`${Math.round(mind.social*100)}%`;
-
-document.getElementById("socialBar")
-.style.width=
-`${mind.social*100}%`;
-
-document.getElementById("intent")
-.textContent=
-mind.intention;
-
-document.getElementById("thought")
-.textContent=
-mind.thought;
-
-document.getElementById("event")
-.textContent=
-city.events[0];
-
-document.getElementById("population")
-.textContent=
-`${nearby.filter(x=>x.type==="person").length} people nearby`;
-
-document.getElementById("perceptions")
-.innerHTML=
-nearby
-.slice(0,8)
-.map(
-x=>`
-<div class="item">
-<b>◉ ${x.name}</b>
-<br>
-<span class="small">
-${x.type} • ${x.distance.toFixed(1)}m • ${x.activity}
-</span>
-</div>
-`
-)
-.join("");
-
-document.getElementById("thoughts")
-.innerHTML=
-mind.memory
-.map(
-x=>`
-<div class="thought">
-${x}
-</div>
-`
-)
-.join("");
-
-document.getElementById("reflection")
-.textContent=
-`I am learning how Greenhaven behaves. ${
-focus
-?`I noticed ${focus.name} is part of its daily life.`
-:"There is more happening beyond my current view."
-}`;
-
+});
 }
-
+function updateCars(){
+cars.forEach((c,i)=>{
+c.offset+=c.speed*c.dir;
+if(c.offset>70)c.offset=-70;
+if(c.offset<-70)c.offset=70;
+const g=carMeshes[i],r=c.road;
+if(r.dir==="x"){g.position.set(r.x+c.offset,0,r.z);g.rotation.y=c.dir>0?0:Math.PI}
+else{g.position.set(r.x,0,r.z+c.offset);g.rotation.y=c.dir>0?Math.PI/2:-Math.PI/2}
+});
+}
+function tick(){
+cycle++;
+minutes+=2;
+if(minutes>=1440){minutes-=1440;day++}
+if(Math.random()<.008)weather=pick(["Clear","Clear","Cloudy","Windy","Rain"]);
+updatePeople();
+updateCars();
+if(Math.random()<.035){
+events.unshift(pick(["A taxi stops near the cafe.","A group gathers in Central Park.","Someone starts jogging along Riverside Walk.","A bus moves through Greenhaven.","People leave the gym.","A delivery vehicle arrives at the market.","A street musician begins playing.","Students cross the road.","A resident enters the library.","Traffic becomes heavier downtown."]));
+if(events.length>15)events.pop();
+}
+}
+function nearby(){
+const result=[];
+const x=echo.position.x,z=echo.position.z;
+buildings.forEach(b=>{const d=Math.hypot(x-b.x,z-b.z);if(d<18)result.push({name:b.name,type:b.type,distance:d,activity:"stationary"})});
+parks.forEach(p=>{const d=Math.hypot(x-p.x,z-p.z);if(d<18)result.push({name:p.name,type:"park",distance:d,activity:"green space"})});
+people.forEach(p=>{const d=Math.hypot(x-p.x,z-p.z);if(d<18)result.push({name:p.name,type:"person",distance:d,activity:p.activity,mood:p.mood})});
+return result.sort((a,b)=>a.distance-b.distance);
+}
+function think(){
+const n=nearby();
+const focus=n.length?pick(n.slice(0,Math.min(5,n.length))):null;
+mind.energy=clamp(mind.energy-rand(.001,.003));
+mind.curiosity=clamp(mind.curiosity+rand(-.012,.012));
+mind.wonder=clamp(mind.wonder+rand(-.01,.014));
+mind.social=clamp(mind.social+rand(-.01,.012));
+if(!focus){
+mind.thought="I cannot see everything from here. There must be more happening elsewhere.";
+mind.question="What is happening beyond my current view?";
+mind.intention="Keep exploring.";
+mind.action="Wandering";
+}else if(focus.type==="person"){
+mind.thought=`${focus.name} is ${focus.activity}. I wonder where they are going.`;
+mind.question=`What will ${focus.name} do next?`;
+mind.intention=`Observe ${focus.name}.`;
+mind.action="Observing";
+}else if(focus.type==="gym"){
+mind.thought="There is a gym nearby. I could exercise, or I could do something completely different.";
+mind.question="Do I actually feel like going to the gym?";
+mind.intention="Maybe visit the gym.";
+mind.action="Considering";
+}else if(focus.type==="park"){
+mind.thought=`${focus.name} looks interesting. I could walk there, run, relax, or simply keep moving.`;
+mind.question="What would I rather do right now?";
+mind.intention=`Consider visiting ${focus.name}.`;
+mind.action="Considering";
+}else{
+mind.thought=`I notice ${focus.name}. I don't fully understand this place yet.`;
+mind.question=`What happens inside ${focus.name}?`;
+mind.intention=`Explore ${focus.name}.`;
+mind.action="Thinking";
+}
+mind.memories.unshift(mind.thought);
+if(mind.memories.length>9)mind.memories.pop();
+updateHUD(n);
+}
+function updateHUD(n){
+document.getElementById("cycle").textContent=`CYCLE: ${cycle}`;
+let h=Math.floor(minutes/60),m=minutes%60,s=h>=12?"PM":"AM",dh=h%12||12;
+document.getElementById("time").textContent=`DAY ${day} — ${String(dh).padStart(2,"0")}:${String(m).padStart(2,"0")} ${s}`;
+for(const [id,val] of [["energy",mind.energy],["curiosity",mind.curiosity],["wonder",mind.wonder],["social",mind.social]]){document.getElementById(id).textContent=Math.round(val*100)+"%";document.getElementById(id+"Bar").style.width=val*100+"%"}
+document.getElementById("goal").textContent=mind.intention;
+document.getElementById("calm").textContent=Math.round(mind.calm*100)+"%";
+document.getElementById("excitement").textContent=Math.round(mind.excitement*100)+"%";
+document.getElementById("emotionCuriosity").textContent=Math.round(mind.curiosity*100)+"%";
+document.getElementById("unease").textContent=Math.round(mind.unease*100)+"%";
+document.getElementById("weather").textContent="Weather: "+weather;
+document.getElementById("population").textContent=`Citizens: ${people.length} • Vehicles: ${cars.length}`;
+document.getElementById("event").textContent=events[0];
+document.getElementById("action").textContent="ACTION: "+mind.action;
+document.getElementById("worldInfo").textContent=`Greenhaven • ${buildings.length} buildings • ${parks.length} parks`;
+document.getElementById("reflection").textContent=`I am learning how Greenhaven behaves. ${focusReflection(n)}`;
+document.getElementById("perceptions").innerHTML=n.slice(0,8).map(x=>`<div class="perception"><b>◉ ${x.name}</b><br><span class="muted">${x.type} • ${x.distance.toFixed(1)}m • ${x.activity}</span></div>`).join("");
+document.getElementById("thoughts").innerHTML=mind.memories.map(x=>`<div class="thought">${x}</div>`).join("");
+document.getElementById("memory").innerHTML=mind.memories.slice(0,6).map(x=>`<div class="memory">${x}</div>`).join("");
+}
+function focusReflection(n){
+if(!n.length)return"The city continues beyond what I can currently see.";
+const x=n[0];return`${x.name} is part of the city's daily life.`;
+}
+function updateEcho(){
+let speed=.16;
+const forward=new THREE.Vector3(Math.sin(yaw),0,Math.cos(yaw));
+const right=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw));
+if(keys.w||keys.arrowup)target.addScaledVector(forward,speed);
+if(keys.s||keys.arrowdown)target.addScaledVector(forward,-speed);
+if(keys.a||keys.arrowleft)target.addScaledVector(right,-speed);
+if(keys.d||keys.arrowright)target.addScaledVector(right,speed);
+target.x=clamp(target.x,-72,72);target.z=clamp(target.z,-72,72);
+echo.position.lerp(new THREE.Vector3(target.x,0,target.z),.2);
+echo.position.y=Math.sin(Date.now()*.004)*.04;
+echo.children[3].rotation.z+=.02;
+}
+function cameraUpdate(){
+const horizontal=Math.cos(pitch);
+const x=target.x+Math.sin(yaw)*horizontal*distance;
+const z=target.z+Math.cos(yaw)*horizontal*distance;
+const y=3.8+Math.sin(pitch)*distance;
+camera.position.lerp(new THREE.Vector3(x,y,z),.08);
+camera.lookAt(target.x,1,target.z);
+}
+function lighting(){
+const h=minutes/60;
+let c=0x82b9d2;
+if(h>=20||h<6)c=0x071421;
+else if(h>=17)c=0xd18d6d;
+else if(h<9)c=0xa1cbd9;
+scene.background.set(c);scene.fog.color.set(c);
+window._sun.intensity=h>=20||h<6?.25:h>=17?.75:h<9?.9:1.3;
+window._ambient.intensity=h>=20||h<6?.25:.6;
+}
+function animate(){
+requestAnimationFrame(animate);
+updateEcho();
+cameraUpdate();
+lighting();
+renderer.render(scene,camera);
+}
+function bindControls(){
+window.addEventListener("keydown",e=>keys[e.key.toLowerCase()]=true);
+window.addEventListener("keyup",e=>keys[e.key.toLowerCase()]=false);
+renderer.domElement.addEventListener("mousedown",e=>{dragging=true;lastX=e.clientX;lastY=e.clientY});
+window.addEventListener("mouseup",()=>dragging=false);
+window.addEventListener("mousemove",e=>{
+if(!dragging)return;
+yaw-=(e.clientX-lastX)*.007;
+pitch=clamp(pitch+(e.clientY-lastY)*.004,.18,1.05);
+lastX=e.clientX;lastY=e.clientY;
+});
+renderer.domElement.addEventListener("wheel",e=>{distance=clamp(distance+e.deltaY*.015,8,55)},{passive:true});
+document.getElementById("zoomIn").onclick=()=>distance=Math.max(8,distance-5);
+document.getElementById("zoomOut").onclick=()=>distance=Math.min(55,distance+5);
+document.getElementById("reset").onclick=()=>{target.set(0,0,4);yaw=0;pitch=.52;distance=28};
+}
+function resize(){
+camera.aspect=innerWidth/innerHeight;
+camera.updateProjectionMatrix();
+renderer.setSize(innerWidth,innerHeight);
+}
+init();
 think();
-
-setInterval(
-()=>{
-city.tick();
-think();
-},
-1000
-);
-
+setInterval(()=>{tick()},1000);
+setInterval(()=>{think()},2500);
+window.addEventListener("resize",resize);
 </script>
-
 </body>
 </html>
